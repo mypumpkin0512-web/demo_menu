@@ -9,6 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   :root {
     --bg: #FBF4E8;
@@ -93,6 +95,17 @@
   .methods { display: flex; gap: 8px; flex-wrap: wrap; }
   .methods button { flex: 1; min-width: 120px; padding: 11px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; }
   .methods button.active { border-color: var(--orange); background: #FFF1E2; font-weight: 500; }
+  .field-label { margin-top: 14px; font-size: 14px; color: var(--muted); }
+  .slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 6px; max-height: 200px; overflow-y: auto; padding: 2px; }
+  .slot { padding: 10px 0; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-size: 15px; cursor: pointer; }
+  .slot.wide { grid-column: span 4; }
+  .slot.active { border-color: var(--orange); background: #FFF1E2; font-weight: 500; }
+  .map-wrap { position: relative; height: 240px; border-radius: 14px; overflow: hidden; margin-top: 6px; border: 1.5px solid var(--line); background: var(--cream); }
+  #map { position: absolute; inset: 0; }
+  .map-pin { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -100%); font-size: 36px; line-height: 1; z-index: 500; pointer-events: none; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); }
+  .map-hint { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .map-hint.ok { color: #23733A; }
+  .locate { margin-top: 8px; }
   .sum-row { display: flex; justify-content: space-between; padding: 4px 0; }
   .sum-row.total { font-size: 19px; font-weight: 600; border-top: 1px solid var(--line); margin-top: 6px; padding-top: 10px; }
 
@@ -348,29 +361,119 @@ function renderCart() {
 
 const FIELD_DEFS = {
   'ชื่อ': { key: 'name', label: 'ชื่อ', type: 'text' },
-  'เบอร์': { key: 'phone', label: 'เบอร์โทร', type: 'tel' },
-  'ที่อยู่': { key: 'address', label: 'ที่อยู่จัดส่ง', type: 'area' },
-  'เวลารับ': { key: 'pickupTime', label: 'เวลาที่จะมารับ (เช่น 12:00)', type: 'text' },
+  'เบอร์': { key: 'phone', label: 'เบอร์โทร', type: 'tel', placeholder: '08x-xxx-xxxx' },
+  'ที่อยู่': { key: 'address', label: 'ที่อยู่', type: 'area' },
+  'ที่อยู่พัสดุ': { key: 'address', label: 'ที่อยู่จัดส่ง', type: 'area', placeholder: 'บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์' },
+  'จุดสังเกต': { key: 'address', label: 'บ้านเลขที่ / จุดสังเกต', type: 'text', placeholder: 'เช่น 99/1 ซอย 5 บ้านประตูสีเขียว' },
+  'แผนที่': { key: 'map', label: 'ตำแหน่งจัดส่ง', type: 'map' },
+  'เวลารับ': { key: 'pickupTime', label: 'จะมารับตอนไหน', type: 'slots' },
+  'เวลาส่ง': { key: 'pickupTime', label: 'อยากให้ส่งตอนไหน', type: 'slots' },
   'หมายเหตุ': { key: 'note', label: 'หมายเหตุถึงร้าน', type: 'area' }
 };
-const formData = {};
+
+// ช่องที่ต้องกรอกตามวิธีรับสินค้า (รับหน้าร้านใช้ตามที่ตั้งไว้ในแท็บตั้งค่า)
+function fieldsFor(method) {
+  if (method === 'ส่งถึงบ้าน') return ['ชื่อ', 'เบอร์', 'แผนที่', 'จุดสังเกต', 'เวลาส่ง', 'หมายเหตุ'];
+  if (method === 'ส่งพัสดุ') return ['ชื่อ', 'เบอร์', 'ที่อยู่พัสดุ', 'หมายเหตุ'];
+  return state.menu.shop.customerFields;
+}
+
+const formData = { pickupTime: 'เร็วที่สุด' };
 function saveFields() {
   document.querySelectorAll('#customerFields [data-key]').forEach((el) => { formData[el.dataset.key] = el.value; });
 }
+
+// ช่วงเวลาทุก 15 นาที ตั้งแต่อีก 15 นาทีข้างหน้า จนถึงเวลาปิดร้าน
+function timeSlots() {
+  const toMin = (t) => { const [h, m] = String(t).split(':').map(Number); return h * 60 + (m || 0); };
+  const open = toMin(state.menu.shop.openTime), close0 = toMin(state.menu.shop.closeTime);
+  const overnight = close0 < open;
+  const close = overnight ? close0 + 1440 : close0;
+  const d = new Date();
+  let now = d.getHours() * 60 + d.getMinutes();
+  if (overnight && now < open) now += 1440;
+  const out = [];
+  for (let t = Math.max(open, Math.ceil((now + 15) / 15) * 15); t <= close && out.length < 32; t += 15) {
+    const x = t % 1440;
+    out.push(String(Math.floor(x / 60)).padStart(2, '0') + ':' + String(x % 60).padStart(2, '0'));
+  }
+  return out;
+}
+
+function fieldHtml(d) {
+  if (d.type === 'slots') {
+    const slots = ['เร็วที่สุด', ...timeSlots()];
+    if (!slots.includes(formData.pickupTime)) formData.pickupTime = 'เร็วที่สุด';
+    return `<div class="field-label">${d.label}</div>
+      <div class="slots" id="slots">${slots.map((s, i) =>
+        `<button class="slot${i === 0 ? ' wide' : ''}${s === formData.pickupTime ? ' active' : ''}" data-v="${s}">${i === 0 ? '⚡ เร็วที่สุด' : s}</button>`).join('')}</div>`;
+  }
+  if (d.type === 'map') {
+    return `<div class="field-label">${d.label}</div>
+      <div class="map-wrap"><div id="map"></div><div class="map-pin">📍</div></div>
+      <button class="ghost locate" id="locateBtn">📍 ใช้ตำแหน่งปัจจุบันของฉัน</button>
+      <div class="map-hint" id="mapHint"></div>`;
+  }
+  const ph = d.placeholder ? ` placeholder="${esc(d.placeholder)}"` : '';
+  const input = d.type === 'area'
+    ? `<textarea data-key="${d.key}"${ph}>${esc(formData[d.key] || '')}</textarea>`
+    : `<input data-key="${d.key}" type="${d.type}"${d.type === 'tel' ? ' inputmode="tel"' : ''}${ph} value="${esc(formData[d.key] || '')}">`;
+  return `<label class="field">${d.label}${input}</label>`;
+}
+
 function renderFields() {
   saveFields();
   if (formData.name === undefined && state.user.displayName) formData.name = state.user.displayName;
-  let names = state.menu.shop.customerFields.slice();
-  if (state.method !== 'รับหน้าร้าน' && !names.includes('ที่อยู่')) names.push('ที่อยู่');
-  if (state.method !== 'รับหน้าร้าน') names = names.filter((n) => n !== 'เวลารับ');
-  const defs = names.map((n) => FIELD_DEFS[n]).filter(Boolean);
+  const defs = fieldsFor(state.method).map((n) => FIELD_DEFS[n]).filter(Boolean);
   $('customerPanel').classList.toggle('hidden', defs.length === 0);
-  $('customerFields').innerHTML = defs.map((d) => `
-    <label class="field">${d.label}
-      ${d.type === 'area'
-        ? `<textarea data-key="${d.key}">${esc(formData[d.key] || '')}</textarea>`
-        : `<input data-key="${d.key}" type="${d.type}" value="${esc(formData[d.key] || '')}">`}
-    </label>`).join('');
+  if (map) { map.remove(); map = null; }
+  $('customerFields').innerHTML = defs.map(fieldHtml).join('');
+
+  const slots = $('slots');
+  if (slots) slots.onclick = (e) => {
+    const b = e.target.closest('.slot'); if (!b) return;
+    formData.pickupTime = b.dataset.v;
+    slots.querySelectorAll('.slot').forEach((x) => x.classList.toggle('active', x === b));
+  };
+  if ($('map')) initMap();
+}
+
+// ---------- แผนที่ปักหมุด ----------
+let map = null;
+let askedLocation = false;
+function mapHint(msg, ok) { const h = $('mapHint'); if (h) { h.textContent = msg; h.classList.toggle('ok', !!ok); } }
+function pinned() { return formData.lat !== undefined && formData.lng !== undefined; }
+
+function initMap() {
+  $('locateBtn').onclick = locate;
+  if (typeof L === 'undefined') { mapHint('โหลดแผนที่ไม่สำเร็จ ใส่บ้านเลขที่และจุดสังเกตให้ละเอียดแทนได้ครับ'); return; }
+  const center = pinned() ? [formData.lat, formData.lng] : [13.7563, 100.5018];
+  map = L.map('map', { zoomControl: true }).setView(center, pinned() ? 17 : 11);
+  map.attributionControl.setPrefix('Leaflet');
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  map.on('dragstart', () => { map._userMoved = true; });
+  map.on('moveend', () => {
+    if (!map._userMoved && !pinned()) return;
+    const c = map.getCenter();
+    formData.lat = c.lat; formData.lng = c.lng;
+    mapHint('✅ ปักหมุดแล้ว — เลื่อนแผนที่เพื่อปรับให้ตรงบ้านได้', true);
+  });
+  setTimeout(() => map && map.invalidateSize(), 150);
+  if (pinned()) mapHint('✅ ปักหมุดแล้ว — เลื่อนแผนที่เพื่อปรับให้ตรงบ้านได้', true);
+  else if (!askedLocation) { askedLocation = true; locate(); }
+  else mapHint('กดปุ่มด้านล่าง หรือเลื่อนแผนที่ให้หมุดอยู่ตรงบ้านของคุณ');
+}
+
+function locate() {
+  if (!navigator.geolocation) { mapHint('เครื่องนี้หาตำแหน่งไม่ได้ เลื่อนแผนที่ให้หมุดอยู่ตรงบ้านแทนได้ครับ'); return; }
+  mapHint('กำลังหาตำแหน่งของคุณ...');
+  navigator.geolocation.getCurrentPosition((p) => {
+    formData.lat = p.coords.latitude; formData.lng = p.coords.longitude;
+    if (map) map.setView([formData.lat, formData.lng], 17);
+    mapHint('✅ ปักหมุดแล้ว — เลื่อนแผนที่เพื่อปรับให้ตรงบ้านได้', true);
+  }, () => {
+    mapHint('หาตำแหน่งไม่ได้ (อาจยังไม่ได้อนุญาต) เลื่อนแผนที่ให้หมุดอยู่ตรงบ้านแทนได้ครับ');
+  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
 }
 
 async function submitOrder() {
