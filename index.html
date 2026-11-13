@@ -138,6 +138,7 @@
   .ow-tag.unpaid { background: #FBE3E0; color: #B3382C; }
   .ow-tag.paid { background: #E3F4E6; color: #23733A; }
   .ow-who { color: var(--muted); margin: 6px 0 10px; font-size: 18px; }
+  .ow-table { display: inline-block; background: var(--brown); color: #fff; font-size: 24px; font-weight: 600; border-radius: 12px; padding: 4px 14px; margin-bottom: 10px; }
   .ow-items { border-top: 2px dashed var(--line); padding-top: 8px; font-size: 23px; line-height: 1.5; }
   .ow-items small { display: block; font-size: 17px; color: var(--muted); margin: -2px 0 6px 36px; line-height: 1.3; }
   .ow-info { border-radius: 12px; padding: 9px 12px; margin-top: 8px; font-size: 18px; }
@@ -192,7 +193,7 @@
   <section id="cartView" class="hidden">
     <button class="back" id="backToMenu">← กลับไปเลือกเพิ่ม</button>
     <div class="panel"><h4>รายการที่เลือก</h4><div id="cartLines"></div></div>
-    <div class="panel" id="methodPanel"><h4>วิธีรับสินค้า</h4><div class="methods" id="methods"></div></div>
+    <div class="panel" id="methodPanel"><h4>รับแบบไหนดี</h4><div class="methods" id="methods"></div></div>
     <div class="panel" id="customerPanel"><h4>ข้อมูลผู้สั่ง</h4><div id="customerFields"></div></div>
     <div class="notify-note" id="notifyNote"></div>
     <div class="panel">
@@ -427,7 +428,7 @@ $('sheet').onclick = (e) => { if (e.target === $('sheet')) closeSheet(); };
 function cartSubtotal() { return state.cart.reduce((s, l) => s + l.unit * l.qty, 0); }
 function shippingFee() {
   const { shop } = state.menu;
-  if (state.method === 'รับหน้าร้าน') return 0;
+  if (!isDelivery(state.method)) return 0;
   if (shop.freeShippingMin > 0 && cartSubtotal() >= shop.freeShippingMin) return 0;
   return shop.shippingFee;
 }
@@ -462,13 +463,13 @@ function renderCart() {
   };
 
   $('methodPanel').classList.toggle('hidden', shop.pickupMethods.length < 2);
-  $('methods').innerHTML = shop.pickupMethods.map((m) => `<button class="${m === state.method ? 'active' : ''}" data-m="${esc(m)}">${esc(m)}</button>`).join('');
+  $('methods').innerHTML = shop.pickupMethods.map((m) => `<button class="${m === state.method ? 'active' : ''}" data-m="${esc(m)}">${METHOD_ICON[m] || ''} ${esc(m)}</button>`).join('');
   $('methods').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; saveFields(); state.method = b.dataset.m; persist(); renderCart(); };
 
   renderFields();
   const ship = shippingFee();
   $('sumSubtotal').textContent = baht(cartSubtotal());
-  $('shipRow').classList.toggle('hidden', state.method === 'รับหน้าร้าน');
+  $('shipRow').classList.toggle('hidden', !isDelivery(state.method));
   $('sumShipping').textContent = ship ? baht(ship) : 'ฟรี';
   $('sumTotal').textContent = baht(cartSubtotal() + ship);
   $('submitBtn').disabled = !shop.open;
@@ -481,6 +482,7 @@ const FIELD_DEFS = {
   'ที่อยู่พัสดุ': { key: 'address', label: 'ที่อยู่จัดส่ง', type: 'area', placeholder: 'บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์' },
   'จุดสังเกต': { key: 'address', label: 'บ้านเลขที่ / จุดสังเกต', type: 'text', placeholder: 'เช่น 99/1 ซอย 5 บ้านประตูสีเขียว' },
   'แผนที่': { key: 'map', label: 'ตำแหน่งจัดส่ง', type: 'map' },
+  'โต๊ะ': { key: 'table', label: 'นั่งโต๊ะไหน (ถ้าร้านมีเลขโต๊ะ)', type: 'tel', placeholder: 'เช่น 5' },
   'หมายเหตุ': { key: 'note', label: 'หมายเหตุถึงร้าน', type: 'area' }
 };
 
@@ -488,11 +490,17 @@ const FIELD_DEFS = {
 function fieldsFor(method) {
   if (method === 'ส่งถึงบ้าน') return ['ชื่อ', 'เบอร์', 'แผนที่', 'จุดสังเกต', 'หมายเหตุ'];
   if (method === 'ส่งพัสดุ') return ['ชื่อ', 'เบอร์', 'ที่อยู่พัสดุ', 'หมายเหตุ'];
-  return state.menu.shop.customerFields;
+  const base = state.menu.shop.customerFields.filter((f) => f !== 'โต๊ะ');
+  if (method === 'นั่งทานที่ร้าน') return [base[0] === 'ชื่อ' ? 'ชื่อ' : null, 'โต๊ะ', ...base.filter((f) => f !== 'ชื่อ')].filter(Boolean);
+  return base;
+}
+function isDelivery(method) { return method === 'ส่งถึงบ้าน' || method === 'ส่งพัสดุ';
 }
 
 // ข้อความบอกลูกค้าว่าร้านจะแจ้งอะไรในไลน์
 const NOTIFY_TEXT = {
+  'นั่งทานที่ร้าน': '🍽️ นั่งรอที่โต๊ะได้เลย ร้านจะยกไปเสิร์ฟให้',
+  'ห่อกลับบ้าน': '🔔 ไม่ต้องยืนรอ ร้านจะแจ้งในไลน์เมื่อห่อเสร็จ',
   'รับหน้าร้าน': '🔔 ไม่ต้องรอหน้าร้าน ร้านจะแจ้งในไลน์เมื่อพร้อมให้มารับ',
   'ส่งถึงบ้าน': '🔔 ร้านจะแจ้งในไลน์เมื่อกำลังออกไปส่ง',
   'ส่งพัสดุ': '📦 ร้านจะส่งเลขพัสดุให้ในไลน์เมื่อจัดส่งแล้ว'
@@ -628,8 +636,10 @@ $('closeBtn').onclick = () => {
 
 // ================= หน้าร้าน (คนดูแลร้าน) =================
 const owner = { tab: 'orders', seen: null, timer: null, products: [] };
-const METHOD_ICON = { 'รับหน้าร้าน': '🏠', 'ส่งถึงบ้าน': '🛵', 'ส่งพัสดุ': '📦' };
+const METHOD_ICON = { 'นั่งทานที่ร้าน': '🍽️', 'ห่อกลับบ้าน': '🥡', 'รับหน้าร้าน': '🏠', 'ส่งถึงบ้าน': '🛵', 'ส่งพัสดุ': '📦' };
 const READY_LABEL = {
+  'นั่งทานที่ร้าน': '🍽️ เสิร์ฟแล้ว',
+  'ห่อกลับบ้าน': '🥡 ห่อเสร็จแล้ว เรียกลูกค้ามารับ',
   'รับหน้าร้าน': '🔔 ทำเสร็จแล้ว เรียกลูกค้ามารับ',
   'ส่งถึงบ้าน': '🛵 ออกไปส่งแล้ว แจ้งลูกค้า',
   'ส่งพัสดุ': '📦 ส่งพัสดุแล้ว แจ้งลูกค้า'
@@ -732,12 +742,13 @@ function renderOwnerOrders(data) {
 function orderCard(o) {
   const paid = o.status >= 2;
   const items = o.items.map((x) => `${x.qty} × ${esc(x.name)}${x.options ? `<small>${esc(x.options)}</small>` : ''}`).join('<br>');
-  const delivery = o.method !== 'รับหน้าร้าน';
+  const delivery = isDelivery(o.method);
   const phoneLink = o.phone ? `<a href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a>` : '';
   const mapLink = o.map ? `<a href="${esc(o.map)}" target="_blank" rel="noopener">📍 เปิดแผนที่</a>` : '';
   return `<div class="ow-card${paid ? '' : ' unpaid'}" data-no="${esc(o.no)}">
     <div class="ow-top"><span class="ow-no">${esc(o.no)}</span><span class="ow-tag ${paid ? 'paid' : 'unpaid'}">${paid ? 'จ่ายแล้ว' : 'ยังไม่จ่าย'}</span></div>
     <div class="ow-who">${esc(o.name || 'ลูกค้า')} · ${METHOD_ICON[o.method] || ''} ${esc(o.method)} · ${esc(o.time)}${o.day && o.day !== new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) ? ' (' + esc(o.day) + ')' : ''}</div>
+    ${o.pickup && o.method === 'นั่งทานที่ร้าน' ? `<div class="ow-table">🪑 ${esc(o.pickup)}</div>` : ''}
     <div class="ow-items">${items}</div>
     ${o.note ? `<div class="ow-info note">📝 ${esc(o.note)}</div>` : ''}
     ${!paid && o.slip ? `<div class="ow-info slip">📎 ลูกค้าส่งสลิปแล้ว — เช็คยอดในแอปธนาคาร</div>` : ''}
