@@ -668,6 +668,8 @@ function showDone(order, again) {
   show('doneView');
   if (again) return;
   state.cart = [];
+  delete formData.note;   // หมายเหตุ/โต๊ะ ใช้ครั้งเดียว — ชื่อ เบอร์ ที่อยู่ จำไว้ให้ครั้งหน้า
+  delete formData.table;
   state.lastOrder = { orderNo: order.orderNo, total: order.total, promptpay: order.promptpay, method: order.method, lines: [], at: Date.now() };
   persist();
 
