@@ -169,7 +169,7 @@ const LIFF_ID = '2012589706-kJFeGfQv';  // ได้จาก LINE Developers �
 const API_URL = 'https://script.google.com/macros/s/AKfycbwRUMRKUoMzJ63sKchEsQ12OORcrTqeer2cIKNYh46C1ZgkmES94nqVPUAIGrCGlCrX/exec';  // ลิงก์ /exec ของ Apps Script ระบบออเดอร์
 // =================================
 
-const state = { menu: null, cart: [], method: null, user: { userId: 'TEST' } };
+const state = { menu: null, cart: [], method: null, cat: null, user: { userId: 'TEST' } };
 const $ = (id) => document.getElementById(id);
 const baht = (n) => '฿' + Number(n).toLocaleString('th-TH');
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -206,17 +206,22 @@ function renderMenu() {
   $('closedBox').classList.toggle('hidden', shop.open);
 
   const cats = [...new Set(products.map((p) => p.category))];
-  $('chips').innerHTML = cats.map((c, i) => `<button class="chip${i === 0 ? ' active' : ''}" data-cat="${i}">${esc(c)}</button>`).join('');
-  $('menuList').innerHTML = cats.map((c, i) => `
-    <h2 class="cat" id="cat-${i}">${esc(c)}</h2>
+  const tabs = cats.length > 1 ? ['ทั้งหมด', ...cats] : cats;
+  if (!tabs.includes(state.cat)) state.cat = tabs[0];
+  $('chips').classList.toggle('hidden', tabs.length < 2);
+  $('chips').innerHTML = tabs.map((c) => `<button class="chip${c === state.cat ? ' active' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+  const shown = state.cat === 'ทั้งหมด' ? cats : [state.cat];
+  $('menuList').innerHTML = shown.map((c) => `
+    <h2 class="cat">${esc(c)}</h2>
     ${products.filter((p) => p.category === c).map(itemHtml).join('')}
   `).join('');
 
   $('chips').onclick = (e) => {
     const b = e.target.closest('.chip'); if (!b) return;
-    document.querySelectorAll('.chip').forEach((x) => x.classList.toggle('active', x === b));
-    const target = $('cat-' + b.dataset.cat);
-    window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 60, behavior: 'smooth' });
+    state.cat = b.dataset.cat;
+    renderMenu();
+    const top = $('chips').getBoundingClientRect().top + window.scrollY;
+    if (window.scrollY > top) window.scrollTo({ top: top, behavior: 'smooth' });
   };
   $('menuList').onclick = (e) => {
     const el = e.target.closest('.item'); if (!el || !state.menu.shop.open) return;
