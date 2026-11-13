@@ -205,6 +205,8 @@
   .ow-search input { flex: 1; min-width: 0; padding: 12px; font-size: 18px; border: 2px solid var(--line); border-radius: 14px; }
   .ow-search button { border: none; background: var(--brown); color: #fff; border-radius: 14px; padding: 0 18px; font-size: 18px; }
   .ow-hist { border-width: 2px; }
+  .ow-paynow { font-size: 30px; font-weight: 600; letter-spacing: 1px; margin: 4px 0; color: var(--brown); }
+  .ow-steps { background: #FFF4DC; border-radius: 14px; padding: 12px 14px; margin-top: 12px; font-size: 18px; line-height: 1.7; }
   .ow-tile { background: #fff; border-radius: 18px; padding: 16px; margin-bottom: 12px; }
   .ow-tile .lb { color: var(--muted); font-size: 18px; }
   .ow-tile .val { font-size: 36px; font-weight: 600; color: var(--orange-dark); }
@@ -1106,9 +1108,14 @@ function renderOwnerHours(shop) {
       <button class="ow-big money" id="hSave">💾 บันทึกเวลาร้าน</button>
     </div>
     <div class="ow-tile">
+      <div style="font-size:21px;font-weight:600">💳 เลขพร้อมเพย์รับเงิน</div>
+      <div id="payBox"></div>
+    </div>
+    <div class="ow-tile">
       <div style="font-size:21px;font-weight:600">📢 ประกาศถึงลูกค้า</div>
       <div id="annBox"></div>
     </div>`;
+  renderPayTile();
   renderAnnounce();
 
   $('hDays').onclick = (e) => {
@@ -1334,6 +1341,136 @@ async function renderAnnounce() {
       try { const r = await ownerCall('owner.broadcast', { text }); toast(`✅ ส่งประกาศถึง ${r.sent} คนแล้ว`); renderAnnounce(); }
       catch (err) { toast('❌ ' + err.message); }
     });
+  };
+}
+
+// ---------- เลขพร้อมเพย์รับเงิน ----------
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) return resolve();
+    const s = document.createElement('script');
+    s.src = src; s.onload = resolve; s.onerror = () => reject(new Error('load failed'));
+    document.head.appendChild(s);
+  });
+}
+
+/** อ่านเลขพร้อมเพย์จากข้อความใน QR (มาตรฐาน EMVCo / Thai QR) */
+function parsePromptpayQr(text) {
+  const read = (str) => {
+    const out = {};
+    for (let i = 0; i + 4 <= str.length;) {
+      const tag = str.substr(i, 2), len = parseInt(str.substr(i + 2, 2), 10);
+      if (isNaN(len)) break;
+      out[tag] = str.substr(i + 4, len);
+      i += 4 + len;
+    }
+    return out;
+  };
+  const top = read(String(text || ''));
+  if (!top['29']) return null; // ไม่ใช่ QR พร้อมเพย์ส่วนตัว (เช่น QR ร้านค้าแบบจ่ายบิล)
+  const acc = read(top['29']);
+  const v = acc['01'] || acc['02'] || acc['03'];
+  if (!v) return null;
+  return /^0066\d{9}$/.test(v) ? '0' + v.slice(4) : v;
+}
+
+async function readQrFromImage(file) {
+  await loadScript('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js');
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  await new Promise((ok, bad) => { img.onload = ok; img.onerror = bad; img.src = url; });
+  const scale = Math.min(1, 1400 / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  URL.revokeObjectURL(url);
+  const data = ctx.getImageData(0, 0, c.width, c.height);
+  const code = jsQR(data.data, c.width, c.height, { inversionAttempts: 'attemptBoth' });
+  return code ? code.data : '';
+}
+
+async function renderPayTile() {
+  const box = $('payBox'); if (!box) return;
+  box.innerHTML = '<div class="sub">กำลังโหลด...</div>';
+  try {
+    const { data } = await ownerCall('owner.payInfo');
+    box.innerHTML = `
+      <div class="sub">เงินจากลูกค้าเข้าบัญชีนี้</div>
+      <div class="ow-paynow">${data.masked ? esc(data.masked) : 'ยังไม่ได้ตั้ง'}</div>
+      <div class="sub">${esc(data.type)}</div>
+      <button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" id="payChange">เปลี่ยนเลขพร้อมเพย์</button>`;
+    $('payChange').onclick = () => payStep1('');
+  } catch (err) { box.innerHTML = `<div class="sub">${esc(err.message)}</div>`; }
+}
+
+function payStep1(prefill) {
+  openModal(`
+    <h3>เปลี่ยนเลขพร้อมเพย์</h3>
+    <p>เลือกวิธีใส่เลข แบบไหนก็ได้</p>
+    <label class="ow-big ready" style="text-align:center;display:block">📷 ส่งรูป QR รับเงินจากแอปธนาคาร
+      <input type="file" accept="image/*" id="payImg" hidden></label>
+    <div class="ow-hint" style="text-align:left">เปิดแอปธนาคาร → เมนู "รับเงิน" หรือ "QR รับเงิน" → แคปหน้าจอ แล้วกดปุ่มด้านบนเลือกรูปนั้น</div>
+    <div class="ow-field">หรือพิมพ์เลขเอง</div>
+    <input id="payId" class="ow-input" inputmode="numeric" placeholder="เบอร์มือถือ / เลขบัตรประชาชน / เลข e-Wallet" value="${esc(prefill || '')}">
+    <p class="err" id="payErr"></p>
+    <button class="ow-big money" id="payNext">ถัดไป: ตรวจชื่อผู้รับเงิน</button>
+    <button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" id="payCancel">ยกเลิก</button>`);
+  $('payCancel').onclick = closeModal;
+  $('payImg').onchange = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    $('payErr').textContent = 'กำลังอ่าน QR...';
+    try {
+      const text = await readQrFromImage(file);
+      const id = parsePromptpayQr(text);
+      if (!text) { $('payErr').textContent = 'หา QR ในรูปไม่เจอ ลองครอปให้เห็น QR ชัด ๆ หรือพิมพ์เลขเองนะครับ'; return; }
+      if (!id) { $('payErr').textContent = 'QR นี้ไม่ใช่ QR พร้อมเพย์รับเงินส่วนตัว ลองใช้ QR "รับเงิน" ในแอปธนาคาร หรือพิมพ์เลขเองนะครับ'; return; }
+      $('payId').value = id;
+      $('payErr').textContent = '';
+      payStep2(id);
+    } catch (err) { $('payErr').textContent = 'อ่านรูปนี้ไม่ได้ ลองรูปอื่น หรือพิมพ์เลขเองนะครับ'; }
+  };
+  $('payNext').onclick = () => {
+    const id = $('payId').value.trim();
+    if (!id) { $('payErr').textContent = 'ใส่เลข หรือส่งรูป QR ก่อนนะครับ'; return; }
+    payStep2(id);
+  };
+}
+
+async function payStep2(rawId) {
+  let res;
+  try { res = await ownerCall('owner.payPreview', { id: rawId }); }
+  catch (err) { if ($('payErr')) $('payErr').textContent = err.message; return; }
+  openModal(`
+    <h3>ตรวจชื่อผู้รับเงินก่อน</h3>
+    <div class="ow-paynow" style="text-align:center">${esc(res.id)}</div>
+    <div class="sub" style="text-align:center">${esc(res.type)}</div>
+    <div style="text-align:center;margin-top:10px"><div id="payQr" style="background:#fff;display:inline-block;padding:12px;border-radius:16px"></div></div>
+    <div class="ow-steps">
+      1. ใช้ <b>มือถืออีกเครื่อง</b> เปิดแอปธนาคาร แล้วสแกน QR นี้ (QR 1 บาท)<br>
+      2. ดู <b>ชื่อผู้รับเงิน</b> ที่แอปธนาคารแสดง<br>
+      3. <b>ไม่ต้องกดโอน</b> แค่ดูชื่อแล้วกดยกเลิกในแอปธนาคาร
+    </div>
+    <div class="ow-field">ถ้าชื่อถูกต้อง ใส่รหัสร้านเพื่อยืนยัน</div>
+    <input id="payPin" class="ow-input" type="password" inputmode="numeric" autocomplete="off" placeholder="รหัสร้าน">
+    <p class="err" id="payErr2"></p>
+    <button class="ow-big money" id="paySave">✅ ชื่อถูกต้อง ใช้เลขนี้</button>
+    <button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" id="payBack">ชื่อไม่ถูก กลับไปแก้</button>`);
+  new QRCode($('payQr'), { text: res.promptpay, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
+  $('payBack').onclick = () => payStep1(res.id);
+  $('paySave').onclick = async () => {
+    const pin = $('payPin').value.trim();
+    if (!pin) { $('payErr2').textContent = 'ใส่รหัสร้านก่อนนะครับ'; return; }
+    $('paySave').disabled = true; $('paySave').textContent = 'กำลังบันทึก...';
+    try {
+      await ownerCall('owner.paySave', { id: res.id, pin });
+      closeModal();
+      toast('✅ เปลี่ยนเลขพร้อมเพย์แล้ว แจ้งคนดูแลร้านทุกคนแล้ว');
+      renderPayTile();
+    } catch (err) {
+      $('payErr2').textContent = err.message;
+      $('paySave').disabled = false; $('paySave').textContent = '✅ ชื่อถูกต้อง ใช้เลขนี้';
+    }
   };
 }
 
