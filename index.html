@@ -144,6 +144,9 @@
   .ow-info { border-radius: 12px; padding: 9px 12px; margin-top: 8px; font-size: 18px; }
   .ow-info.note { background: #FFF4DC; }
   .ow-info.slip { background: #E3F4E6; color: #23733A; }
+  .ow-info.warn { background: #FDE8E4; color: #A8321E; border: 2px solid #F2B8AC; }
+  .ow-info.warn b { display: block; font-size: 20px; }
+  .ow-info.wait { background: #FFF4DC; color: #7A5A12; }
   .ow-info.addr { background: var(--cream); }
   .ow-links { display: flex; gap: 8px; margin-top: 8px; }
   .ow-links a { flex: 1; text-align: center; text-decoration: none; color: var(--brown); border: 2px solid var(--line); border-radius: 14px; padding: 11px 0; font-size: 18px; background: #fff; }
@@ -808,7 +811,7 @@ function orderCard(o) {
     ${o.pickup && o.method === 'นั่งทานที่ร้าน' ? `<div class="ow-table">🪑 ${esc(o.pickup)}</div>` : ''}
     <div class="ow-items">${items}</div>
     ${o.note ? `<div class="ow-info note">📝 ${esc(o.note)}</div>` : ''}
-    ${!paid && o.slip ? `<div class="ow-info slip">📎 ลูกค้าส่งสลิปแล้ว — เช็คยอดในแอปธนาคาร</div>` : ''}
+    ${slipBox(o, paid)}
     ${delivery && o.address ? `<div class="ow-info addr">🏠 ${esc(o.address)}</div>` : ''}
     ${phoneLink || mapLink ? `<div class="ow-links">${mapLink}${phoneLink}</div>` : ''}
     <div class="ow-total">ยอด ${baht(o.total)}</div>
@@ -818,6 +821,18 @@ function orderCard(o) {
       : `<button class="ow-big money" data-act="2">💰 ได้รับเงินแล้ว</button>`}
     <button class="ow-cancel" data-act="6">ยกเลิกออเดอร์นี้</button>
   </div>`;
+}
+
+/** ผลตรวจสลิปบนการ์ดออเดอร์ */
+function slipBox(o, paid) {
+  if (!o.slip) return '';
+  const msg = esc(o.slip.replace(/^\S+\s+\d\d:\d\d\s+/, ''));   // ตัดไอคอน + เวลาออก
+  const at = (o.slip.match(/\d\d:\d\d/) || [''])[0];
+  if (o.slipState === 'ok') return `<div class="ow-info slip">✅ ระบบตรวจสลิปแล้ว ${at}<br><small>${msg}</small></div>`;
+  if (paid) return '';
+  if (o.slipState === 'warn') return `<div class="ow-info warn"><b>⚠️ สลิปมีปัญหา</b>${msg}<br><small>เช็คในแอปธนาคารก่อนกด "ได้รับเงินแล้ว"</small></div>`;
+  if (o.slipState === 'wait') return `<div class="ow-info wait">⏳ ${msg}</div>`;
+  return `<div class="ow-info slip">📎 ลูกค้าส่งสลิปแล้ว — เช็คยอดในแอปธนาคาร</div>`;
 }
 
 function onOrderClick(e) {
