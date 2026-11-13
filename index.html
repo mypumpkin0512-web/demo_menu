@@ -297,15 +297,18 @@
 <div id="owToast" class="ow-toast hidden"></div>
 
 <script>
-// ====== ตั้งค่า: ใส่ 2 ค่านี้ ======
-const LIFF_ID = '2012589706-kJFeGfQv';  // ได้จาก LINE Developers → LIFF (เว้นว่าง = โหมดทดสอบนอกไลน์)
-const API_URL = 'https://script.google.com/macros/s/AKfycbwRUMRKUoMzJ63sKchEsQ12OORcrTqeer2cIKNYh46C1ZgkmES94nqVPUAIGrCGlCrX/exec';  // ลิงก์ /exec ของ Apps Script ระบบออเดอร์
+// ====== หน้าเดียวใช้ทุกร้าน ======
+// ร้านไหน = ?s=รหัสร้าน ใน Endpoint URL ของ LIFF เช่น https://.../demo_menu/?s=demo
+// ค่าของแต่ละร้าน (LIFF ID + ลิงก์ /exec) อยู่ในไฟล์ shops.json ข้างไฟล์นี้ — เพิ่มร้านใหม่ = เพิ่ม 1 บรรทัดในนั้น
+let LIFF_ID = '';
+let API_URL = '';
+let SHOP_KEY = '';
 // =================================
 
 const state = { menu: null, cart: [], method: null, cat: null, lastOrder: null, user: { userId: 'TEST' } };
 
 // ---------- จำตะกร้าไว้ในเครื่อง (เผลอปิดแล้วเปิดใหม่ สั่งต่อได้) ----------
-const STORE_KEY = 'pumpkin-order-' + (LIFF_ID || 'test');
+let STORE_KEY = 'pumpkin-order-test';
 const CART_TTL = 24 * 60 * 60 * 1000;      // ตะกร้าเก็บไว้ 1 วัน
 const LAST_ORDER_TTL = 3 * 60 * 60 * 1000; // ปุ่มดู QR ออเดอร์ล่าสุด แสดง 3 ชั่วโมง
 
@@ -1503,6 +1506,23 @@ async function loadOwnerSales() {
   } catch (err) { ownerError(err); }
 }
 
+/** อ่านว่าเป็นร้านไหน แล้วโหลด LIFF ID + ลิงก์ API ของร้านนั้นจาก shops.json */
+async function loadShop() {
+  const q = new URLSearchParams(location.search);
+  SHOP_KEY = (q.get('s') || '').trim();
+  if (!/^[a-z0-9_-]{1,40}$/i.test(SHOP_KEY)) throw new Error('ลิงก์ไม่ครบ (ไม่มีรหัสร้าน ?s=)');
+  const res = await fetch('shops.json', { cache: 'no-cache' });
+  if (!res.ok) throw new Error('โหลดรายชื่อร้านไม่ได้');
+  const shops = await res.json();
+  const shop = Object.prototype.hasOwnProperty.call(shops, SHOP_KEY) ? shops[SHOP_KEY] : null;
+  if (!shop) throw new Error('ไม่พบร้าน "' + SHOP_KEY + '"');
+  // รับเฉพาะลิงก์ Apps Script เท่านั้น กันคนแก้ลิงก์ให้ส่งข้อมูลไปที่อื่น
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(shop.api || '')) throw new Error('ลิงก์ API ของร้าน "' + SHOP_KEY + '" ไม่ถูกต้อง');
+  LIFF_ID = shop.liff || '';
+  API_URL = shop.api;
+  STORE_KEY = 'pumpkin-order-' + SHOP_KEY;
+}
+
 function isOwnerMode() {
   const q = new URLSearchParams(location.search);
   if (q.get('mode') === 'owner') return true;
@@ -1512,7 +1532,7 @@ function isOwnerMode() {
 
 (async function start() {
   try {
-    if (!API_URL) throw new Error('ยังไม่ได้ใส่ API_URL ในไฟล์ index.html');
+    await loadShop();
     await initLiff();
     if (isOwnerMode()) { startOwner(); return; }
     state.menu = await loadMenu();
