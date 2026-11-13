@@ -1511,7 +1511,7 @@ async function loadShop() {
   const q = new URLSearchParams(location.search);
   SHOP_KEY = (q.get('s') || '').trim();
   if (!/^[a-z0-9_-]{1,40}$/i.test(SHOP_KEY)) throw new Error('ลิงก์ไม่ครบ (ไม่มีรหัสร้าน ?s=)');
-  const res = await fetch('shops.json', { cache: 'no-cache' });
+  const res = await fetch('shops.json?t=' + Date.now(), { cache: 'no-store' }); // กันแคช: เพิ่ม/แก้ร้านแล้วเห็นผลทันที
   if (!res.ok) throw new Error('โหลดรายชื่อร้านไม่ได้');
   const shops = await res.json();
   const shop = Object.prototype.hasOwnProperty.call(shops, SHOP_KEY) ? shops[SHOP_KEY] : null;
