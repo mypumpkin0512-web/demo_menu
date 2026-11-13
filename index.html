@@ -160,6 +160,51 @@
   .ow-switch { min-width: 130px; border: none; border-radius: 14px; padding: 14px 10px; font-size: 19px; font-weight: 600; cursor: pointer; }
   .ow-switch.on { background: #E3F4E6; color: #23733A; }
   .ow-switch.off { background: #FBE3E0; color: #B3382C; }
+  .ow-tab { font-size: 17px; padding: 13px 0; }
+  .ow-hint { text-align: center; color: var(--muted); font-size: 17px; margin: 10px 0 4px; }
+  .ow-prod .nm { cursor: pointer; }
+  .ow-shopline { border-radius: 14px; padding: 10px 14px; margin-bottom: 10px; font-size: 18px; font-weight: 500; cursor: pointer; }
+  .ow-shopline.open { background: #E3F4E6; color: #23733A; }
+  .ow-shopline.closed { background: #FBE3E0; color: #B3382C; }
+  .ow-field { display: block; margin-top: 14px; font-size: 18px; color: var(--muted); }
+  .ow-field small { font-size: 15px; }
+  .ow-field input, .ow-input { display: block; width: 100%; margin-top: 6px; padding: 14px; font-size: 20px; border: 2px solid var(--line); border-radius: 14px; background: #fff; }
+  .ow-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .ow-chip { border: 2px solid var(--line); background: #fff; border-radius: 999px; padding: 10px 16px; font-size: 18px; cursor: pointer; }
+  .ow-chip.on { background: var(--brown); border-color: var(--brown); color: #fff; }
+  .ow-chip.day.on { background: #FBE3E0; border-color: #B3382C; color: #B3382C; }
+  .ow-mode { display: block; width: 100%; text-align: left; border: 2px solid var(--line); background: #fff; border-radius: 14px; padding: 12px 14px; margin-top: 8px; font-size: 19px; cursor: pointer; }
+  .ow-mode small { display: block; font-size: 15px; color: var(--muted); }
+  .ow-mode.on { border-color: var(--orange); background: #FFF1E2; font-weight: 500; }
+  .ow-choice { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+  .ow-choice input { min-width: 0; padding: 12px; font-size: 18px; border: 2px solid var(--line); border-radius: 12px; }
+  .ow-choice input[data-k="name"] { flex: 1; }
+  .ow-choice input[data-k="price"] { width: 72px; }
+  .ow-choice button { border: none; background: #FBE3E0; color: #B3382C; border-radius: 10px; width: 40px; height: 44px; font-size: 18px; cursor: pointer; }
+  .ow-times { display: flex; gap: 10px; margin-top: 10px; }
+  .ow-times label { flex: 1; min-width: 0; font-size: 18px; color: var(--muted); }
+  .ow-times input { display: block; width: 100%; min-width: 0; -webkit-appearance: none; appearance: none; margin-top: 6px; padding: 12px; font-size: 24px; border: 2px solid var(--line); border-radius: 14px; background: #fff; font-family: inherit; }
+  .ow-thumb { width: 56px; height: 56px; flex: none; border-radius: 12px; background: var(--cream); display: grid; place-items: center; font-size: 24px; overflow: hidden; cursor: pointer; }
+  .ow-thumb img, .ow-photo-box img { width: 100%; height: 100%; object-fit: cover; }
+  .ow-photo { display: flex; gap: 14px; align-items: center; margin-top: 6px; }
+  .ow-photo-box { width: 110px; height: 110px; flex: none; border-radius: 16px; background: var(--cream); display: grid; place-items: center; font-size: 40px; overflow: hidden; }
+  .ow-photo-btns { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .ow-photo-pick { display: inline-block; }
+  .ow-tools { display: flex; gap: 8px; margin-bottom: 12px; }
+  .ow-tool { flex: 1; border: 2px solid var(--line); background: #fff; border-radius: 16px; padding: 14px 4px; font-size: 18px; font-weight: 500; cursor: pointer; }
+  .ow-walk-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 2px solid var(--line); background: #fff; border-radius: 16px; padding: 14px; margin-bottom: 8px; font-size: 20px; cursor: pointer; }
+  .ow-walk-item span { flex: 1; }
+  .ow-walk-item b { color: var(--orange-dark); }
+  .ow-walk-item i { font-style: normal; width: 38px; height: 38px; border-radius: 50%; background: var(--orange); color: #fff; display: grid; place-items: center; font-size: 24px; }
+  .ow-walk-cart { background: #fff; border-radius: 16px; padding: 12px 14px; margin-top: 16px; border: 2px dashed var(--orange); }
+  .ow-walk-line { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 19px; }
+  .ow-walk-line > div:first-child { flex: 1; }
+  .ow-walk-line small { display: block; color: var(--muted); font-size: 15px; }
+  .ow-walk-total { display: flex; justify-content: space-between; font-size: 24px; font-weight: 600; padding-top: 10px; }
+  .ow-search { display: flex; gap: 8px; margin-top: 12px; }
+  .ow-search input { flex: 1; min-width: 0; padding: 12px; font-size: 18px; border: 2px solid var(--line); border-radius: 14px; }
+  .ow-search button { border: none; background: var(--brown); color: #fff; border-radius: 14px; padding: 0 18px; font-size: 18px; }
+  .ow-hist { border-width: 2px; }
   .ow-tile { background: #fff; border-radius: 18px; padding: 16px; margin-bottom: 12px; }
   .ow-tile .lb { color: var(--muted); font-size: 18px; }
   .ow-tile .val { font-size: 36px; font-weight: 600; color: var(--orange-dark); }
@@ -227,8 +272,9 @@
   <section id="ownerView" class="ow hidden">
     <div class="ow-tabs">
       <button class="ow-tab active" data-tab="orders">ออเดอร์<span id="owCount"></span></button>
-      <button class="ow-tab" data-tab="products">ของหมด</button>
+      <button class="ow-tab" data-tab="menu">เมนู</button>
       <button class="ow-tab" data-tab="sales">ยอดขาย</button>
+      <button class="ow-tab" data-tab="hours">ร้าน</button>
     </div>
     <div id="owAlert" class="ow-alert hidden">🔔 มีออเดอร์ใหม่!</div>
     <div id="owBody"></div>
@@ -331,6 +377,7 @@ function renderMenu() {
   $('openBadge').textContent = shop.open ? 'เปิดรับออเดอร์' : 'ปิดอยู่';
   $('openBadge').className = 'badge ' + (shop.open ? 'open' : 'closed');
   $('closedBox').classList.toggle('hidden', shop.open);
+  if (shop.closedReason) $('closedBox').textContent = shop.closedReason;
 
   const cats = [...new Set(products.map((p) => p.category))];
   const tabs = cats.length > 1 ? ['ทั้งหมด', ...cats] : cats;
@@ -635,7 +682,7 @@ $('closeBtn').onclick = () => {
 };
 
 // ================= หน้าร้าน (คนดูแลร้าน) =================
-const owner = { tab: 'orders', seen: null, timer: null, products: [] };
+const owner = { tab: 'orders', view: 'active', seen: null, timer: null, menu: null, walk: [] };
 const METHOD_ICON = { 'นั่งทานที่ร้าน': '🍽️', 'ห่อกลับบ้าน': '🥡', 'รับหน้าร้าน': '🏠', 'ส่งถึงบ้าน': '🛵', 'ส่งพัสดุ': '📦' };
 const READY_LABEL = {
   'นั่งทานที่ร้าน': '🍽️ เสิร์ฟแล้ว',
@@ -692,12 +739,14 @@ function startOwner() {
 
 function ownerTab(tab) {
   owner.tab = tab;
+  owner.view = 'active';
   document.querySelectorAll('.ow-tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
   $('owAlert').classList.add('hidden');
   $('owBody').innerHTML = '<div class="ow-empty">กำลังโหลด...</div>';
   window.scrollTo(0, 0);
   if (tab === 'orders') loadOwnerOrders(false);
-  if (tab === 'products') loadOwnerProducts();
+  if (tab === 'menu') loadOwnerMenu();
+  if (tab === 'hours') loadOwnerHours();
   if (tab === 'sales') loadOwnerSales();
 }
 
@@ -714,7 +763,7 @@ function ownerError(err) {
 async function loadOwnerOrders(silent) {
   try {
     const { data } = await ownerCall('owner.orders');
-    if (owner.tab !== 'orders') return;
+    if (owner.tab !== 'orders' || owner.view === 'history') return;
     const nos = data.orders.map((o) => o.no);
     if (owner.seen && nos.some((n) => !owner.seen.includes(n))) {
       $('owAlert').classList.remove('hidden');
@@ -728,15 +777,21 @@ async function loadOwnerOrders(silent) {
 }
 
 function renderOwnerOrders(data) {
+  $('owBody').onclick = (e) => {
+    if (e.target.closest('[data-goto]')) return ownerTab('hours');
+    const t = e.target.closest('[data-tool]');
+    if (t) return t.dataset.tool === 'walkin' ? openWalkin() : openHistory();
+    onOrderClick(e);
+  };
   const list = data.orders;
   $('owCount').textContent = list.length ? ` (${list.length})` : '';
-  const head = `<div class="ow-today"><span>ขายได้วันนี้<br><small style="color:var(--muted)">${data.today.count} ออเดอร์</small></span><b>${baht(data.today.total)}</b></div>`;
+  const tools = `<div class="ow-tools"><button class="ow-tool" data-tool="walkin">🧾 ขายหน้าร้าน</button><button class="ow-tool" data-tool="history">📖 ออเดอร์ย้อนหลัง</button></div>`;
+  const head = shopLine(data.shop) + tools + `<div class="ow-today"><span>ขายได้วันนี้<br><small style="color:var(--muted)">${data.today.count} ออเดอร์</small></span><b>${baht(data.today.total)}</b></div>`;
   if (!list.length) {
     $('owBody').innerHTML = head + '<div class="ow-empty">ยังไม่มีออเดอร์ที่ต้องทำ 🐶<br><small>ระบบจะเช็คออเดอร์ใหม่ให้เองทุก 20 วินาที</small></div>';
     return;
   }
   $('owBody').innerHTML = head + list.map(orderCard).join('');
-  $('owBody').onclick = onOrderClick;
 }
 
 function orderCard(o) {
@@ -788,43 +843,497 @@ async function setStatus(no, to, btn, track) {
 }
 
 function confirmCancel(no) {
-  $('owModalBody').innerHTML = `
-    <h3>ยกเลิกออเดอร์ ${esc(no)} ใช่ไหม?</h3>
-    <p>ลูกค้าจะได้รับข้อความว่าออเดอร์ถูกยกเลิก</p>
-    <button class="ow-big money" style="background:var(--red)" id="owYes">ใช่ ยกเลิกออเดอร์</button>
-    <button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" id="owNo">ไม่ใช่ กลับไป</button>`;
-  $('owModal').classList.remove('hidden');
-  $('owNo').onclick = () => $('owModal').classList.add('hidden');
-  $('owYes').onclick = () => { $('owModal').classList.add('hidden'); setStatus(no, 6, null, ''); };
+  confirmBox(`ยกเลิกออเดอร์ ${no} ใช่ไหม?`, 'ลูกค้าจะได้รับข้อความว่าออเดอร์ถูกยกเลิก', 'ใช่ ยกเลิกออเดอร์', () => setStatus(no, 6, null, ''));
 }
 
-// ---------- ของหมด ----------
-async function loadOwnerProducts() {
+// ---------- เมนู (เพิ่ม/แก้ราคา/ของหมด/ตัวเลือกเสริม) ----------
+const GROUP_MODES = [
+  { v: 'one', label: 'ต้องเลือก 1 อย่าง', hint: 'เช่น ขนาด ธรรมดา/พิเศษ' },
+  { v: 'optional', label: 'เลือกได้ 1 อย่าง (ไม่บังคับ)', hint: 'เช่น ความเผ็ด' },
+  { v: 'many', label: 'เลือกได้หลายอย่าง', hint: 'เช่น เพิ่มไข่ ไม่ใส่ผัก' }
+];
+const groupMode = (g) => (g.multi ? 'many' : g.required ? 'one' : 'optional');
+
+async function loadOwnerMenu() {
   try {
-    const { data } = await ownerCall('owner.products');
-    owner.products = data;
-    renderOwnerProducts();
+    const { data } = await ownerCall('owner.menu');
+    owner.menu = data;
+    renderOwnerMenu();
   } catch (err) { ownerError(err); }
 }
 
-function renderOwnerProducts() {
-  if (owner.tab !== 'products') return;
-  const cats = [...new Set(owner.products.map((p) => p.category))];
-  $('owBody').innerHTML = '<div class="ow-empty" style="padding:6px 0 12px;font-size:18px">กดปุ่มเพื่อเปลี่ยน <b>มีขาย</b> ↔ <b>หมดแล้ว</b><br>ลูกค้าจะเห็นทันที</div>' +
-    cats.map((c) => `<h2 class="cat">${esc(c)}</h2>` + owner.products.filter((p) => p.category === c).map((p) => `
-      <div class="ow-prod"><div class="nm">${esc(p.name)}<small>${baht(p.price)}</small></div>
-        <button class="ow-switch ${p.open ? 'on' : 'off'}" data-id="${esc(p.id)}">${p.open ? '✅ มีขาย' : '❌ หมดแล้ว'}</button></div>`).join('')).join('');
+function groupSummary(g) {
+  return g.choices.map((c) => c.name + (c.price ? ' +' + c.price : '')).join(', ');
+}
+
+function renderOwnerMenu() {
+  if (owner.tab !== 'menu') return;
+  const { products, groups } = owner.menu;
+  const cats = [...new Set(products.map((p) => p.category))];
+  $('owBody').innerHTML =
+    `<button class="ow-big ready" data-menu="add">➕ เพิ่มเมนูใหม่</button>
+     <div class="ow-hint">กด <b>มีขาย / หมดแล้ว</b> เพื่อสลับ ลูกค้าเห็นทันที</div>` +
+    cats.map((c) => `<h2 class="cat">${esc(c)}</h2>` + products.filter((p) => p.category === c).map((p) => `
+      <div class="ow-prod">
+        <div class="ow-thumb" data-menu="edit" data-id="${esc(p.id)}">${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : '📷'}</div>
+        <div class="nm" data-menu="edit" data-id="${esc(p.id)}">${esc(p.name)}<small>${baht(p.price)} · ✏️ แก้ไข</small></div>
+        <button class="ow-switch ${p.open ? 'on' : 'off'}" data-menu="toggle" data-id="${esc(p.id)}">${p.open ? '✅ มีขาย' : '❌ หมดแล้ว'}</button>
+      </div>`).join('')).join('') +
+    `<h2 class="cat" style="margin-top:26px">ตัวเลือกเสริม</h2>
+     <div class="ow-hint" style="text-align:left">เช่น ขนาดพิเศษ +10 บาท, เพิ่มไข่ — แก้ครั้งเดียว ใช้ได้กับทุกเมนูที่เลือกไว้</div>` +
+    Object.values(groups).map((g) => `
+      <div class="ow-prod" data-menu="group" data-name="${esc(g.name)}">
+        <div class="nm">${esc(g.name)}<small>${esc(groupSummary(g))}</small></div>
+        <span style="font-size:18px;color:var(--muted)">✏️ แก้ไข</span>
+      </div>`).join('') +
+    `<button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" data-menu="group-add">➕ เพิ่มตัวเลือกเสริม</button>`;
+
   $('owBody').onclick = async (e) => {
-    const b = e.target.closest('.ow-switch'); if (!b) return;
-    const p = owner.products.find((x) => x.id === b.dataset.id);
-    p.open = !p.open;
-    renderOwnerProducts();
-    try {
-      await ownerCall('owner.toggle', { id: p.id, open: p.open });
-      toast(p.open ? `✅ ${p.name} กลับมามีขายแล้ว` : `❌ ${p.name} หมดแล้ว`);
-    } catch (err) {
-      p.open = !p.open; renderOwnerProducts(); toast('❌ ' + err.message);
+    const el = e.target.closest('[data-menu]'); if (!el) return;
+    const act = el.dataset.menu;
+    if (act === 'add') return editProduct(null);
+    if (act === 'edit') return editProduct(products.find((p) => p.id === el.dataset.id));
+    if (act === 'group') return editGroup(groups[el.dataset.name]);
+    if (act === 'group-add') return editGroup(null);
+    if (act === 'toggle') {
+      const p = products.find((x) => x.id === el.dataset.id);
+      p.open = !p.open; renderOwnerMenu();
+      try {
+        await ownerCall('owner.toggle', { id: p.id, open: p.open });
+        toast(p.open ? `✅ ${p.name} กลับมามีขายแล้ว` : `❌ ${p.name} หมดแล้ว`);
+      } catch (err) { p.open = !p.open; renderOwnerMenu(); toast('❌ ' + err.message); }
     }
+  };
+}
+
+/** ย่อรูปในเครื่องก่อนส่ง (ด้านยาวไม่เกิน max px) คืนค่า base64 ของ JPEG */
+function shrinkImage(file, max) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', 0.82).split(',')[1]);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('bad image')); };
+    img.src = url;
+  });
+}
+
+function openModal(html) {
+  $('owModalBody').onclick = null; // ล้าง handler ของหน้าก่อน
+  $('owModalBody').innerHTML = html;
+  $('owModal').classList.remove('hidden');
+  $('owModalBody').scrollTop = 0;
+}
+function closeModal() { $('owModal').classList.add('hidden'); }
+
+function editProduct(p) {
+  const { products, groups } = owner.menu;
+  const cats = [...new Set(products.map((x) => x.category))];
+  const chosen = new Set(p ? p.groups : []);
+  let cat = p ? p.category : (cats[0] || '');
+  let photo = null; // รูปใหม่ที่เลือก (ย่อแล้ว)
+  let removePhoto = false;
+  openModal(`
+    <h3>${p ? 'แก้ไขเมนู' : 'เพิ่มเมนูใหม่'}</h3>
+    <div class="ow-photo">
+      <div class="ow-photo-box" id="fPhotoBox">${p && p.image ? `<img src="${esc(p.image)}" alt="">` : '📷'}</div>
+      <div class="ow-photo-btns">
+        <label class="ow-chip ow-photo-pick">📷 ถ่ายรูป / เลือกรูป<input type="file" accept="image/*" id="fPhoto" hidden></label>
+        ${p && p.image ? '<button class="ow-chip" id="fPhotoDel">ลบรูป</button>' : ''}
+      </div>
+    </div>
+    <label class="ow-field">ชื่อเมนู<input id="fName" value="${esc(p ? p.name : '')}" placeholder="เช่น ข้าวมันไก่ทอด"></label>
+    <label class="ow-field">ราคา (บาท)<input id="fPrice" type="number" inputmode="numeric" min="0" value="${p ? p.price : ''}" placeholder="เช่น 50"></label>
+    <div class="ow-field">หมวด</div>
+    <div class="ow-chips" id="fCats">${cats.map((c) => `<button class="ow-chip${c === cat ? ' on' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}
+      <button class="ow-chip" data-cat="__new">➕ หมวดใหม่</button></div>
+    <input id="fNewCat" class="ow-input hidden" placeholder="ชื่อหมวดใหม่ เช่น ของหวาน">
+    <div class="ow-field">ตัวเลือกเสริมของเมนูนี้ <small>(กดเลือกได้หลายอัน)</small></div>
+    <div class="ow-chips" id="fGroups">${Object.keys(groups).map((g) => `<button class="ow-chip${chosen.has(g) ? ' on' : ''}" data-g="${esc(g)}">${esc(g)}</button>`).join('') || '<span class="ow-hint">ยังไม่มีตัวเลือกเสริม</span>'}</div>
+    <p class="err" id="fErr"></p>
+    <button class="ow-big money" id="fSave">💾 บันทึก</button>
+    <button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" id="fCancel">ยกเลิก</button>
+    ${p ? '<button class="ow-cancel" id="fDel">ลบเมนูนี้</button>' : ''}`);
+
+  $('fCats').onclick = (e) => {
+    const b = e.target.closest('.ow-chip'); if (!b) return;
+    cat = b.dataset.cat;
+    $('fCats').querySelectorAll('.ow-chip').forEach((x) => x.classList.toggle('on', x === b));
+    $('fNewCat').classList.toggle('hidden', cat !== '__new');
+    if (cat === '__new') $('fNewCat').focus();
+  };
+  $('fGroups').onclick = (e) => {
+    const b = e.target.closest('.ow-chip'); if (!b) return;
+    if (chosen.has(b.dataset.g)) chosen.delete(b.dataset.g); else chosen.add(b.dataset.g);
+    b.classList.toggle('on');
+  };
+  $('fPhoto').onchange = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    $('fPhotoBox').innerHTML = '⏳';
+    try {
+      photo = await shrinkImage(file, 900);
+      removePhoto = false;
+      $('fPhotoBox').innerHTML = `<img src="data:image/jpeg;base64,${photo}" alt="">`;
+    } catch (err) { $('fPhotoBox').innerHTML = '📷'; toast('❌ เปิดรูปนี้ไม่ได้ ลองรูปอื่นนะครับ'); }
+  };
+  if ($('fPhotoDel')) $('fPhotoDel').onclick = () => { photo = null; removePhoto = true; $('fPhotoBox').innerHTML = '📷'; $('fPhotoDel').remove(); };
+  $('fCancel').onclick = closeModal;
+  if (p) $('fDel').onclick = () => confirmBox(`ลบเมนู "${p.name}" ใช่ไหม?`, 'ลบแล้วลูกค้าจะไม่เห็นเมนูนี้อีก (ถ้าแค่ของหมด ให้กด "หมดแล้ว" แทน)', 'ใช่ ลบเมนู', async () => {
+    try { await ownerCall('owner.deleteProduct', { id: p.id }); toast('🗑️ ลบเมนูแล้ว'); } catch (err) { toast('❌ ' + err.message); }
+    loadOwnerMenu();
+  });
+  $('fSave').onclick = async () => {
+    const name = $('fName').value.trim();
+    const price = $('fPrice').value;
+    const category = cat === '__new' ? $('fNewCat').value.trim() : cat;
+    if (!name) { $('fErr').textContent = 'ใส่ชื่อเมนูก่อนนะครับ'; return; }
+    if (price === '' || Number(price) < 0) { $('fErr').textContent = 'ใส่ราคาก่อนนะครับ'; return; }
+    if (!category) { $('fErr').textContent = 'เลือกหรือพิมพ์หมวดก่อนนะครับ'; return; }
+    $('fSave').disabled = true; $('fSave').textContent = 'กำลังบันทึก...';
+    try {
+      const saved = await ownerCall('owner.saveProduct', { id: p ? p.id : '', name, price: Number(price), category, groups: [...chosen] });
+      if (photo) { $('fSave').textContent = 'กำลังอัปโหลดรูป...'; await ownerCall('owner.uploadImage', { id: saved.id, data: photo, mime: 'image/jpeg' }); }
+      else if (removePhoto) await ownerCall('owner.removeImage', { id: saved.id });
+      closeModal(); toast('✅ บันทึกเมนูแล้ว'); loadOwnerMenu();
+    } catch (err) { $('fErr').textContent = err.message; $('fSave').disabled = false; $('fSave').textContent = '💾 บันทึก'; }
+  };
+}
+
+function editGroup(g) {
+  let mode = g ? groupMode(g) : 'one';
+  let rows = g ? g.choices.map((c) => ({ ...c })) : [{ name: '', price: 0 }, { name: '', price: 0 }];
+  const rowHtml = () => rows.map((c, i) => `
+    <div class="ow-choice">
+      <input data-i="${i}" data-k="name" value="${esc(c.name)}" placeholder="เช่น พิเศษ">
+      <span>+</span><input data-i="${i}" data-k="price" type="number" inputmode="numeric" min="0" value="${c.price || ''}" placeholder="0">
+      <span>บาท</span><button data-del="${i}" aria-label="ลบ">✕</button>
+    </div>`).join('');
+  openModal(`
+    <h3>${g ? 'แก้ไขตัวเลือกเสริม' : 'เพิ่มตัวเลือกเสริม'}</h3>
+    <label class="ow-field">ชื่อ<input id="gName" value="${esc(g ? g.name : '')}" placeholder="เช่น ขนาด, ความหวาน, เพิ่มเติม"></label>
+    <div class="ow-field">ให้ลูกค้าเลือกแบบไหน</div>
+    <div id="gModes">${GROUP_MODES.map((m) => `<button class="ow-mode${m.v === mode ? ' on' : ''}" data-m="${m.v}">${m.label}<small>${m.hint}</small></button>`).join('')}</div>
+    <div class="ow-field">รายการ <small>(ไม่บวกเงินให้ใส่ 0 หรือเว้นว่าง)</small></div>
+    <div id="gRows">${rowHtml()}</div>
+    <button class="ow-chip" id="gAdd" style="margin-top:8px">➕ เพิ่มรายการ</button>
+    <p class="err" id="gErr"></p>
+    <button class="ow-big money" id="gSave">💾 บันทึก</button>
+    <button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" id="gCancel">ยกเลิก</button>
+    ${g ? '<button class="ow-cancel" id="gDel">ลบตัวเลือกนี้</button>' : ''}`);
+
+  const sync = () => $('gRows').querySelectorAll('input').forEach((el) => { rows[el.dataset.i][el.dataset.k] = el.dataset.k === 'price' ? Number(el.value) || 0 : el.value; });
+  $('gModes').onclick = (e) => {
+    const b = e.target.closest('.ow-mode'); if (!b) return;
+    mode = b.dataset.m;
+    $('gModes').querySelectorAll('.ow-mode').forEach((x) => x.classList.toggle('on', x === b));
+  };
+  $('gAdd').onclick = () => { sync(); rows.push({ name: '', price: 0 }); $('gRows').innerHTML = rowHtml(); };
+  $('gRows').onclick = (e) => {
+    const b = e.target.closest('[data-del]'); if (!b) return;
+    sync(); rows.splice(Number(b.dataset.del), 1); if (!rows.length) rows.push({ name: '', price: 0 });
+    $('gRows').innerHTML = rowHtml();
+  };
+  $('gCancel').onclick = closeModal;
+  if (g) $('gDel').onclick = () => confirmBox(`ลบตัวเลือก "${g.name}" ใช่ไหม?`, 'เมนูที่ใช้ตัวเลือกนี้อยู่ จะไม่มีให้เลือกอีก', 'ใช่ ลบตัวเลือก', async () => {
+    try { await ownerCall('owner.deleteGroup', { name: g.name }); toast('🗑️ ลบตัวเลือกแล้ว'); } catch (err) { toast('❌ ' + err.message); }
+    loadOwnerMenu();
+  });
+  $('gSave').onclick = async () => {
+    sync();
+    const name = $('gName').value.trim();
+    const choices = rows.filter((c) => String(c.name).trim());
+    if (!name) { $('gErr').textContent = 'ใส่ชื่อตัวเลือกก่อนนะครับ'; return; }
+    if (!choices.length) { $('gErr').textContent = 'ใส่รายการอย่างน้อย 1 อย่างนะครับ'; return; }
+    $('gSave').disabled = true; $('gSave').textContent = 'กำลังบันทึก...';
+    try {
+      await ownerCall('owner.saveGroup', { oldName: g ? g.name : '', name, mode, choices });
+      closeModal(); toast('✅ บันทึกตัวเลือกแล้ว'); loadOwnerMenu();
+    } catch (err) { $('gErr').textContent = err.message; $('gSave').disabled = false; $('gSave').textContent = '💾 บันทึก'; }
+  };
+}
+
+function confirmBox(title, detail, yesLabel, onYes) {
+  openModal(`
+    <h3>${esc(title)}</h3><p>${esc(detail)}</p>
+    <button class="ow-big money" style="background:var(--red)" id="cYes">${esc(yesLabel)}</button>
+    <button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" id="cNo">ไม่ใช่ กลับไป</button>`);
+  $('cNo').onclick = closeModal;
+  $('cYes').onclick = () => { closeModal(); onYes(); };
+}
+
+// ---------- เวลาร้าน ----------
+const WEEK = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์'];
+
+function shopLine(shop) {
+  return shop.open
+    ? `<div class="ow-shopline open" data-goto="hours">🟢 เปิดรับออเดอร์อยู่ · ${esc(shop.openTime)}–${esc(shop.closeTime)}</div>`
+    : `<div class="ow-shopline closed" data-goto="hours">🔴 ปิดรับออเดอร์อยู่ · กดเพื่อดู</div>`;
+}
+
+async function loadOwnerHours() {
+  try {
+    const { data } = await ownerCall('owner.shop');
+    renderOwnerHours(data);
+  } catch (err) { ownerError(err); }
+}
+
+function renderOwnerHours(shop) {
+  if (owner.tab !== 'hours') return;
+  const off = new Set(shop.closedDays);
+  $('owBody').innerHTML = `
+    <div class="ow-tile" style="text-align:center">
+      <div style="font-size:26px;font-weight:600">${shop.open ? '🟢 ตอนนี้เปิดรับออเดอร์' : '🔴 ตอนนี้ปิดรับออเดอร์'}</div>
+      ${shop.open ? '' : `<div class="sub" style="margin-top:4px">${esc(shop.closedReason)}</div>`}
+      ${shop.paused
+        ? '<button class="ow-big money" id="hResume">▶️ เปิดรับออเดอร์อีกครั้ง</button>'
+        : '<button class="ow-big" style="background:var(--red)" id="hPause">⏸️ ปิดรับออเดอร์วันนี้</button><div class="sub" style="margin-top:8px">พรุ่งนี้จะเปิดรับเองตามเวลาปกติ</div>'}
+    </div>
+    <div class="ow-tile">
+      <div style="font-size:21px;font-weight:600">เวลาร้านปกติ</div>
+      <div class="ow-times">
+        <label>เปิด<input type="time" id="hOpen" value="${esc(shop.openTime)}"></label>
+        <label>ปิด<input type="time" id="hClose" value="${esc(shop.closeTime)}"></label>
+      </div>
+      <div class="ow-field">วันหยุดประจำ <small>(กดเลือกวันที่หยุด)</small></div>
+      <div class="ow-chips" id="hDays">${WEEK.map((d) => `<button class="ow-chip day${off.has(d) ? ' on' : ''}" data-d="${d}">${d}</button>`).join('')}</div>
+      <p class="err" id="hErr"></p>
+      <button class="ow-big money" id="hSave">💾 บันทึกเวลาร้าน</button>
+    </div>
+    <div class="ow-tile">
+      <div style="font-size:21px;font-weight:600">📢 ประกาศถึงลูกค้า</div>
+      <div id="annBox"></div>
+    </div>`;
+  renderAnnounce();
+
+  $('hDays').onclick = (e) => {
+    const b = e.target.closest('.ow-chip'); if (!b) return;
+    if (off.has(b.dataset.d)) off.delete(b.dataset.d); else off.add(b.dataset.d);
+    b.classList.toggle('on');
+  };
+  const pause = async (paused) => {
+    try { const { data } = await ownerCall('owner.pause', { paused }); toast(paused ? '⏸️ ปิดรับออเดอร์วันนี้แล้ว' : '▶️ เปิดรับออเดอร์แล้ว'); renderOwnerHours(data); }
+    catch (err) { toast('❌ ' + err.message); }
+  };
+  if ($('hPause')) $('hPause').onclick = () => confirmBox('ปิดรับออเดอร์วันนี้ใช่ไหม?', 'ลูกค้าจะดูเมนูได้ แต่สั่งไม่ได้ จนถึงพรุ่งนี้ หรือจนกว่าจะกดเปิดอีกครั้ง', 'ใช่ ปิดรับออเดอร์', () => pause(true));
+  if ($('hResume')) $('hResume').onclick = () => pause(false);
+  $('hSave').onclick = async () => {
+    const open = $('hOpen').value, close = $('hClose').value;
+    if (!open || !close) { $('hErr').textContent = 'ใส่เวลาเปิดและปิดให้ครบนะครับ'; return; }
+    $('hSave').disabled = true; $('hSave').textContent = 'กำลังบันทึก...';
+    try {
+      const { data } = await ownerCall('owner.hours', { open, close, closedDays: WEEK.filter((d) => off.has(d)) });
+      toast('✅ บันทึกเวลาร้านแล้ว'); renderOwnerHours(data);
+    } catch (err) { $('hErr').textContent = err.message; $('hSave').disabled = false; $('hSave').textContent = '💾 บันทึกเวลาร้าน'; }
+  };
+}
+
+// ---------- ขายหน้าร้าน (ลูกค้าเดินมาซื้อเอง) ----------
+async function openWalkin() {
+  if (!owner.menu) {
+    try { owner.menu = (await ownerCall('owner.menu')).data; } catch (err) { toast('❌ ' + err.message); return; }
+  }
+  owner.walk = [];
+  renderWalkin();
+}
+
+function walkTotal() { return owner.walk.reduce((s, l) => s + l.unit * l.qty, 0); }
+
+function renderWalkin() {
+  const { products } = owner.menu;
+  const open = products.filter((p) => p.open);
+  const cats = [...new Set(open.map((p) => p.category))];
+  const lines = owner.walk;
+  openModal(`
+    <h3>🧾 ขายหน้าร้าน</h3>
+    <div class="ow-hint" style="text-align:left;margin-top:0">กดเมนูที่ลูกค้าซื้อ แล้วเลือกวิธีรับเงิน</div>
+    ${cats.map((c) => `<h2 class="cat">${esc(c)}</h2>` + open.filter((p) => p.category === c).map((p) => `
+      <button class="ow-walk-item" data-add="${esc(p.id)}"><span>${esc(p.name)}</span><b>${baht(p.price)}</b><i>+</i></button>`).join('')).join('')}
+    <div class="ow-walk-cart">
+      ${lines.length ? lines.map((l, i) => `
+        <div class="ow-walk-line"><div>${esc(l.name)}${l.options.length ? `<small>${esc(l.options.join(', '))}</small>` : ''}</div>
+          <div class="line-ctrl"><button data-q="${i}" data-d="-1">−</button><span>${l.qty}</span><button data-q="${i}" data-d="1">+</button></div>
+          <b>${baht(l.unit * l.qty)}</b></div>`).join('') : '<div class="ow-hint">ยังไม่ได้เลือกเมนู</div>'}
+      <div class="ow-walk-total"><span>รวม</span><b>${baht(walkTotal())}</b></div>
+    </div>
+    <button class="ow-big money" id="wCash" ${lines.length ? '' : 'disabled'}>💵 รับเงินสด ${lines.length ? baht(walkTotal()) : ''}</button>
+    <button class="ow-big ready" id="wQr" ${lines.length ? '' : 'disabled'}>📱 ให้ลูกค้าสแกนจ่าย</button>
+    <button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" id="wClose">ปิด</button>`);
+
+  $('owModalBody').onclick = (e) => {
+    const add = e.target.closest('[data-add]');
+    if (add) return walkAdd(products.find((p) => p.id === add.dataset.add));
+    const q = e.target.closest('[data-q]');
+    if (q) {
+      const l = owner.walk[q.dataset.q];
+      l.qty += Number(q.dataset.d);
+      if (l.qty <= 0) owner.walk.splice(q.dataset.q, 1);
+      renderWalkin();
+    }
+  };
+  $('wClose').onclick = () => { $('owModalBody').onclick = null; closeModal(); };
+  $('wCash').onclick = () => saveWalkin('เงินสด', $('wCash'));
+  $('wQr').onclick = showWalkinQr;
+}
+
+function walkAdd(p) {
+  const groups = p.groups.map((g) => owner.menu.groups[g]).filter(Boolean);
+  const push = (options, unit) => {
+    const key = p.id + '|' + options.join('|');
+    const ex = owner.walk.find((l) => l.key === key);
+    if (ex) ex.qty++; else owner.walk.push({ key, id: p.id, name: p.name, options, unit, qty: 1 });
+    renderWalkin();
+  };
+  if (!groups.length) return push([], p.price);
+  // มีตัวเลือก: ให้เลือกก่อน
+  const picked = groups.map((g) => (g.required && !g.multi ? new Set([g.choices[0].name]) : new Set()));
+  const draw = () => {
+    openModal(`
+      <h3>${esc(p.name)}</h3>
+      ${groups.map((g, gi) => `<div class="ow-field">${esc(g.name)}</div>
+        <div class="ow-chips">${g.choices.map((c) => `<button class="ow-chip${picked[gi].has(c.name) ? ' on' : ''}" data-g="${gi}" data-c="${esc(c.name)}">${esc(c.name)}${c.price ? ' +' + c.price : ''}</button>`).join('')}</div>`).join('')}
+      <button class="ow-big money" id="pOk">➕ ใส่รายการ</button>
+      <button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" id="pBack">กลับ</button>`);
+    $('owModalBody').onclick = (e) => {
+      const b = e.target.closest('[data-g]'); if (!b) return;
+      const g = groups[b.dataset.g], set = picked[b.dataset.g], name = b.dataset.c;
+      if (g.multi) { if (set.has(name)) set.delete(name); else set.add(name); }
+      else if (set.has(name) && !g.required) set.clear();
+      else { set.clear(); set.add(name); }
+      draw();
+    };
+    $('pBack').onclick = renderWalkin;
+    $('pOk').onclick = () => {
+      const options = [], extra = [];
+      groups.forEach((g, gi) => g.choices.forEach((c) => { if (picked[gi].has(c.name)) { options.push(c.name); extra.push(c.price); } }));
+      push(options, p.price + extra.reduce((a, b) => a + b, 0));
+    };
+  };
+  draw();
+}
+
+const walkItems = () => owner.walk.map((l) => ({ id: l.id, qty: l.qty, options: l.options }));
+
+async function showWalkinQr() {
+  $('wQr').disabled = true; $('wQr').textContent = 'กำลังสร้าง QR...';
+  try {
+    const res = await ownerCall('owner.walkinPreview', { items: walkItems() });
+    openModal(`
+      <div style="text-align:center">
+        <h3>ให้ลูกค้าสแกนจ่าย</h3>
+        <div class="amount">${baht(res.total)}</div>
+        <div id="wQrBox" style="background:#fff;display:inline-block;padding:14px;border-radius:18px"></div>
+        <div class="ow-hint">ยอดเงินขึ้นในแอปธนาคารของลูกค้าเอง<br>เห็นเงินเข้าแล้วค่อยกดปุ่มด้านล่าง</div>
+      </div>
+      <button class="ow-big money" id="wPaid">✅ ได้รับเงินแล้ว บันทึกการขาย</button>
+      <button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" id="wBack">กลับไปแก้รายการ</button>`);
+    new QRCode($('wQrBox'), { text: res.promptpay, width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M });
+    $('wPaid').onclick = () => saveWalkin('โอน', $('wPaid'));
+    $('wBack').onclick = renderWalkin;
+  } catch (err) {
+    toast('❌ ' + err.message); renderWalkin();
+  }
+}
+
+async function saveWalkin(payment, btn) {
+  btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+  try {
+    const res = await ownerCall('owner.walkin', { items: walkItems(), payment });
+    owner.walk = [];
+    $('owModalBody').onclick = null;
+    closeModal();
+    toast(`✅ บันทึกการขาย ${baht(res.total)} (${payment}) แล้ว`);
+    if (owner.tab === 'orders') loadOwnerOrders(true);
+  } catch (err) {
+    toast('❌ ' + err.message); renderWalkin();
+  }
+}
+
+// ---------- ออเดอร์ย้อนหลัง ----------
+function ymd(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function openHistory() {
+  owner.view = 'history';
+  const today = new Date(), yest = new Date(Date.now() - 86400000);
+  $('owBody').innerHTML = `
+    <button class="back" id="hBack" style="font-size:19px">← กลับไปออเดอร์ที่ต้องทำ</button>
+    <div class="ow-tile">
+      <div class="ow-chips" id="hQuick">
+        <button class="ow-chip on" data-date="${ymd(today)}">วันนี้</button>
+        <button class="ow-chip" data-date="${ymd(yest)}">เมื่อวาน</button>
+        <label class="ow-chip">📅 เลือกวัน<input type="date" id="hDate" max="${ymd(today)}" style="width:0;height:0;opacity:0;position:absolute"></label>
+      </div>
+      <div class="ow-search"><input id="hQ" placeholder="ค้นชื่อลูกค้า / เบอร์ / เลขออเดอร์"><button id="hGo">ค้นหา</button></div>
+    </div>
+    <div id="hList"><div class="ow-empty">กำลังโหลด...</div></div>`;
+  $('hBack').onclick = () => { owner.view = 'active'; ownerTab('orders'); };
+  const pickChip = (el) => $('hQuick').querySelectorAll('.ow-chip').forEach((x) => x.classList.toggle('on', x === el));
+  $('hQuick').onclick = (e) => {
+    const b = e.target.closest('[data-date]'); if (!b) return;
+    pickChip(b); $('hQ').value = ''; loadHistory({ date: b.dataset.date });
+  };
+  $('hDate').onchange = () => { if ($('hDate').value) { pickChip($('hDate').parentElement); $('hQ').value = ''; loadHistory({ date: $('hDate').value }); } };
+  $('hGo').onclick = () => { const q = $('hQ').value.trim(); if (q) { pickChip(null); loadHistory({ q }); } };
+  $('hQ').onkeydown = (e) => { if (e.key === 'Enter') $('hGo').click(); };
+  loadHistory({ date: ymd(today) });
+}
+
+async function loadHistory(params) {
+  $('hList').innerHTML = '<div class="ow-empty">กำลังโหลด...</div>';
+  try {
+    const { data } = await ownerCall('owner.history', params);
+    if (owner.view !== 'history') return;
+    if (!data.length) { $('hList').innerHTML = '<div class="ow-empty">ไม่พบออเดอร์</div>'; return; }
+    const total = data.filter((o) => o.status >= 2 && o.status <= 5).reduce((s, o) => s + o.total, 0);
+    $('hList').innerHTML = (params.date ? `<div class="ow-hint">${data.length} ออเดอร์ · ขายได้ ${baht(total)}</div>` : `<div class="ow-hint">เจอ ${data.length} ออเดอร์ (ย้อนหลัง 60 วัน)</div>`) +
+      data.map((o) => `<div class="ow-card ow-hist">
+        <div class="ow-top"><span class="ow-no" style="font-size:24px">${esc(o.no)}</span><span class="ow-tag ${o.status === 6 ? 'unpaid' : o.status === 1 ? 'unpaid' : 'paid'}">${esc(o.statusName)}</span></div>
+        <div class="ow-who">${esc(o.name || 'ลูกค้า')} · ${METHOD_ICON[o.method] || '🧾'} ${esc(o.method)} · ${esc(o.day)} ${esc(o.time)}${o.phone ? ' · ' + esc(o.phone) : ''}</div>
+        <div class="ow-items" style="font-size:19px">${o.items.map((x) => `${x.qty} × ${esc(x.name)}${x.options ? ` <span style="color:var(--muted)">(${esc(x.options)})</span>` : ''}`).join('<br>')}</div>
+        ${o.note ? `<div class="ow-info note">📝 ${esc(o.note)}</div>` : ''}
+        <div class="ow-total">${esc(o.payment)} · ${baht(o.total)}</div>
+      </div>`).join('');
+  } catch (err) { $('hList').innerHTML = `<div class="ow-empty">โหลดไม่สำเร็จ<br>${esc(err.message)}</div>`; }
+}
+
+// ---------- ประกาศถึงลูกค้า ----------
+const ANNOUNCE_TEMPLATES = [
+  '📢 พรุ่งนี้ร้านหยุด 1 วันนะครับ',
+  '🎉 วันนี้มีเมนูใหม่ มาลองกันได้เลยครับ',
+  '🔥 โปรวันนี้ ซื้อครบ 100 บาท แถมน้ำ 1 แก้ว',
+  '🙏 ขอบคุณที่อุดหนุนนะครับ'
+];
+
+async function renderAnnounce() {
+  const box = $('annBox'); if (!box) return;
+  box.innerHTML = '<div class="sub">กำลังโหลด...</div>';
+  let info;
+  try { info = (await ownerCall('owner.broadcastInfo')).data; } catch (err) { box.innerHTML = `<div class="sub">${esc(err.message)}</div>`; return; }
+  const q = info.quota;
+  const left = q.limit !== null && q.used !== null ? q.limit - q.used : null;
+  box.innerHTML = `
+    <div class="sub">ส่งถึงลูกค้าที่เคยสั่งผ่านไลน์ <b>${info.customers} คน</b></div>
+    <div class="sub">${left === null ? 'โควตาข้อความ: อ่านไม่ได้ / ไม่จำกัด' : `โควตาข้อความเดือนนี้ เหลือ <b>${left}</b> จาก ${q.limit}`}</div>
+    <div class="ow-chips" id="annTpl">${ANNOUNCE_TEMPLATES.map((t, i) => `<button class="ow-chip" data-t="${i}" style="font-size:16px">${esc(t)}</button>`).join('')}</div>
+    <textarea id="annText" class="ow-input" rows="4" maxlength="1000" placeholder="พิมพ์ข้อความ หรือกดเลือกข้อความด้านบน" style="margin-top:10px;resize:vertical"></textarea>
+    <p class="err" id="annErr"></p>
+    <button class="ow-big ready" id="annSend" ${info.customers ? '' : 'disabled'}>📢 ส่งประกาศ</button>`;
+  $('annTpl').onclick = (e) => { const b = e.target.closest('[data-t]'); if (b) $('annText').value = ANNOUNCE_TEMPLATES[b.dataset.t]; };
+  $('annSend').onclick = () => {
+    const text = $('annText').value.trim();
+    if (!text) { $('annErr').textContent = 'พิมพ์ข้อความก่อนนะครับ'; return; }
+    if (left !== null && info.customers > left) { $('annErr').textContent = `โควตาไม่พอ (เหลือ ${left} ต้องใช้ ${info.customers})`; return; }
+    confirmBox(`ส่งถึงลูกค้า ${info.customers} คน ใช่ไหม?`, `จะใช้โควตาข้อความ ${info.customers} ข้อความ (ส่งแล้วยกเลิกไม่ได้)`, 'ใช่ ส่งเลย', async () => {
+      try { const r = await ownerCall('owner.broadcast', { text }); toast(`✅ ส่งประกาศถึง ${r.sent} คนแล้ว`); renderAnnounce(); }
+      catch (err) { toast('❌ ' + err.message); }
+    });
   };
 }
 
