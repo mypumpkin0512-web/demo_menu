@@ -123,26 +123,41 @@
 
   /* ===== หน้าร้าน (คนดูแลร้าน) — ตัวใหญ่ ปุ่มใหญ่ ===== */
   .ow { font-size: 19px; }
-  .ow-tabs { position: sticky; top: 0; z-index: 5; background: var(--bg); display: flex; gap: 8px; padding: 14px 0 10px; }
-  .ow-tab { flex: 1; padding: 14px 0; border-radius: 16px; border: 2px solid var(--line); background: #fff; font-size: 19px; font-weight: 600; cursor: pointer; }
+  .ow-tabs { position: sticky; top: 0; z-index: 5; background: var(--bg); display: flex; gap: 6px; padding: 6px 0; }
+  .ow-tab { flex: 1; padding: 10px 0; border-radius: 14px; border: 2px solid var(--line); background: #fff; font-size: 18px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .ow-tab[data-tab="orders"] { flex: 1.35; }
+  .ow-count { display: inline-block; min-width: 20px; padding: 0 5px; margin-left: 3px; border-radius: 999px; background: var(--orange); color: #fff; font-size: 13px; line-height: 20px; vertical-align: 2px; }
+  .ow-count:empty { display: none; }
   .ow-tab.active { background: var(--brown); border-color: var(--brown); color: #fff; }
   .ow-alert { background: var(--orange); color: #fff; text-align: center; font-size: 22px; font-weight: 600; padding: 14px; border-radius: 16px; margin-bottom: 12px; animation: pulse 1s ease-in-out 3; }
   @keyframes pulse { 50% { transform: scale(1.03); } }
   .ow-today { background: #fff; border-radius: 18px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
   .ow-today b { font-size: 30px; color: var(--orange-dark); }
   .ow-empty { text-align: center; padding: 40px 10px; color: var(--muted); font-size: 21px; line-height: 1.6; }
-  .ow-card { background: #fff; border-radius: 22px; padding: 16px; margin-bottom: 14px; border: 3px solid var(--line); }
+  .ow-card { background: #fff; border-radius: 18px; padding: 8px 14px 10px; margin-bottom: 8px; border: 2px solid var(--line); }
   .ow-card.unpaid { border-color: var(--orange); }
   .ow-top { display: flex; justify-content: space-between; align-items: center; }
-  .ow-no { font-size: 30px; font-weight: 600; }
+  .ow-no { font-size: 25px; font-weight: 600; }
+  .ow-top > span:first-child { white-space: nowrap; overflow: hidden; }
+  .ow-card .ow-tag { white-space: nowrap; font-size: 16px; padding: 4px 10px; }
+  .ow-card .ow-q { font-size: 15px; padding: 2px 9px; margin-left: 6px; }
+  .ow-tbl { display: inline-block; background: var(--brown); color: #fff; font-size: 15px; font-weight: 600; border-radius: 10px; padding: 2px 9px; margin-left: 6px; vertical-align: middle; }
   .ow-tag { font-size: 17px; padding: 5px 12px; border-radius: 999px; font-weight: 600; }
   .ow-tag.unpaid { background: #FBE3E0; color: #B3382C; }
   .ow-tag.paid { background: #E3F4E6; color: #23733A; }
-  .ow-who { color: var(--muted); margin: 6px 0 10px; font-size: 18px; }
+  .ow-who { color: var(--muted); margin: 0 0 4px; font-size: 15px; }
   .ow-table { display: inline-block; background: var(--brown); color: #fff; font-size: 24px; font-weight: 600; border-radius: 12px; padding: 4px 14px; margin-bottom: 10px; }
-  .ow-items { border-top: 2px dashed var(--line); padding-top: 8px; font-size: 23px; line-height: 1.5; }
-  .ow-items small { display: block; font-size: 17px; color: var(--muted); margin: -2px 0 6px 36px; line-height: 1.3; }
-  .ow-info { border-radius: 12px; padding: 9px 12px; margin-top: 8px; font-size: 18px; }
+  .ow-items { border-top: 2px dashed var(--line); padding-top: 6px; font-size: 21px; line-height: 1.35; }
+  .ow-items small { display: block; font-size: 15px; color: var(--muted); margin: 0 0 3px 30px; line-height: 1.25; }
+  .ow-info { border-radius: 12px; padding: 7px 10px; margin-top: 6px; font-size: 16px; }
+  .ow-okline { margin-top: 6px; font-size: 15px; color: #23733A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ow-foot { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+  .ow-foot .ow-total { margin: 0 0 0 auto; }
+  .ow-cancel-s { background: none; border: none; padding: 4px 0; color: #B3382C; font-size: 15px; text-decoration: underline; cursor: pointer; white-space: nowrap; }
+  .ow-done { border: 2px solid #A9D8B3; background: #E3F4E6; color: #23733A; border-radius: 999px; padding: 6px 14px; font-size: 17px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .ow-slim { border-radius: 12px; padding: 8px 12px; margin-bottom: 8px; font-size: 16px; font-weight: 500; }
+  .ow-slim.closed { background: #FBE3E0; color: #B3382C; cursor: pointer; }
+  .ow-slim.hint { background: #FFF4DC; color: #7A5A12; }
   .ow-info.note { background: #FFF4DC; }
   .ow-info.slip { background: #E3F4E6; color: #23733A; }
   .ow-info.warn { background: #FDE8E4; color: #A8321E; border: 2px solid #F2B8AC; }
@@ -152,9 +167,10 @@
   .ow-info.addr { background: var(--cream); }
   .ow-links { display: flex; gap: 8px; margin-top: 8px; }
   .ow-links a { flex: 1; text-align: center; text-decoration: none; color: var(--brown); border: 2px solid var(--line); border-radius: 14px; padding: 11px 0; font-size: 18px; background: #fff; }
-  .ow-total { text-align: right; font-size: 21px; font-weight: 600; margin-top: 10px; }
+  .ow-total { text-align: right; font-size: 20px; font-weight: 600; margin-top: 8px; white-space: nowrap; }
   .ow-track { display: block; width: 100%; margin-top: 10px; padding: 14px; font-size: 19px; border: 2px solid var(--line); border-radius: 14px; }
   .ow-big { display: block; width: 100%; border: none; border-radius: 18px; padding: 20px 0; font-size: 23px; font-weight: 600; color: #fff; margin-top: 12px; cursor: pointer; }
+  .ow-card .ow-big { padding: 12px 0; font-size: 20px; border-radius: 14px; margin-top: 6px; }
   .ow-big.money { background: var(--green); }
   .ow-big.ready { background: var(--orange); }
   .ow-big:disabled { background: #C9B8A6; }
@@ -165,7 +181,7 @@
   .ow-switch { min-width: 130px; border: none; border-radius: 14px; padding: 14px 10px; font-size: 19px; font-weight: 600; cursor: pointer; }
   .ow-switch.on { background: #E3F4E6; color: #23733A; }
   .ow-switch.off { background: #FBE3E0; color: #B3382C; }
-  .ow-tab { font-size: 17px; padding: 13px 0; }
+  .ow-tab { font-size: 17px; padding: 10px 0; }
   .ow-hint { text-align: center; color: var(--muted); font-size: 17px; margin: 10px 0 4px; }
   .ow-prod .nm { cursor: pointer; }
   .ow-shopline { border-radius: 14px; padding: 10px 14px; margin-bottom: 10px; font-size: 18px; font-weight: 500; cursor: pointer; }
@@ -195,8 +211,8 @@
   .ow-photo-box { width: 110px; height: 110px; flex: none; border-radius: 16px; background: var(--cream); display: grid; place-items: center; font-size: 40px; overflow: hidden; }
   .ow-photo-btns { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
   .ow-photo-pick { display: inline-block; }
-  .ow-tools { display: flex; gap: 8px; margin-bottom: 12px; }
-  .ow-tool { flex: 1; border: 2px solid var(--line); background: #fff; border-radius: 16px; padding: 14px 4px; font-size: 18px; font-weight: 500; cursor: pointer; }
+  .ow-tools { display: flex; gap: 8px; margin-bottom: 8px; }
+  .ow-tool { flex: 1; border: 2px solid var(--line); background: #fff; border-radius: 14px; padding: 8px 4px; font-size: 17px; font-weight: 500; cursor: pointer; }
   .ow-walk-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 2px solid var(--line); background: #fff; border-radius: 16px; padding: 14px; margin-bottom: 8px; font-size: 20px; cursor: pointer; }
   .ow-walk-item span { flex: 1; }
   .ow-walk-item b { color: var(--orange-dark); }
@@ -336,7 +352,7 @@
   <!-- หน้าร้าน (เห็นเฉพาะคนดูแลร้านที่ลงทะเบียนแล้ว) -->
   <section id="ownerView" class="ow hidden">
     <div class="ow-tabs">
-      <button class="ow-tab active" data-tab="orders">ออเดอร์<span id="owCount"></span></button>
+      <button class="ow-tab active" data-tab="orders">ออเดอร์<span id="owCount" class="ow-count"></span></button>
       <button class="ow-tab" data-tab="menu">เมนู</button>
       <button class="ow-tab" data-tab="sales">ยอดขาย</button>
       <button class="ow-tab" data-tab="hours">ร้าน</button>
@@ -1052,7 +1068,9 @@ function toast(msg) {
 // 3) สลิปมีปัญหา (ยอดไม่ตรง โอนผิดบัญชี สลิปเก่า) → "ออเดอร์ 5 สลิปมีปัญหา ช่วยเช็คในแอปธนาคารก่อนนะ" — สลิปซ้ำไม่ดัง
 // 4) โควตาตรวจสลิปเพิ่งหมด → พูดบอก 1 ครั้ง
 // มือถือยอมให้เว็บส่งเสียงหลังแตะจอ 1 ครั้ง → แตะตรงไหนก็ได้ ระบบเปิดเสียงให้เอง
-const SAY = { on: true, unlocked: false, last: null, slip: {}, told: {}, mine: new Set(), ctx: null, lines: [], left: null };
+const SAY = { on: true, unlocked: false, last: null, slip: {}, told: {}, mine: new Set(), ctx: null, lines: [], left: null,
+  opt: { name: true, items: false, note: false } };   // อ่านอะไรเพิ่ม (ยอดเงินอ่านทุกครั้ง) — ตั้งแยกแต่ละเครื่องที่แท็บร้าน
+const SAY_OPTS = [['name', '👤 ชื่อลูกค้า'], ['items', '🍽️ เมนูแต่ละอย่าง'], ['note', '📝 หมายเหตุ']];
 const SAY_AGAIN_MS = 3 * 60 * 1000;   // ออเดอร์เดิมเตือนเรื่องสลิปซ้ำได้ทุก 3 นาที (ลูกค้าส่งรูปรัว ๆ จะไม่ดังรัว)
 const ALERT = {
   paid: { icon: '💰', sub: 'จ่ายเงินแล้ว เริ่มทำได้เลย', say: 'จ่ายเงินแล้ว เริ่มทำได้เลย' },
@@ -1063,7 +1081,41 @@ const ALERT = {
 function sayKey() { return 'pumpkin-say-' + SHOP_KEY; }
 function sayInit() {
   try { SAY.on = localStorage.getItem(sayKey()) !== '0'; } catch (e) { /* ใช้ค่าเริ่มต้น = เปิด */ }
+  try { Object.assign(SAY.opt, JSON.parse(localStorage.getItem(sayKey() + '-opt') || '{}')); } catch (e) { /* ค่าเริ่มต้น */ }
   ['click', 'touchend'].forEach((ev) => document.addEventListener(ev, sayUnlock, true));
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-say]')) return toggleSay();
+    const o = e.target.closest('[data-sayopt]');
+    if (o) return toggleSayOpt(o.dataset.sayopt);
+    if (e.target.closest('[data-saytest]')) return sayTest();
+  });
+}
+function toggleSayOpt(k) {
+  SAY.opt[k] = !SAY.opt[k];
+  try { localStorage.setItem(sayKey() + '-opt', JSON.stringify(SAY.opt)); } catch (e) { /* ไม่เป็นไร */ }
+  const box = $('sayOpts');
+  if (box) box.outerHTML = sayOptsHtml();
+}
+function sayOptsHtml() {
+  return `<div class="ow-chips" id="sayOpts">${SAY_OPTS.map(([k, label]) =>
+    `<button class="ow-chip${SAY.opt[k] ? ' on' : ''}" data-sayopt="${k}">${SAY.opt[k] ? '✓ ' : ''}${label}</button>`).join('')}</div>`;
+}
+/** แท็บร้าน: เปิด/ปิดเสียง + เลือกว่าจะให้อ่านอะไร */
+function sayTileHtml() {
+  return `<div class="ow-tile">
+    ${sayBarHtml()}
+    <div class="ow-field" style="margin-top:4px">อ่านออกเสียงด้วย <small>(ยอดเงินอ่านทุกครั้ง)</small></div>
+    ${sayOptsHtml()}
+    <button class="ow-tool" data-saytest style="width:100%;margin-top:12px">▶️ ลองฟังเสียง</button>
+    <div class="ow-hint">ตั้งแยกได้แต่ละเครื่อง · เปิดหน้าร้านค้างไว้ จอติด แล้วแตะจอ 1 ครั้ง</div>
+  </div>`;
+}
+/** ลองฟัง: ใช้ออเดอร์ล่าสุดในหน้าร้าน (ถ้ามี) ไม่งั้นใช้ตัวอย่าง */
+function sayTest() {
+  const o = (SAY.list || []).slice(-1)[0] || { disp: '#001', name: 'นก', total: 70, method: 'นั่งทานที่ร้าน', pickup: 'โต๊ะ 3',
+    items: [{ name: 'ข้าวมันไก่ทอด', options: 'พิเศษ', qty: 2 }], note: 'ไม่ใส่แตง' };
+  chime(false);
+  setTimeout(() => speakTh(alertLine(o, 'paid').speak), 700);
 }
 function sayUnlock() {
   if (SAY.unlocked) return;
@@ -1094,6 +1146,12 @@ function sayBarHtml() {
 function renderSayBar() {
   const el = $('sayBar');
   if (el) el.outerHTML = sayBarHtml();
+  const hint = $('sayHint');
+  if (hint && !(SAY.on && !SAY.unlocked)) hint.remove();
+}
+/** หน้าออเดอร์: บอกให้แตะจอ 1 ครั้ง (หายไปเองหลังแตะ) */
+function sayHintHtml() {
+  return SAY.on && !SAY.unlocked ? '<div class="ow-slim hint" id="sayHint">🔇 แตะจอ 1 ครั้งเพื่อเปิดเสียงแจ้งเตือน</div>' : '';
 }
 /** เสียงกริ๊ง: จ่ายแล้ว = ติ๊ง-ต่อง · ต้องเช็คเอง = ปี๊บต่ำ 3 ครั้ง */
 function chime(urgent) {
@@ -1123,6 +1181,15 @@ function speakTh(line) {
     synth.speak(u);
   } catch (e) { /* เครื่องนี้พูดไม่ได้ — ยังมีเสียงกริ๊ง + ป๊อปอัพ */ }
 }
+/** ข้อความสำหรับอ่านออกเสียง: ตัดอีโมจิ/สัญลักษณ์ (เก็บ , ไว้ให้เว้นจังหวะ) */
+function sayClean(t) {
+  return String(t || '').replace(/[^\p{L}\p{M}\p{N}\s.,]/gu, ' ').replace(/\s+/g, ' ').trim();
+}
+/** 70 → "70 บาท" · 45.5 → "45.50 บาท" */
+function sayAmount(n) {
+  const v = Math.round((Number(n) || 0) * 100) / 100;
+  return (Number.isInteger(v) ? String(v) : v.toFixed(2)) + ' บาท';
+}
 /** ชื่อสำหรับอ่านออกเสียง: ตัดอีโมจิ/สัญลักษณ์ และคำว่า "คุณ" ที่มีอยู่แล้ว */
 function sayName(name) {
   return String(name || '').replace(/[^\p{L}\p{M}\p{N}\s.]/gu, ' ').replace(/\s+/g, ' ').trim().replace(/^คุณ\s*/, '').slice(0, 30);
@@ -1133,11 +1200,25 @@ function alertLine(o, kind) {
   const name = sayName(o.name);
   const why = kind === 'check' ? ((o.slip || '').match(/\(([^)]+)\)/) || ['', ''])[1] : '';
   const over = kind === 'paid' ? Math.round(((o.paid || 0) - o.total) * 100) / 100 : 0;   // โอนเกิน
+  // ประโยคที่อ่าน: ออเดอร์ 5 (โต๊ะ 3) (คุณนก) จ่ายเงินแล้ว 70 บาท, (เมนู), (หมายเหตุ), เริ่มทำได้เลย
+  const head = `ออเดอร์ ${num}` + (o.method === 'นั่งทานที่ร้าน' && o.pickup ? ' ' + sayClean(o.pickup) : '') + (SAY.opt.name && name ? ' คุณ' + name : '');
+  const amt = sayAmount(o.total);
+  let speak;
+  if (kind === 'paid') {
+    const items = SAY.opt.items && o.items && o.items.length
+      ? o.items.map((i) => sayClean(i.name) + ' ' + i.qty + (i.options ? ' ' + sayClean(i.options).replace(/\s*,\s*/g, ' ') : '')).join(', ') + ', ' : '';   // "ข้าวมันไก่ทอด 2 พิเศษ" แบบที่แม่ค้าเรียกกัน
+    const note = SAY.opt.note && o.note ? 'หมายเหตุ ' + sayClean(o.note).slice(0, 80) + ', ' : '';
+    speak = `${head} จ่ายเงินแล้ว ${amt}` + (over > 0 ? ` โอนเกินมา ${sayAmount(over)}` : '') + ', ' + items + note + 'เริ่มทำได้เลย';
+  } else if (kind === 'check') {
+    speak = `${head} ส่งสลิปมาแล้ว ยอด ${amt}, ช่วยเช็คยอดในแอปธนาคาร แล้วกดได้รับเงินแล้วด้วย`;
+  } else {
+    speak = `${head} สลิปมีปัญหา ยอด ${amt}, ช่วยเช็คในแอปธนาคารก่อนนะ`;
+  }
   return {
     kind, no: o.no,
     title: `${a.icon} ${o.disp || o.no}${name ? ' · ' + name : ''}`,
     sub: a.sub + (why ? ` (${why})` : '') + (over > 0 ? ` · คืนลูกค้า ${over} บาท` : ''),
-    speak: `ออเดอร์ ${num}${name ? ' คุณ' + name : ''} ${a.say}` + (over > 0 ? ` โอนเกินมา ${over} บาท` : '')
+    speak
   };
 }
 /** ป๊อปอัพ: จ่ายแล้ว (เขียว หายเองใน 12 วิ) · ต้องเช็คเอง (ส้ม ค้างจนแตะ แตะแล้วพาไปที่ออเดอร์) */
@@ -1171,6 +1252,7 @@ function announce(lines, extra) {
 /** เทียบกับรอบก่อน แล้วเตือนเฉพาะสิ่งที่เพิ่งเกิด (เปิดหน้าครั้งแรกไม่เตือนของเก่า) */
 function checkOrders(data) {
   const list = data.orders, st = {}, slip = {}, byNo = {};
+  SAY.list = list;
   list.forEach((o) => { st[o.no] = o.status; slip[o.no] = o.slip || ''; byNo[o.no] = o; });
   const lines = [];
   let extra = '';
@@ -1283,15 +1365,17 @@ async function loadOwnerOrders(silent) {
 function renderOwnerOrders(data) {
   $('owBody').onclick = (e) => {
     if (e.target.closest('[data-goto]')) return ownerTab('hours');
-    if (e.target.closest('[data-say]')) return toggleSay();
     const t = e.target.closest('[data-tool]');
     if (t) return t.dataset.tool === 'walkin' ? openWalkin() : openHistory();
     onOrderClick(e);
   };
   const list = data.orders;
-  $('owCount').textContent = list.length ? ` (${list.length})` : '';
+  $('owCount').textContent = list.length ? String(list.length) : '';
   const tools = `<div class="ow-tools"><button class="ow-tool" data-tool="walkin">🧾 ขายหน้าร้าน</button><button class="ow-tool" data-tool="history">📖 ออเดอร์ย้อนหลัง</button></div>`;
-  const head = shopLine(data.shop) + sayBarHtml() + slipNote(data.slip) + tools + `<div class="ow-today"><span>ขายได้วันนี้<br><small style="color:var(--muted)">${data.today.count} ออเดอร์</small></span><b>${baht(data.today.total)}</b></div>`;
+  // หน้านี้เน้นเห็นออเดอร์ให้ได้มากที่สุด: เสียง/เวลาร้าน → แท็บร้าน · ยอดขาย → แท็บยอดขาย
+  const closed = data.shop && !data.shop.open ? `<div class="ow-slim closed" data-goto="hours">🔴 ปิดรับออเดอร์อยู่ · กดเพื่อดู</div>` : '';
+  const quotaOut = data.slip && data.slip.on && data.slip.left <= 0 ? `<div class="ow-slim closed" data-goto="hours">⚠️ โควตาตรวจสลิปเดือนนี้หมด — เช็คยอดในแอปธนาคารเอง</div>` : '';
+  const head = closed + sayHintHtml() + quotaOut + tools;
   if (!list.length) {
     $('owBody').innerHTML = head + '<div class="ow-empty"><img class="mascot" alt="" src="' + esc(BRAND.empty) + '">ยังไม่มีออเดอร์ที่ต้องทำ<br><small>ระบบจะเช็คออเดอร์ใหม่ให้เองทุก 20 วินาที</small></div>';
     return;
@@ -1302,25 +1386,29 @@ function renderOwnerOrders(data) {
 
 function orderCard(o) {
   const paid = o.status >= 2;
+  const dineIn = o.method === 'นั่งทานที่ร้าน';
   const items = o.items.map((x) => `${x.qty} × ${esc(x.name)}${x.options ? `<small>${esc(x.options)}</small>` : ''}`).join('<br>');
   const delivery = isDelivery(o.method);
   const phoneLink = o.phone ? `<a href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a>` : '';
   const mapLink = o.map ? `<a href="${esc(o.map)}" target="_blank" rel="noopener">📍 เปิดแผนที่</a>` : '';
+  const day = o.day && o.day !== new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) ? ' (' + esc(o.day) + ')' : '';
+  const table = dineIn && o.pickup ? `<span class="ow-tbl">🪑 ${esc(o.pickup.replace(/^โต๊ะ\s*/, 'โต๊ะ '))}</span>` : '';
+  // นั่งทานที่ร้าน + จ่ายแล้ว: ไม่มีปุ่มใหญ่ (คนขายยกไปเสิร์ฟเอง) มีแค่ปุ่มเล็ก ✓ เอาออกจากรายการ
+  const done = paid && dineIn ? `<button class="ow-done" data-act="4">✓ เสิร์ฟแล้ว</button>` : '';
+  const big = done ? '' : paid
+    ? `<button class="ow-big ready" data-act="4">${READY_LABEL[o.method] || READY_LABEL['รับหน้าร้าน']}</button>`
+    : `<button class="ow-big money" data-act="2">💰 ได้รับเงินแล้ว</button>`;
   return `<div class="ow-card${paid ? '' : ' unpaid'}" data-no="${esc(o.no)}">
-    <div class="ow-top"><span><span class="ow-no">${esc(o.disp || o.no)}</span>${o.queue ? `<span class="ow-q">คิว ${o.queue}</span>` : ''}</span><span class="ow-tag ${paid ? 'paid' : 'unpaid'}">${paid ? 'จ่ายแล้ว' : o.paid > 0 ? 'จ่ายไม่ครบ' : 'ยังไม่จ่าย'}</span></div>
-    <div class="ow-who">${esc(o.name || 'ลูกค้า')} · ${METHOD_ICON[o.method] || ''} ${esc(o.method)} · ${esc(o.time)}${o.day && o.day !== new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) ? ' (' + esc(o.day) + ')' : ''}</div>
-    ${o.pickup && o.method === 'นั่งทานที่ร้าน' ? `<div class="ow-table">🪑 ${esc(o.pickup)}</div>` : ''}
+    <div class="ow-top"><span><span class="ow-no">${esc(o.disp || o.no)}</span>${o.queue ? `<span class="ow-q">คิว ${o.queue}</span>` : ''}${table}</span><span class="ow-tag ${paid ? 'paid' : 'unpaid'}">${paid ? (o.slipState === 'ok' ? '✅ จ่ายแล้ว' : 'จ่ายแล้ว') : o.paid > 0 ? 'จ่ายไม่ครบ' : 'ยังไม่จ่าย'}</span></div>
+    <div class="ow-who">${esc(o.name || 'ลูกค้า')} · ${METHOD_ICON[o.method] || ''} ${esc(o.method)} · ${esc(o.time)}${day}</div>
     <div class="ow-items">${items}</div>
     ${o.note ? `<div class="ow-info note">📝 ${esc(o.note)}</div>` : ''}
     ${slipBox(o, paid)}
     ${delivery && o.address ? `<div class="ow-info addr">🏠 ${esc(o.address)}</div>` : ''}
     ${phoneLink || mapLink ? `<div class="ow-links">${mapLink}${phoneLink}</div>` : ''}
-    <div class="ow-total">ยอด ${baht(o.total)}</div>
     ${paid && o.method === 'ส่งพัสดุ' ? `<input class="ow-track" data-track placeholder="ใส่เลขพัสดุก่อนกดปุ่ม">` : ''}
-    ${paid
-      ? `<button class="ow-big ready" data-act="4">${READY_LABEL[o.method] || READY_LABEL['รับหน้าร้าน']}</button>`
-      : `<button class="ow-big money" data-act="2">💰 ได้รับเงินแล้ว</button>`}
-    <button class="ow-cancel" data-act="6">ยกเลิกออเดอร์นี้</button>
+    <div class="ow-foot"><button class="ow-cancel-s" data-act="6">ยกเลิก</button><span class="ow-total">ยอด ${baht(o.total)}</span>${done}</div>
+    ${big}
   </div>`;
 }
 
@@ -1328,10 +1416,8 @@ function orderCard(o) {
 function slipBox(o, paid) {
   if (!o.slip) return '';
   const msg = esc(o.slip.replace(/^\S+\s+\d\d:\d\d\s+/, ''));   // ตัดไอคอน + เวลาออก
-  const at = (o.slip.match(/\d\d:\d\d/) || [''])[0];
   const refund = (o.paid || 0) - o.total;
-  if (o.slipState === 'ok') return `<div class="ow-info slip">✅ ระบบตรวจสลิปแล้ว ${at}<br><small>${msg}</small></div>` +
-    (refund > 0.009 ? `<div class="ow-info refund">💸 ลูกค้าโอนเกิน คืนลูกค้า ${baht(refund)}</div>` : '');
+  if (o.slipState === 'ok') return (refund > 0.009 ? `<div class="ow-info refund">💸 ลูกค้าโอนเกิน คืนลูกค้า ${baht(refund)}</div>` : '');
   if (o.slipState === 'part' && !paid) return `<div class="ow-info wait">💰 จ่ายไม่ครบ — รอลูกค้าโอนเพิ่ม ${baht(o.total - (o.paid || 0))}<br><small>${msg}</small></div>`;
   if (paid) return '';
   if (o.slipState === 'warn') return `<div class="ow-info warn"><b>⚠️ สลิปมีปัญหา</b>${msg}<br><small>เช็คในแอปธนาคารก่อนกด "ได้รับเงินแล้ว"</small></div>`;
@@ -1622,6 +1708,7 @@ function renderOwnerHours(shop) {
         ? '<button class="ow-big money" id="hResume">▶️ เปิดรับออเดอร์อีกครั้ง</button>'
         : '<button class="ow-big" style="background:var(--red)" id="hPause">⏸️ ปิดรับออเดอร์วันนี้</button><div class="sub" style="margin-top:8px">พรุ่งนี้จะเปิดรับเองตามเวลาปกติ</div>'}
     </div>
+    ${sayTileHtml()}
     <div class="ow-tile">
       <div style="font-size:21px;font-weight:600">เวลาร้านปกติ</div>
       <div class="ow-times">
