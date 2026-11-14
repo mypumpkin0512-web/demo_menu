@@ -2,6 +2,13 @@
   "demo": {
     "name": "ร้านตัวอย่าง",
     "liff": "2012589706-kJFeGfQv",
-    "api": "https://script.google.com/macros/s/AKfycbwRUMRKUoMzJ63sKchEsQ12OORcrTqeer2cIKNYh46C1ZgkmES94nqVPUAIGrCGlCrX/exec"
+    "api": "https://script.google.com/macros/s/AKfycbwRUM...(ลิงก์เดิม ไม่ต้องแก้)...CrX/exec",
+    "logo": "brands/demo/logo.png",
+    "images": {
+      "loading": "brands/demo/loading.png",
+      "busy": "brands/demo/busy.png",
+      "empty": "brands/demo/empty.png",
+      "done": "brands/demo/done.png"
+    }
   }
 }
