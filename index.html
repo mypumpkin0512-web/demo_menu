@@ -501,10 +501,14 @@ function applyBrand(palette) {
   const imgs = shop.images || {};
   const p = palette || THEMES.pumpkin;
   ICON_SPOTS.forEach((k) => { BRAND[k] = safeImg(imgs[k]) || logo || defaultIcon(k, p); });
-  $('loadingImg').src = BRAND.loading; $('loadingImg').style.visibility = '';
-  $('busyImg').src = BRAND.busy;
-  $('doneImg').src = BRAND.done;
+  // รูปไหนโหลดไม่ขึ้น (พิมพ์ชื่อไฟล์ผิด / ยังไม่ได้อัปโหลด) → ใช้ไอคอนกลางแทน ไม่ขึ้นรูปแตก
+  const set = (id, k) => { const el = $(id); el.onerror = () => { el.onerror = null; BRAND[k] = defaultIcon(k, p); el.src = BRAND[k]; }; el.src = BRAND[k]; };
+  set('loadingImg', 'loading'); $('loadingImg').style.visibility = '';
+  set('busyImg', 'busy');
+  set('doneImg', 'done');
+  const probe = new Image(); probe.onerror = () => { BRAND.empty = defaultIcon('empty', p); }; probe.src = BRAND.empty;
   $('shopLogo').classList.toggle('hidden', !logo);
+  $('shopLogo').onerror = () => $('shopLogo').classList.add('hidden');
   if (logo) $('shopLogo').src = logo;
 }
 
