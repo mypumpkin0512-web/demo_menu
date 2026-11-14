@@ -296,6 +296,29 @@
   .say-bar.on button { background: var(--green); color: #fff; }
   .say-hint { display: block; color: var(--orange-dark); font-size: 16px; font-weight: 500; }
   .slip-quota { margin: 0 0 12px; }
+  /* ประตูหน้าร้าน: ใส่รหัสร้าน 6 หลักทุกครั้งที่เปิด (แตะ/พิมพ์ = เปิดเสียงไปในตัว) */
+  .gate { position: fixed; inset: 0; z-index: 90; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); overflow-y: auto; animation: fadeIn .2s ease-out; }
+  .gate.leaving { opacity: 0; transition: opacity .25s; pointer-events: none; }
+  .gate-card { width: 100%; max-width: 380px; text-align: center; }
+  .gate-lock { width: 76px; height: 76px; margin: 0 auto 12px; border-radius: 50%; background: var(--cream); display: grid; place-items: center; font-size: 38px; }
+  .gate-shop { font-size: 15px; color: var(--muted); }
+  .gate h2 { font-size: 23px; margin: 2px 0 8px; }
+  .gate-text { font-size: 16px; line-height: 1.6; color: var(--muted); margin: 0 0 20px; }
+  .pin { position: relative; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; max-width: 336px; margin: 0 auto; cursor: text; }
+  .pin span { aspect-ratio: 5 / 6; border: 2px solid var(--line); background: #fff; border-radius: 14px; display: grid; place-items: center; font-size: 26px; color: var(--brown); transition: border-color .15s, transform .15s; }
+  .pin span.fill { border-color: var(--orange); }
+  .pin span.cur { border-color: var(--brown); box-shadow: 0 0 0 3px rgba(90, 63, 45, .12); }
+  .pin input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; font-size: 16px; color: transparent; caret-color: transparent; background: transparent; z-index: 1; }
+  .pin.busy span { animation: pinPulse .9s ease-in-out infinite; }
+  .pin.busy span:nth-child(3) { animation-delay: .1s; } .pin.busy span:nth-child(4) { animation-delay: .2s; } .pin.busy span:nth-child(5) { animation-delay: .3s; } .pin.busy span:nth-child(6) { animation-delay: .4s; } .pin.busy span:nth-child(7) { animation-delay: .5s; }
+  .pin.shake { animation: pinShake .4s; }
+  .pin.shake span { border-color: var(--red); }
+  @keyframes pinPulse { 50% { transform: translateY(-4px); border-color: var(--orange); } }
+  @keyframes pinShake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+  .gate-err { min-height: 24px; margin: 12px 0 4px; font-size: 16px; font-weight: 500; color: var(--red); }
+  .gate .primary { max-width: 336px; margin: 0 auto; }
+  .gate-note { font-size: 14px; color: var(--muted); margin: 14px 0 0; }
+  .gate-block { background: #fff; border-radius: 18px; padding: 16px; font-size: 17px; line-height: 1.6; }
   .ow-toast { position: fixed; left: 50%; top: 84px; transform: translateX(-50%); pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,.25); background: var(--brown); color: #fff; font-size: 20px; padding: 14px 22px; border-radius: 16px; z-index: 40; max-width: 90%; text-align: center; }
 </style>
 </head>
@@ -380,6 +403,23 @@
 </div>
 <div id="owModal" class="sheet-backdrop hidden"><div class="sheet ow ow-modal" id="owModalBody"></div></div>
 <div id="owToast" class="ow-toast hidden"></div>
+<div id="gate" class="gate hidden" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+  <div class="gate-card">
+    <div class="gate-lock">🔒</div>
+    <div class="gate-shop" id="gateShop"></div>
+    <h2 id="gateTitle">หน้านี้สำหรับเจ้าของร้าน</h2>
+    <p class="gate-text">เฉพาะเจ้าของร้านหรือผู้ที่ได้รับอนุญาตเท่านั้น<br>โปรดยืนยันด้วยรหัสร้าน 6 หลัก</p>
+    <div id="gateForm">
+      <label class="pin" id="gatePin">
+        <input id="gateInput" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" aria-label="รหัสร้าน 6 หลัก">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </label>
+      <p class="gate-err" id="gateErr" role="alert"></p>
+      <button class="primary" id="gateBtn">🔓 เข้าหน้าร้าน</button>
+      <p class="gate-note">🔊 เข้าแล้วเสียงแจ้งเตือนออเดอร์จะเปิดให้เอง</p>
+    </div>
+  </div>
+</div>
 <div id="busy" class="busy hidden" role="alert" aria-live="assertive">
   <div class="busy-card">
     <div class="busy-ring"><img alt="" id="busyImg"></div>
@@ -392,7 +432,7 @@
 // ====== หน้าเดียวใช้ทุกร้าน ======
 // ร้านไหน = ?s=รหัสร้าน ใน Endpoint URL ของ LIFF เช่น https://.../demo_menu/?s=demo
 // ค่าของแต่ละร้าน (LIFF ID + ลิงก์ /exec) อยู่ในไฟล์ shops.json ข้างไฟล์นี้ — เพิ่มร้านใหม่ = เพิ่ม 1 บรรทัดในนั้น
-const PAGE_VERSION = '14 พ.ย. 69 · 20:00';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
+const PAGE_VERSION = '14 พ.ย. 69 · 21:00';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
 let LIFF_ID = '';
 let API_URL = '';
 let SHOP_KEY = '';
@@ -1106,10 +1146,12 @@ async function ownerFetch(action, extra) {
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(Object.assign({ action, idToken: state.user.idToken }, extra || {}))
+    body: JSON.stringify(Object.assign({ action, idToken: state.user.idToken, gate: GATE.token }, extra || {}))
   });
   const data = await res.json();
   if (!data.ok) {
+    // บัตรผ่านหน้าร้านหมดอายุ (ปิดจอทิ้งไว้นานเกิน 6 ชม.) → ขึ้นช่องใส่รหัสอีกครั้ง
+    if (data.code === 'PIN') gateShow('ใส่รหัสร้านอีกครั้งเพื่อดูออเดอร์ต่อ');
     // บัตรผ่านของไลน์หมดอายุ (เปิดหน้าทิ้งไว้นาน) → ล็อกอินใหม่อัตโนมัติ 1 ครั้ง
     if (data.code === 'AUTH' && LIFF_ID && !sessionStorage.getItem('relogin')) {
       sessionStorage.setItem('relogin', '1');
@@ -1139,7 +1181,7 @@ function toast(msg) {
 // 3) สลิปมีปัญหา (ยอดไม่ตรง โอนผิดบัญชี สลิปเก่า) → "ออเดอร์ 5 สลิปมีปัญหา ช่วยเช็คในแอปธนาคารก่อนนะ" — สลิปซ้ำไม่ดัง
 // 4) โควตาตรวจสลิปเพิ่งหมด → พูดบอก 1 ครั้ง
 // มือถือยอมให้เว็บส่งเสียงหลังแตะจอ 1 ครั้ง → แตะตรงไหนก็ได้ ระบบเปิดเสียงให้เอง
-const SAY = { on: true, unlocked: false, last: null, slip: {}, told: {}, mine: new Set(), ctx: null, lines: [], left: null,
+const SAY = { on: true, unlocked: false, last: null, slip: {}, told: {}, mine: new Set(), ctx: null, lines: [], left: null, rate: 'mid',
   opt: { no: true, table: true, name: true, items: false, note: false } };   // อ่านอะไรบ้าง (ยอดเงินอ่านทุกครั้ง) — ตั้งแยกแต่ละเครื่องที่แท็บร้าน
 const SAY_OPTS = [['no', '🔢 เลขออเดอร์'], ['table', '🪑 เลขโต๊ะ'], ['name', '👤 ชื่อลูกค้า'], ['items', '🍽️ เมนูแต่ละอย่าง'], ['note', '📝 หมายเหตุ']];
 const SAY_AGAIN_MS = 3 * 60 * 1000;   // ออเดอร์เดิมเตือนเรื่องสลิปซ้ำได้ทุก 3 นาที (ลูกค้าส่งรูปรัว ๆ จะไม่ดังรัว)
@@ -1153,6 +1195,7 @@ function sayKey() { return 'pumpkin-say-' + SHOP_KEY; }
 function sayInit() {
   try { SAY.on = localStorage.getItem(sayKey()) !== '0'; } catch (e) { /* ใช้ค่าเริ่มต้น = เปิด */ }
   try { Object.assign(SAY.opt, JSON.parse(localStorage.getItem(sayKey() + '-opt') || '{}')); } catch (e) { /* ค่าเริ่มต้น */ }
+  try { SAY.rate = localStorage.getItem(sayKey() + '-rate') || 'mid'; } catch (e) { /* ปกติ */ }
   ['click', 'touchend'].forEach((ev) => document.addEventListener(ev, sayUnlock, true));
   sayTryAuto();
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') sayCheckAlive(); });
@@ -1160,6 +1203,8 @@ function sayInit() {
     if (e.target.closest('[data-say]')) return toggleSay();
     const o = e.target.closest('[data-sayopt]');
     if (o) return toggleSayOpt(o.dataset.sayopt);
+    const r = e.target.closest('[data-sayrate]');
+    if (r) return setSayRate(r.dataset.sayrate);
     if (e.target.closest('[data-saytest]')) return sayTest();
   });
 }
@@ -1168,6 +1213,21 @@ function toggleSayOpt(k) {
   try { localStorage.setItem(sayKey() + '-opt', JSON.stringify(SAY.opt)); } catch (e) { /* ไม่เป็นไร */ }
   const box = $('sayOpts');
   if (box) box.outerHTML = sayOptsHtml();
+}
+function setSayRate(k) {
+  SAY.rate = k;
+  try { localStorage.setItem(sayKey() + '-rate', k); } catch (e) { /* ไม่เป็นไร */ }
+  const box = $('sayRates');
+  if (box) box.outerHTML = sayRatesHtml();
+  sayUnlock();
+  // ฟังความเร็วใหม่ทันที (กดรัว ๆ ก็ดังแค่ตัวอย่างล่าสุด ไม่ไปตัดเสียงออเดอร์จริง)
+  SAYQ.jobs = SAYQ.jobs.filter((j) => !j.sample);
+  SAYQ.jobs.push({ urgent: false, texts: ['ออเดอร์ 5, คุณนก, จ่ายเงินแล้ว 70 บาท'], sample: true });
+  sayNext();
+}
+function sayRatesHtml() {
+  return `<div class="ow-chips" id="sayRates">${SAY_RATES.map(([k, label]) =>
+    `<button class="ow-chip${SAY.rate === k ? ' on' : ''}" data-sayrate="${k}">${SAY.rate === k ? '✓ ' : ''}${label}</button>`).join('')}</div>`;
 }
 function sayOptsHtml() {
   return `<div class="ow-chips" id="sayOpts">${SAY_OPTS.map(([k, label]) =>
@@ -1179,8 +1239,10 @@ function sayTileHtml() {
     ${sayBarHtml()}
     <div class="ow-field" style="margin-top:4px">อ่านออกเสียงด้วย <small>(ยอดเงินอ่านทุกครั้ง)</small></div>
     ${sayOptsHtml()}
+    <div class="ow-field" style="margin-top:12px">ความเร็วเสียงพูด</div>
+    ${sayRatesHtml()}
     <button class="ow-tool" data-saytest style="width:100%;margin-top:12px">▶️ ลองฟังเสียง</button>
-    <div class="ow-hint">ตั้งแยกได้แต่ละเครื่อง · เปิดหน้าร้านค้างไว้ จอติด แล้วแตะจอ 1 ครั้ง</div>
+    <div class="ow-hint">ตั้งแยกได้แต่ละเครื่อง · เปิดหน้าร้านค้างไว้ จอติด · คอมใช้ Edge เสียงจะเป็นธรรมชาติที่สุด</div>
   </div>`;
 }
 /** ลองฟัง: ใช้ออเดอร์ล่าสุดในหน้าร้าน (ถ้ามี) ไม่งั้นใช้ตัวอย่าง */
@@ -1271,20 +1333,70 @@ function chime(urgent) {
     });
   } catch (e) { /* ไม่เป็นไร */ }
 }
+/** เข้าหน้าร้านสำเร็จ: ติ๊งสั้น ๆ เสียงสูงขึ้น (บอกว่าเสียงใช้ได้แล้ว ไม่เหมือนเสียงออเดอร์) */
+function chimeOk() {
+  const ac = SAY.ctx;
+  if (!ac) return;
+  try {
+    const t = ac.currentTime;
+    [[784, 0], [1175, 0.12]].forEach(([f, d]) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + d);
+      g.gain.exponentialRampToValueAtTime(0.35, t + d + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.35);
+      o.connect(g); g.connect(ac.destination); o.start(t + d); o.stop(t + d + 0.4);
+    });
+  } catch (e) { /* ไม่เป็นไร */ }
+}
+/** แบ่งประโยคเป็นท่อนไทย / ท่อนภาษาอังกฤษ — เสียงไทยอ่านชื่ออังกฤษเป็นตัว ๆ ("เค แอล โอ เอ็น จี")
+ *  เลยให้เสียงอังกฤษอ่านท่อนอังกฤษแทน ("Klong Kittipon" อ่านเป็นคำ) */
+function sayParts(line) {
+  const parts = [];
+  const re = /[A-Za-z][A-Za-z'’]*(?:[\s.-]+[A-Za-z][A-Za-z'’]*)*\.?/g;
+  let last = 0, m;
+  while ((m = re.exec(line))) {
+    if (m.index > last) parts.push({ text: line.slice(last, m.index), en: false });
+    // ตัวพิมพ์ใหญ่ล้วน (KLONG) เสียงอังกฤษก็สะกดทีละตัว → ทำเป็น Klong · ตัวย่อสั้น ๆ (BBQ) คงไว้
+    const en = m[0].replace(/[A-Z]{4,}/g, (w) => w[0] + w.slice(1).toLowerCase());
+    parts.push({ text: en, en: true });
+    last = m.index + m[0].length;
+  }
+  if (last < line.length) parts.push({ text: line.slice(last), en: false });
+  return parts.filter((p) => /[\p{L}\p{N}]/u.test(p.text));
+}
+/** เลือกเสียงที่ฟังดีที่สุดในเครื่อง: Edge มีเสียง "Natural" (เหมือนคนพูด) · Chrome มีเสียง Google
+ *  อังกฤษเลือกเสียงผู้ใหญ่ สำเนียง US (Edge มีเสียงเด็กชื่อ Ana อยู่ต้นรายการ — ข้าม) */
+function sayVoiceFor(en) {
+  const vs = window.speechSynthesis.getVoices().filter((x) => en ? /^en/i.test(x.lang) : /^th/i.test(x.lang));
+  if (!vs.length) return null;
+  const score = (v) => (/natural/i.test(v.name) ? 8 : 0) + (/google/i.test(v.name) ? 6 : 0) +
+    (en && /^en[-_]US/i.test(v.lang) ? 3 : 0) + (/Aria|Jenny|Ava|Emma|Michelle|Samantha|Zira|Premwadee|Kanya/i.test(v.name) ? 2 : 0) -   // เสียงผู้หญิงทั้งไทย+อังกฤษ ฟังเป็นคนเดียวกัน
+    (/\bAna\b/.test(v.name) ? 20 : 0);
+  return vs.slice().sort((a, b) => score(b) - score(a))[0];
+}
+const SAY_RATES = [['slow', '🐢 ช้า', 0.7], ['mid', 'ปกติ', 0.85], ['fast', '🐇 เร็ว', 1]];
+function sayRate() { return (SAY_RATES.find((r) => r[0] === SAY.rate) || SAY_RATES[1])[2]; }
 /** พูด 1 ประโยค แล้วเรียก done เมื่อพูดจบ (บางเครื่องไม่บอกว่าจบ → นับเวลาเผื่อไว้แทน) */
 function speakTh(line, done) {
   let finished = false;
   const fin = () => { if (finished) return; finished = true; clearTimeout(timer); if (done) done(); };
-  const timer = setTimeout(fin, 2000 + String(line).length * 120);
+  const timer = setTimeout(fin, 2500 + String(line).length * 120);
   try {
     const synth = window.speechSynthesis;
     if (!synth || !window.SpeechSynthesisUtterance) return fin();
-    const u = new SpeechSynthesisUtterance(sayNumbers(line));
-    u.lang = 'th-TH'; u.rate = 0.95;
-    const v = synth.getVoices().find((x) => /^th/i.test(x.lang));
-    if (v) u.voice = v;
-    u.onend = fin; u.onerror = fin;
-    synth.speak(u);
+    const parts = sayParts(sayNumbers(line));
+    if (!parts.length) return fin();
+    // ส่งทุกท่อนเข้าคิวของเครื่องพร้อมกัน (ต่อกันลื่นกว่ารอทีละท่อน) แล้วรอท่อนสุดท้ายพูดจบ
+    parts.forEach((p, i) => {
+      const u = new SpeechSynthesisUtterance(p.text.trim());
+      const v = sayVoiceFor(p.en);
+      u.lang = p.en ? (v ? v.lang : 'en-US') : 'th-TH';
+      u.rate = sayRate();
+      if (v) u.voice = v;
+      if (i === parts.length - 1) { u.onend = fin; u.onerror = fin; }
+      synth.speak(u);
+    });
   } catch (e) { fin(); /* เครื่องนี้พูดไม่ได้ — ยังมีเสียงกริ๊ง + ป๊อปอัพ */ }
 }
 /** เว้นวรรคหน้า-หลังตัวเลขทุกตัว กันเครื่องอ่านรวบไปกับคำข้าง ๆ ("โต๊ะ3คุณ" → "โต๊ะ 3 คุณ") */
@@ -1431,22 +1543,131 @@ function focusCard() {
   setTimeout(() => card.classList.remove('flash'), 2500);
 }
 
+// ---------- ประตูหน้าร้าน: ใส่รหัสร้าน 6 หลักทุกครั้งที่เปิด ----------
+// ระบบหลังบ้านตรวจรหัสเอง (ใส่ผิด 5 ครั้งพัก 15 นาที) → ได้บัตรผ่านของเครื่องนี้ ไม่มีบัตรผ่าน = โหลดออเดอร์ไม่ได้
+// แตะช่องรหัส/พิมพ์รหัส = มือถืออนุญาตให้ส่งเสียง → เข้าหน้าร้านแล้วมีเสียงเลย ไม่ต้องแตะจออีก
+const GATE = { token: '', shown: false, busy: false, checked: false };
+function gateInit() {
+  const inp = $('gateInput');
+  inp.addEventListener('input', () => {
+    const v = inp.value.replace(/\D/g, '').slice(0, 6);
+    if (inp.value !== v) inp.value = v;
+    gateMsg('');
+    $('gatePin').classList.remove('shake');
+    gateRender();
+    if (v.length === 6) gateSubmit();
+  });
+  inp.addEventListener('keydown', (e) => {
+    sayUnlock();                                  // คอม: พิมพ์รหัส = เปิดเสียง (ไม่ต้องคลิก)
+    if (e.key === 'Enter') { e.preventDefault(); gateSubmit(); }
+  });
+  ['focus', 'blur'].forEach((ev) => inp.addEventListener(ev, gateRender));
+  $('gateBtn').onclick = () => { sayUnlock(); gateSubmit(); };
+}
+function gateRender() {
+  const inp = $('gateInput');
+  const n = inp.value.length, focused = document.activeElement === inp;
+  [...$('gatePin').querySelectorAll('span')].forEach((s, i) => {
+    s.textContent = i < n ? '●' : '';
+    s.classList.toggle('fill', i < n);
+    s.classList.toggle('cur', focused && !GATE.busy && i === Math.min(n, 5));
+  });
+  $('gatePin').classList.toggle('busy', GATE.busy);
+  $('gateBtn').disabled = GATE.busy;
+  $('gateBtn').textContent = GATE.busy ? 'กำลังตรวจรหัส...' : '🔓 เข้าหน้าร้าน';
+}
+function gateMsg(t, shake) {
+  $('gateErr').textContent = t || '';
+  if (!shake) return;
+  const pin = $('gatePin');
+  pin.classList.remove('shake'); void pin.offsetWidth; pin.classList.add('shake');
+  if (navigator.vibrate) navigator.vibrate(200);
+}
+function gateShow(msg) {
+  PTR.ready = false;
+  if (!GATE.shown) {
+    GATE.shown = true;
+    GATE.token = '';
+    $('gateShop').textContent = (SHOP_INFO && SHOP_INFO.name) || '';
+    $('gateInput').value = '';
+    $('gate').classList.remove('hidden', 'leaving');
+    gateRender();
+    try { $('gateInput').focus(); } catch (e) { /* แตะช่องเอง */ }
+  }
+  if (msg) gateMsg(msg);
+  if (!GATE.checked) gateCheck();
+}
+function gateHide() {
+  GATE.shown = false;
+  const g = $('gate');
+  g.classList.add('leaving');
+  try { $('gateInput').blur(); } catch (e) { /* ไม่เป็นไร */ }
+  setTimeout(() => { if (!GATE.shown) g.classList.add('hidden'); }, 260);
+}
+/** บัญชีนี้ใช้หน้าร้านไม่ได้เลย → เปลี่ยนช่องรหัสเป็นคำอธิบาย */
+function gateBlock(html) {
+  $('gateForm').innerHTML = `<div class="gate-block">${html}</div>`;
+}
+/** ถามระบบก่อน (ระหว่างที่คนกำลังใส่รหัส): บัญชีนี้ลงทะเบียนไหม ร้านตั้งรหัสแล้วหรือยัง */
+async function gateCheck() {
+  GATE.checked = true;
+  try {
+    const r = await ownerFetch('owner.gate');
+    if (r.pin === false) gateBlock('ร้านนี้ยังไม่ได้ตั้งรหัสร้าน<br><small>ติดต่อ Pumpkin Bot ให้ตั้งรหัสร้าน 6 หลักก่อนนะครับ</small>');
+  } catch (err) {
+    GATE.checked = err.code === 'NOT_OWNER';
+    if (err.code === 'NOT_OWNER') gateBlock('บัญชีไลน์นี้ยังไม่ได้ลงทะเบียนเป็นคนดูแลร้าน<br><br>พิมพ์ในแชทของร้านว่า<br><b>ลงทะเบียนร้าน</b> ตามด้วยรหัสร้าน');
+    else if (err.message === 'unknown action') gateMsg('ระบบหลังบ้านยังเป็นเวอร์ชันเก่า — อัปเดต Pumpkin Core แล้ว Deploy ใหม่ก่อนนะครับ');
+  }
+}
+async function gateSubmit() {
+  const inp = $('gateInput');
+  const pin = inp.value;
+  if (GATE.busy) return;
+  if (pin.length < 4) { gateMsg('ใส่รหัสร้านให้ครบ 6 หลักก่อนนะครับ', true); return; }
+  GATE.busy = true; gateRender();
+  try {
+    const r = await ownerFetch('owner.unlock', { pin });
+    GATE.token = r.gate;
+    GATE.busy = false;
+    gateHide();
+    ownerEnter();
+    if (SAY.on && SAY.unlocked) chimeOk();
+    toast('🔓 เข้าหน้าร้านแล้ว' + (SAY.on && SAY.unlocked ? ' · เสียงแจ้งเตือนเปิดอยู่' : ''));
+  } catch (err) {
+    GATE.busy = false;
+    inp.value = '';
+    gateRender();
+    if (err.code === 'NOT_OWNER') return gateBlock('บัญชีไลน์นี้ยังไม่ได้ลงทะเบียนเป็นคนดูแลร้าน<br><br>พิมพ์ในแชทของร้านว่า<br><b>ลงทะเบียนร้าน</b> ตามด้วยรหัสร้าน');
+    if (err.code === 'NO_PIN') return gateBlock(esc(err.message));
+    gateMsg(err.message === 'Failed to fetch' ? 'อินเทอร์เน็ตมีปัญหา ลองอีกครั้งนะครับ'
+      : err.message === 'unknown action' ? 'ระบบหลังบ้านยังเป็นเวอร์ชันเก่า — อัปเดต Pumpkin Core แล้ว Deploy ใหม่ก่อนนะครับ'
+      : err.message, true);
+    try { inp.focus(); } catch (e) { /* ไม่เป็นไร */ }
+  }
+}
+
 function startOwner() {
   document.title = 'หน้าร้าน';
   $('loading').classList.add('hidden');
+  sayInit();          // แตะ/พิมพ์ที่ช่องรหัส = เปิดเสียงไปในตัว
+  gateInit();
+  gateShow();
+}
+/** ผ่านรหัสแล้ว: ครั้งแรกตั้งปุ่ม/ตัวเช็คออเดอร์ · ครั้งต่อไป (บัตรผ่านหมดอายุแล้วใส่ใหม่) โหลดแท็บเดิมใหม่ */
+function ownerEnter() {
   $('ownerView').classList.remove('hidden');
+  PTR.ready = true;
+  if (owner.started) return ownerTab(owner.tab);
+  owner.started = true;
   document.querySelectorAll('.ow-tab').forEach((b) => {
     b.onclick = () => ownerTab(b.dataset.tab);
   });
-  sayInit();
   ownerTab('orders');
   // เช็คออเดอร์ใหม่ทุก 10 วินาที ตอนจอเปิดอยู่ (เปิดเสียงแจ้งเตือนไว้ = เช็คแม้อยู่แท็บอื่น)
-  owner.timer = setInterval(() => {
-    if (document.visibilityState === 'visible' && (owner.tab === 'orders' || SAY.on)) loadOwnerOrders(true);
-  }, 10000);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && (owner.tab === 'orders' || SAY.on)) loadOwnerOrders(true);
-  });
+  const tick = () => !GATE.shown && document.visibilityState === 'visible' && (owner.tab === 'orders' || SAY.on);
+  owner.timer = setInterval(() => { if (tick()) loadOwnerOrders(true); }, 10000);
+  document.addEventListener('visibilitychange', () => { if (tick()) loadOwnerOrders(true); });
 }
 
 function ownerTab(tab) {
@@ -2519,7 +2740,7 @@ async function checkFreshPage() {
     else applyTheme(cachedTheme(), false);                   // สีเดิมที่จำไว้ ระหว่างรอเมนู
     await initLiff();
     ptrInit();
-    if (isOwnerMode()) { startOwner(); PTR.ready = true; return; }
+    if (isOwnerMode()) { startOwner(); return; }   // ผ่านช่องรหัสแล้วถึงดึงลงเพื่ออัปเดตได้
     state.menu = await loadMenu();
     applyTheme(state.menu.shop.theme, true);
     setVoice(state.menu.shop.voice);
