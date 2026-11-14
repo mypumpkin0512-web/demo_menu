@@ -392,6 +392,7 @@
 // ====== หน้าเดียวใช้ทุกร้าน ======
 // ร้านไหน = ?s=รหัสร้าน ใน Endpoint URL ของ LIFF เช่น https://.../demo_menu/?s=demo
 // ค่าของแต่ละร้าน (LIFF ID + ลิงก์ /exec) อยู่ในไฟล์ shops.json ข้างไฟล์นี้ — เพิ่มร้านใหม่ = เพิ่ม 1 บรรทัดในนั้น
+const PAGE_VERSION = '14 พ.ย. 69 · 20:00';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
 let LIFF_ID = '';
 let API_URL = '';
 let SHOP_KEY = '';
@@ -1878,7 +1879,8 @@ function renderOwnerHours(shop) {
       <input id="locPin" class="ow-input" type="password" inputmode="numeric" autocomplete="off" placeholder="รหัสร้าน (ยืนยันทุกครั้งที่บันทึก)" style="margin-top:8px">
       <p class="err" id="locErr"></p>
       <div class="tq-row"><button class="ow-switch on" id="locSave" style="flex:1">💾 บันทึกที่ตั้ง</button>${shop.map ? '<button class="ow-switch" id="locTest" style="flex:1">🗺️ ลองเปิดดู</button>' : ''}</div>
-    </div>`;
+    </div>
+    <div class="ow-hint" style="margin:6px 0 20px">หน้าเว็บ ${esc(PAGE_VERSION)} · ระบบ ${shop.core ? esc(shop.core) : '<b style="color:var(--red)">เวอร์ชันเก่า</b> (วาง Code.gs ใหม่ใน Pumpkin Core แล้ว deploy ร้านใหม่)'}</div>`;
   renderPayTile();
   renderAnnounce();
   renderThemeTile(shop.theme);
@@ -2494,7 +2496,23 @@ function isOwnerMode() {
   return !!st && decodeURIComponent(st).includes('mode=owner');
 }
 
+/** GitHub Pages / ไลน์ จำหน้าเว็บเก่าไว้ได้ถึง 10 นาที → เช็คว่ามีหน้าใหม่ไหม ถ้ามีโหลดใหม่ให้เอง (ครั้งเดียวต่อเวอร์ชัน) */
+async function checkFreshPage() {
+  try {
+    const res = await fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' });
+    const m = (await res.text()).match(/const PAGE_VERSION = '([^']+)'/);
+    if (!m || m[1] === PAGE_VERSION) return;
+    const key = 'pumpkin-reload-' + m[1];
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+    const u = new URL(location.href);
+    u.searchParams.set('pv', String(Date.now()));
+    location.replace(u.toString());
+  } catch (e) { /* ไม่เป็นไร ใช้หน้าเดิมไปก่อน */ }
+}
+
 (async function start() {
+  checkFreshPage();
   try {
     await loadShop();
     if (isOwnerMode()) applyBrand(THEMES.pumpkin);           // หน้าร้านใช้สีมาตรฐาน
