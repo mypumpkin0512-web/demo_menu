@@ -1069,8 +1069,8 @@ function toast(msg) {
 // 4) โควตาตรวจสลิปเพิ่งหมด → พูดบอก 1 ครั้ง
 // มือถือยอมให้เว็บส่งเสียงหลังแตะจอ 1 ครั้ง → แตะตรงไหนก็ได้ ระบบเปิดเสียงให้เอง
 const SAY = { on: true, unlocked: false, last: null, slip: {}, told: {}, mine: new Set(), ctx: null, lines: [], left: null,
-  opt: { name: true, items: false, note: false } };   // อ่านอะไรเพิ่ม (ยอดเงินอ่านทุกครั้ง) — ตั้งแยกแต่ละเครื่องที่แท็บร้าน
-const SAY_OPTS = [['name', '👤 ชื่อลูกค้า'], ['items', '🍽️ เมนูแต่ละอย่าง'], ['note', '📝 หมายเหตุ']];
+  opt: { no: true, table: true, name: true, items: false, note: false } };   // อ่านอะไรบ้าง (ยอดเงินอ่านทุกครั้ง) — ตั้งแยกแต่ละเครื่องที่แท็บร้าน
+const SAY_OPTS = [['no', '🔢 เลขออเดอร์'], ['table', '🪑 เลขโต๊ะ'], ['name', '👤 ชื่อลูกค้า'], ['items', '🍽️ เมนูแต่ละอย่าง'], ['note', '📝 หมายเหตุ']];
 const SAY_AGAIN_MS = 3 * 60 * 1000;   // ออเดอร์เดิมเตือนเรื่องสลิปซ้ำได้ทุก 3 นาที (ลูกค้าส่งรูปรัว ๆ จะไม่ดังรัว)
 const ALERT = {
   paid: { icon: '💰', sub: 'จ่ายเงินแล้ว เริ่มทำได้เลย', say: 'จ่ายเงินแล้ว เริ่มทำได้เลย' },
@@ -1083,6 +1083,8 @@ function sayInit() {
   try { SAY.on = localStorage.getItem(sayKey()) !== '0'; } catch (e) { /* ใช้ค่าเริ่มต้น = เปิด */ }
   try { Object.assign(SAY.opt, JSON.parse(localStorage.getItem(sayKey() + '-opt') || '{}')); } catch (e) { /* ค่าเริ่มต้น */ }
   ['click', 'touchend'].forEach((ev) => document.addEventListener(ev, sayUnlock, true));
+  sayTryAuto();
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') sayCheckAlive(); });
   document.addEventListener('click', (e) => {
     if (e.target.closest('[data-say]')) return toggleSay();
     const o = e.target.closest('[data-sayopt]');
@@ -1114,8 +1116,36 @@ function sayTileHtml() {
 function sayTest() {
   const o = (SAY.list || []).slice(-1)[0] || { disp: '#001', name: 'นก', total: 70, method: 'นั่งทานที่ร้าน', pickup: 'โต๊ะ 3',
     items: [{ name: 'ข้าวมันไก่ทอด', options: 'พิเศษ', qty: 2 }], note: 'ไม่ใส่แตง' };
-  chime(false);
-  setTimeout(() => speakTh(alertLine(o, 'paid').speak), 700);
+  sayEnqueue(false, [alertLine(o, 'paid').speak]);
+}
+/** บางเครื่อง/บางเวอร์ชันของไลน์ยอมให้เว็บมีเสียงเลยโดยไม่ต้องแตะ → ลองก่อน ถ้าได้ก็ไม่ต้องขึ้นแถบให้แตะ */
+function sayTryAuto() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    SAY.ctx = SAY.ctx || new AC();
+    const ok = () => { if (SAY.ctx.state === 'running' && !SAY.unlocked) sayUnlock(); };
+    ok();
+    const p = SAY.ctx.resume();
+    if (p && p.then) p.then(ok, () => {});
+  } catch (e) { /* ต้องแตะจอ */ }
+}
+/** กลับมาที่หน้าร้านหลังล็อกจอ/สลับแอป: ถ้าเสียงถูกปิดไป ลองเปิดใหม่ ไม่ได้ก็ขึ้นแถบให้แตะอีกครั้ง */
+function sayCheckAlive() {
+  const ac = SAY.ctx;
+  if (!SAY.unlocked || !ac || ac.state === 'running') return;
+  const p = ac.resume();
+  const check = () => {
+    if (ac.state === 'running') return;
+    SAY.unlocked = false;
+    ['click', 'touchend'].forEach((ev) => document.addEventListener(ev, sayUnlock, true));
+    if (owner.tab === 'orders' && $('owBody') && !$('sayHint')) {
+      const tools = $('owBody').querySelector('.ow-tools');
+      if (tools) tools.insertAdjacentHTML('beforebegin', sayHintHtml());
+    }
+    renderSayBar();
+  };
+  if (p && p.then) p.then(check, check); else check();
 }
 function sayUnlock() {
   if (SAY.unlocked) return;
@@ -1136,7 +1166,7 @@ function toggleSay() {
   SAY.on = !SAY.on;
   try { localStorage.setItem(sayKey(), SAY.on ? '1' : '0'); } catch (e) { /* ไม่เป็นไร */ }
   sayUnlock();
-  if (SAY.on) { chime(false); setTimeout(() => speakTh('เปิดเสียงแจ้งเตือนแล้ว'), 700); }
+  if (SAY.on) sayEnqueue(false, ['เปิดเสียงแจ้งเตือนแล้ว']);
   renderSayBar();
 }
 function sayBarHtml() {
@@ -1170,16 +1200,39 @@ function chime(urgent) {
     });
   } catch (e) { /* ไม่เป็นไร */ }
 }
-function speakTh(line) {
+/** พูด 1 ประโยค แล้วเรียก done เมื่อพูดจบ (บางเครื่องไม่บอกว่าจบ → นับเวลาเผื่อไว้แทน) */
+function speakTh(line, done) {
+  let finished = false;
+  const fin = () => { if (finished) return; finished = true; clearTimeout(timer); if (done) done(); };
+  const timer = setTimeout(fin, 2000 + String(line).length * 120);
   try {
     const synth = window.speechSynthesis;
-    if (!synth || !window.SpeechSynthesisUtterance) return;
+    if (!synth || !window.SpeechSynthesisUtterance) return fin();
     const u = new SpeechSynthesisUtterance(line);
     u.lang = 'th-TH'; u.rate = 0.95;
     const v = synth.getVoices().find((x) => /^th/i.test(x.lang));
     if (v) u.voice = v;
+    u.onend = fin; u.onerror = fin;
     synth.speak(u);
-  } catch (e) { /* เครื่องนี้พูดไม่ได้ — ยังมีเสียงกริ๊ง + ป๊อปอัพ */ }
+  } catch (e) { fin(); /* เครื่องนี้พูดไม่ได้ — ยังมีเสียงกริ๊ง + ป๊อปอัพ */ }
+}
+/** คิวเสียง: ออเดอร์จ่ายพร้อมกันหลายใบ → ดังทีละใบ (กริ๊ง → พูด → ใบต่อไป) ไม่พูดทับกัน */
+const SAYQ = { jobs: [], busy: false };
+function sayEnqueue(urgent, texts) {
+  SAYQ.jobs.push({ urgent, texts });
+  sayNext();
+}
+function sayNext() {
+  if (SAYQ.busy || !SAYQ.jobs.length) return;
+  SAYQ.busy = true;
+  const job = SAYQ.jobs.shift();
+  chime(job.urgent);
+  let i = 0;
+  const step = () => {
+    if (i >= job.texts.length) { SAYQ.busy = false; setTimeout(sayNext, 500); return; }
+    speakTh(job.texts[i++], step);
+  };
+  setTimeout(step, job.urgent ? 1100 : 900);
 }
 /** ข้อความสำหรับอ่านออกเสียง: ตัดอีโมจิ/สัญลักษณ์ (เก็บ , ไว้ให้เว้นจังหวะ) */
 function sayClean(t) {
@@ -1201,18 +1254,22 @@ function alertLine(o, kind) {
   const why = kind === 'check' ? ((o.slip || '').match(/\(([^)]+)\)/) || ['', ''])[1] : '';
   const over = kind === 'paid' ? Math.round(((o.paid || 0) - o.total) * 100) / 100 : 0;   // โอนเกิน
   // ประโยคที่อ่าน: ออเดอร์ 5 (โต๊ะ 3) (คุณนก) จ่ายเงินแล้ว 70 บาท, (เมนู), (หมายเหตุ), เริ่มทำได้เลย
-  const head = `ออเดอร์ ${num}` + (o.method === 'นั่งทานที่ร้าน' && o.pickup ? ' ' + sayClean(o.pickup) : '') + (SAY.opt.name && name ? ' คุณ' + name : '');
+  const head = [
+    SAY.opt.no ? `ออเดอร์ ${num}` : '',
+    SAY.opt.table && o.method === 'นั่งทานที่ร้าน' && o.pickup ? sayClean(o.pickup) : '',
+    SAY.opt.name && name ? 'คุณ' + name : ''
+  ].filter(Boolean).map((x) => x + ' ').join('');
   const amt = sayAmount(o.total);
   let speak;
   if (kind === 'paid') {
     const items = SAY.opt.items && o.items && o.items.length
       ? o.items.map((i) => sayClean(i.name) + ' ' + i.qty + (i.options ? ' ' + sayClean(i.options).replace(/\s*,\s*/g, ' ') : '')).join(', ') + ', ' : '';   // "ข้าวมันไก่ทอด 2 พิเศษ" แบบที่แม่ค้าเรียกกัน
     const note = SAY.opt.note && o.note ? 'หมายเหตุ ' + sayClean(o.note).slice(0, 80) + ', ' : '';
-    speak = `${head} จ่ายเงินแล้ว ${amt}` + (over > 0 ? ` โอนเกินมา ${sayAmount(over)}` : '') + ', ' + items + note + 'เริ่มทำได้เลย';
+    speak = `${head}จ่ายเงินแล้ว ${amt}` + (over > 0 ? ` โอนเกินมา ${sayAmount(over)}` : '') + ', ' + items + note + 'เริ่มทำได้เลย';
   } else if (kind === 'check') {
-    speak = `${head} ส่งสลิปมาแล้ว ยอด ${amt}, ช่วยเช็คยอดในแอปธนาคาร แล้วกดได้รับเงินแล้วด้วย`;
+    speak = `${head}ส่งสลิปมาแล้ว ยอด ${amt}, ช่วยเช็คยอดในแอปธนาคาร แล้วกดได้รับเงินแล้วด้วย`;
   } else {
-    speak = `${head} สลิปมีปัญหา ยอด ${amt}, ช่วยเช็คในแอปธนาคารก่อนนะ`;
+    speak = `${head}สลิปมีปัญหา ยอด ${amt}, ช่วยเช็คในแอปธนาคารก่อนนะ`;
   }
   return {
     kind, no: o.no,
@@ -1246,8 +1303,9 @@ function announce(lines, extra) {
   if (!lines.length && !extra) return;
   if (navigator.vibrate) navigator.vibrate(urgent ? [400, 150, 400, 150, 400] : [250, 120, 250]);
   if (!SAY.on || !SAY.unlocked) return;
-  chime(urgent);
-  setTimeout(() => { lines.forEach((l) => speakTh(l.speak)); if (extra) speakTh(extra); }, urgent ? 1100 : 900);
+  // แต่ละออเดอร์เป็น 1 คิว (มีกริ๊งนำ) — มาพร้อมกันก็ดังเรียงทีละใบ
+  lines.forEach((l) => sayEnqueue(l.kind !== 'paid', [l.speak]));
+  if (extra) sayEnqueue(true, [extra]);
 }
 /** เทียบกับรอบก่อน แล้วเตือนเฉพาะสิ่งที่เพิ่งเกิด (เปิดหน้าครั้งแรกไม่เตือนของเก่า) */
 function checkOrders(data) {
