@@ -148,6 +148,7 @@
   .ow-info.warn { background: #FDE8E4; color: #A8321E; border: 2px solid #F2B8AC; }
   .ow-info.warn b { display: block; font-size: 20px; }
   .ow-info.wait { background: #FFF4DC; color: #7A5A12; }
+  .ow-info.refund { background: #FFF4DC; color: #7A5A12; border: 2px solid #F0D28A; font-weight: 600; font-size: 20px; }
   .ow-info.addr { background: var(--cream); }
   .ow-links { display: flex; gap: 8px; margin-top: 8px; }
   .ow-links a { flex: 1; text-align: center; text-decoration: none; color: var(--brown); border: 2px solid var(--line); border-radius: 14px; padding: 11px 0; font-size: 18px; background: #fff; }
@@ -468,7 +469,7 @@ function openMyOrders() {
     const b = e.target.closest('[data-pay]'); if (!b) return;
     const o = list.find((x) => (x.key || x.no) === b.dataset.pay);
     closeSheet();
-    showDone({ orderNo: o.no, total: o.total, method: o.method, promptpay: o.promptpay, queue: o }, true);
+    showDone({ orderNo: o.no, total: o.total - (o.paid || 0), method: o.method, promptpay: o.promptpay, queue: o }, true);
   };
   $('myRefresh').onclick = async () => { await loadMyOrders(true); openMyOrders(); };
   $('sheetClose').onclick = closeSheet;
@@ -1131,11 +1132,12 @@ function alertLine(o, kind) {
   const num = parseInt(((o.disp || o.no).match(/(\d+)$/) || ['', '0'])[1], 10);
   const name = sayName(o.name);
   const why = kind === 'check' ? ((o.slip || '').match(/\(([^)]+)\)/) || ['', ''])[1] : '';
+  const over = kind === 'paid' ? Math.round(((o.paid || 0) - o.total) * 100) / 100 : 0;   // โอนเกิน
   return {
     kind, no: o.no,
     title: `${a.icon} ${o.disp || o.no}${name ? ' · ' + name : ''}`,
-    sub: a.sub + (why ? ` (${why})` : ''),
-    speak: `ออเดอร์ ${num}${name ? ' คุณ' + name : ''} ${a.say}`
+    sub: a.sub + (why ? ` (${why})` : '') + (over > 0 ? ` · คืนลูกค้า ${over} บาท` : ''),
+    speak: `ออเดอร์ ${num}${name ? ' คุณ' + name : ''} ${a.say}` + (over > 0 ? ` โอนเกินมา ${over} บาท` : '')
   };
 }
 /** ป๊อปอัพ: จ่ายแล้ว (เขียว หายเองใน 12 วิ) · ต้องเช็คเอง (ส้ม ค้างจนแตะ แตะแล้วพาไปที่ออเดอร์) */
@@ -1305,7 +1307,7 @@ function orderCard(o) {
   const phoneLink = o.phone ? `<a href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a>` : '';
   const mapLink = o.map ? `<a href="${esc(o.map)}" target="_blank" rel="noopener">📍 เปิดแผนที่</a>` : '';
   return `<div class="ow-card${paid ? '' : ' unpaid'}" data-no="${esc(o.no)}">
-    <div class="ow-top"><span><span class="ow-no">${esc(o.disp || o.no)}</span>${o.queue ? `<span class="ow-q">คิว ${o.queue}</span>` : ''}</span><span class="ow-tag ${paid ? 'paid' : 'unpaid'}">${paid ? 'จ่ายแล้ว' : 'ยังไม่จ่าย'}</span></div>
+    <div class="ow-top"><span><span class="ow-no">${esc(o.disp || o.no)}</span>${o.queue ? `<span class="ow-q">คิว ${o.queue}</span>` : ''}</span><span class="ow-tag ${paid ? 'paid' : 'unpaid'}">${paid ? 'จ่ายแล้ว' : o.paid > 0 ? 'จ่ายไม่ครบ' : 'ยังไม่จ่าย'}</span></div>
     <div class="ow-who">${esc(o.name || 'ลูกค้า')} · ${METHOD_ICON[o.method] || ''} ${esc(o.method)} · ${esc(o.time)}${o.day && o.day !== new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) ? ' (' + esc(o.day) + ')' : ''}</div>
     ${o.pickup && o.method === 'นั่งทานที่ร้าน' ? `<div class="ow-table">🪑 ${esc(o.pickup)}</div>` : ''}
     <div class="ow-items">${items}</div>
@@ -1327,7 +1329,10 @@ function slipBox(o, paid) {
   if (!o.slip) return '';
   const msg = esc(o.slip.replace(/^\S+\s+\d\d:\d\d\s+/, ''));   // ตัดไอคอน + เวลาออก
   const at = (o.slip.match(/\d\d:\d\d/) || [''])[0];
-  if (o.slipState === 'ok') return `<div class="ow-info slip">✅ ระบบตรวจสลิปแล้ว ${at}<br><small>${msg}</small></div>`;
+  const refund = (o.paid || 0) - o.total;
+  if (o.slipState === 'ok') return `<div class="ow-info slip">✅ ระบบตรวจสลิปแล้ว ${at}<br><small>${msg}</small></div>` +
+    (refund > 0.009 ? `<div class="ow-info refund">💸 ลูกค้าโอนเกิน คืนลูกค้า ${baht(refund)}</div>` : '');
+  if (o.slipState === 'part' && !paid) return `<div class="ow-info wait">💰 จ่ายไม่ครบ — รอลูกค้าโอนเพิ่ม ${baht(o.total - (o.paid || 0))}<br><small>${msg}</small></div>`;
   if (paid) return '';
   if (o.slipState === 'warn') return `<div class="ow-info warn"><b>⚠️ สลิปมีปัญหา</b>${msg}<br><small>เช็คในแอปธนาคารก่อนกด "ได้รับเงินแล้ว"</small></div>`;
   if (o.slipState === 'wait') return `<div class="ow-info wait">⏳ ${msg}</div>`;
