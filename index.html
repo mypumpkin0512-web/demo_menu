@@ -34,6 +34,13 @@
   .shop-name { font-size: 24px; font-weight: 600; margin: 0; }
   .shop-meta { display: flex; gap: 8px; align-items: center; margin-top: 6px; font-size: 14px; color: var(--muted); flex-wrap: wrap; }
   .badge { padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 500; }
+  .table-badge { background: var(--brown); color: #fff; margin-left: 6px; }
+  .map-btn { border: 1.5px solid var(--line); background: #fff; color: var(--brown); border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .ptr { position: fixed; left: 50%; top: 0; z-index: 70; transform: translate(-50%, -60px); background: var(--brown); color: #fff; font-size: 15px; font-weight: 500; padding: 8px 16px; border-radius: 999px; box-shadow: 0 6px 16px rgba(0,0,0,.2); opacity: 0; transition: opacity .15s; pointer-events: none; white-space: nowrap; }
+  .ptr.show { opacity: 1; }
+  .tq-row { display: flex; gap: 8px; margin-top: 8px; }
+  .tq-row input { flex: 1; min-width: 0; padding: 12px; font-size: 20px; border: 2px solid var(--line); border-radius: 14px; background: #fff; }
+  .tq-out img { display: block; width: 100%; margin-top: 12px; border: 1px solid var(--line); border-radius: 10px; }
   .badge.open { background: #E3F4E6; color: #23733A; }
   .badge.closed { background: #FBE3E0; color: var(--red); }
   .closed-box { background: #FBE3E0; color: var(--red); padding: 12px 14px; border-radius: 14px; margin: 12px 0; font-size: 15px; }
@@ -300,7 +307,7 @@
   <section id="menuView" class="hidden">
     <header>
       <div class="shop-head"><img id="shopLogo" class="shop-logo hidden" alt=""><h1 class="shop-name" id="shopName"></h1></div>
-      <div class="shop-meta"><span id="openBadge" class="badge"></span><span id="hoursText"></span></div>
+      <div class="shop-meta"><span id="openBadge" class="badge"></span><span id="qrTable" class="badge table-badge hidden"></span><span id="hoursText"></span><button id="mapBtn" class="map-btn hidden">📍 แผนที่ร้าน</button></div>
     </header>
     <div id="closedBox" class="closed-box hidden">ตอนนี้ร้านปิดรับออเดอร์อยู่ ดูเมนูไว้ก่อนได้นะครับ</div>
     <div id="lastOrderBox" class="last-order hidden">
@@ -336,10 +343,11 @@
       <div style="color:var(--muted)">สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</div>
       <div class="amount" id="doneTotal"></div>
       <div id="qr"></div>
+      <button class="primary" id="saveQr" style="margin:0 auto 12px;max-width:320px">💾 บันทึก QR ไว้สแกนจ่าย</button>
       <div id="doneQueue" class="done-queue hidden"></div>
       <div id="doneBusy" class="busy-note hidden"></div>
       <div class="steps">
-        1. สแกน QR หรือแคปหน้าจอไปสแกนในแอปธนาคาร<br>
+        1. กด <b>บันทึก QR</b> → เปิดแอปธนาคาร → สแกน → เลือกรูปจากอัลบั้ม<br>
         2. ยอดเงินจะขึ้นให้อัตโนมัติ<br>
         3. จ่ายแล้ว <b>ส่งรูปสลิปในแชท</b> ร้านจะยืนยันให้ครับ<br>
         4. <span id="doneNotify"></span> 🐾
@@ -410,6 +418,7 @@ function restore() {
   if (!d) return;
   const { products, groups, shop } = state.menu;
   Object.assign(formData, d.form || {});
+  delete formData.table;   // เลขโต๊ะใช้เฉพาะตอนสแกน QR ที่โต๊ะครั้งนั้น ไม่จำข้ามรอบ
   if (shop.pickupMethods.includes(d.method)) state.method = d.method;
   if (d.lastOrder && Date.now() - d.lastOrder.at < LAST_ORDER_TTL) state.lastOrder = d.lastOrder;
   if (Date.now() - d.savedAt > CART_TTL || !Array.isArray(d.cart)) return;
@@ -438,7 +447,8 @@ function renderLastOrder() {
     $('lastOrderText').textContent = mine.length === 1
       ? `🧾 ออเดอร์ ${mine[0].no} · ${mine[0].stage === 'unpaid' ? 'ยังไม่จ่าย' : waiting ? (waiting.ahead ? 'คิวก่อนหน้า ' + waiting.ahead : 'ถึงคิวแล้ว') : mine[0].statusName}`
       : `🧾 ออเดอร์ของฉัน ${mine.length} รายการ`;
-    $('lastOrderQr').textContent = 'เช็คคิว';
+    // ยังรอคิว/รอจ่าย = "เช็คคิว" · พร้อมรับหมดแล้ว = แค่ "ดูออเดอร์"
+    $('lastOrderQr').textContent = mine.some((o) => o.stage === 'queue' || o.stage === 'unpaid') ? 'เช็คคิว' : 'ดูออเดอร์';
     return;
   }
   const o = mine ? null : state.lastOrder;   // ถามระบบแล้วไม่มีออเดอร์ค้าง = ไม่ต้องโชว์
@@ -477,8 +487,9 @@ function openMyOrders() {
         ${o.busy ? `<div class="busy-note">${esc(o.busyText).replace(/\n/g, '<br>')}</div>` : ''}
         ${o.stage === 'unpaid' && o.promptpay ? `<button class="primary" data-pay="${esc(o.key || o.no)}">ดู QR จ่ายเงิน</button>` : ''}
       </div>`).join('') : '<div class="my-card">ตอนนี้ยังไม่มีออเดอร์ที่ค้างอยู่ครับ 🐾</div>'}
-    <div class="my-note">แต่ละออเดอร์มีคิวของตัวเอง · ร้านทำให้ตามลำดับคิว</div>
-    <button class="primary" id="myRefresh">🔄 เช็คคิวอีกครั้ง</button>
+    ${list.some((o) => o.stage === 'queue' || o.stage === 'unpaid')
+      ? '<div class="my-note">แต่ละออเดอร์มีคิวของตัวเอง · ร้านทำให้ตามลำดับคิว</div><button class="primary" id="myRefresh">🔄 เช็คคิวอีกครั้ง</button>'
+      : list.length ? '<button class="primary" id="myRefresh">🔄 อัปเดตสถานะ</button>' : '<button class="primary" id="myRefresh">🔄 เช็คอีกครั้ง</button>'}
     <button class="ghost" id="sheetClose">ปิด</button>`;
   $('sheetBody').onchange = null;
   $('sheetBody').onclick = (e) => {
@@ -678,6 +689,8 @@ function renderMenu() {
   $('openBadge').textContent = shop.open ? 'เปิดรับออเดอร์' : 'ปิดอยู่';
   $('openBadge').className = 'badge ' + (shop.open ? 'open' : 'closed');
   $('closedBox').classList.toggle('hidden', shop.open);
+  $('mapBtn').classList.toggle('hidden', !shop.map);
+  $('mapBtn').onclick = () => openMap(shop.map);
   if (shop.closedReason) $('closedBox').textContent = shop.closedReason;
 
   const cats = [...new Set(products.map((p) => p.category))];
@@ -770,6 +783,60 @@ function openItem(id) {
   refresh();
   openSheet();
 }
+/** รูป QR จ่ายเงินพร้อมชื่อร้าน ยอด เลขออเดอร์ (เอาไปสแกนจากอัลบั้มในแอปธนาคาร) */
+function payCard(order) {
+  const W = 640, H = 860, cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const g = cv.getContext('2d'), font = getComputedStyle(document.body).fontFamily;
+  const css = getComputedStyle(document.documentElement);
+  const accent = css.getPropertyValue('--orange').trim() || '#D99354', ink = css.getPropertyValue('--brown').trim() || '#5A3F2D';
+  g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+  g.fillStyle = accent; g.fillRect(0, 0, W, 110);
+  g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = `600 40px ${font}`; g.fillText((state.menu && state.menu.shop.name) || SHOP_INFO.name || '', W / 2, 56, W - 60);
+  g.fillStyle = ink; g.font = `500 30px ${font}`; g.fillText('สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)', W / 2, 160);
+  g.drawImage(qrCanvas(order.promptpay, 440), (W - 440) / 2, 200, 440, 440);
+  g.fillStyle = accent; g.font = `600 64px ${font}`; g.fillText(baht(order.total), W / 2, 712);
+  g.fillStyle = ink; g.font = `500 30px ${font}`; g.fillText('ออเดอร์ ' + order.orderNo, W / 2, 790);
+  return cv.toDataURL('image/png');
+}
+/** บันทึกรูปลงเครื่อง: มือถือที่แชร์ไฟล์ได้ → เมนู "บันทึกรูป" ของเครื่อง · ไม่งั้นดาวน์โหลดไฟล์ */
+async function saveImages(urls, base) {
+  const name = (i) => urls.length > 1 ? `${base}-${i + 1}.png` : `${base}.png`;
+  try {
+    const files = await Promise.all(urls.map(async (u, i) => new File([await (await fetch(u)).blob()], name(i), { type: 'image/png' })));
+    if (navigator.canShare && navigator.canShare({ files })) { await navigator.share({ files }); return true; }
+  } catch (e) { if (e && e.name === 'AbortError') return true; }
+  for (let i = 0; i < urls.length; i++) {
+    const blobUrl = URL.createObjectURL(await (await fetch(urls[i])).blob());   // ลิงก์แบบ blob ตั้งชื่อไฟล์ได้แน่นอนกว่า
+    const a = document.createElement('a'); a.href = blobUrl; a.download = name(i);
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+  }
+  if (typeof toast === 'function' && $('owToast')) toast('💾 กำลังบันทึก… ถ้าไม่ขึ้น กดค้างที่รูป → บันทึกรูป');
+  return false;
+}
+async function saveQr(order) {
+  await (document.fonts ? document.fonts.ready : Promise.resolve());
+  const url = payCard(order), name = `qr-${SHOP_KEY}-${String(order.orderNo).replace(/\W/g, '')}.png`;
+  // มือถือที่แชร์ไฟล์ได้: เปิดเมนู "บันทึกรูป" ของเครื่องเลย
+  try {
+    const blob = await (await fetch(url)).blob();
+    const file = new File([blob], name, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  // ไม่งั้น: โชว์รูปให้กดค้างบันทึก + ปุ่มดาวน์โหลด
+  $('sheetBody').innerHTML = `
+    <h3>💾 บันทึก QR จ่ายเงิน</h3>
+    <img src="${url}" alt="QR จ่ายเงิน" style="display:block;width:100%;max-width:320px;margin:0 auto;border-radius:14px;border:1px solid var(--line)">
+    <div class="my-note" style="font-size:15px">กดค้างที่รูป → <b>บันทึกรูป</b><br>แล้วเปิดแอปธนาคาร → สแกน → เลือกรูปจากอัลบั้ม</div>
+    <a class="ghost" href="${url}" download="${name}" style="display:block;text-align:center;text-decoration:none">⬇️ ดาวน์โหลดรูป</a>
+    <button class="ghost" id="sheetClose" style="margin-top:8px">ปิด</button>`;
+  $('sheetBody').onclick = null;
+  $('sheetClose').onclick = closeSheet;
+  openSheet();
+}
+
 function openSheet() {
   if ($('sheet').classList.contains('hidden')) { $('sheet').classList.remove('hidden'); lockScroll(); }
   $('sheetBody').scrollTop = 0;
@@ -847,9 +914,8 @@ const FIELD_DEFS = {
 function fieldsFor(method) {
   if (method === 'ส่งถึงบ้าน') return ['ชื่อ', 'เบอร์', 'แผนที่', 'จุดสังเกต', 'หมายเหตุ'];
   if (method === 'ส่งพัสดุ') return ['ชื่อ', 'เบอร์', 'ที่อยู่พัสดุ', 'หมายเหตุ'];
-  const base = state.menu.shop.customerFields.filter((f) => f !== 'โต๊ะ');
-  if (method === 'นั่งทานที่ร้าน') return [base[0] === 'ชื่อ' ? 'ชื่อ' : null, 'โต๊ะ', ...base.filter((f) => f !== 'ชื่อ')].filter(Boolean);
-  return base;
+  // เลขโต๊ะไม่ต้องกรอก: สแกน QR ที่โต๊ะ ระบบใส่ให้เอง
+  return state.menu.shop.customerFields.filter((f) => f !== 'โต๊ะ');
 }
 function isDelivery(method) { return method === 'ส่งถึงบ้าน' || method === 'ส่งพัสดุ';
 }
@@ -889,7 +955,9 @@ function renderFields() {
   $('customerPanel').classList.toggle('hidden', defs.length === 0);
   if (map) { map.remove(); map = null; }
   $('customerFields').innerHTML = defs.map(fieldHtml).join('');
-  $('notifyNote').textContent = NOTIFY_TEXT[state.method] || NOTIFY_TEXT['รับหน้าร้าน'];
+  $('notifyNote').textContent = state.method === 'นั่งทานที่ร้าน' && state.qrTable
+    ? `🍽️ นั่งรอที่โต๊ะ ${state.qrTable} ได้เลย ร้านจะยกไปเสิร์ฟให้`
+    : NOTIFY_TEXT[state.method] || NOTIFY_TEXT['รับหน้าร้าน'];
   if ($('map')) initMap();
 }
 
@@ -970,6 +1038,7 @@ function showDone(order, again) {
   $('doneNotify').textContent = (NOTIFY_TEXT[order.method] || NOTIFY_TEXT['รับหน้าร้าน']).replace(/^\S+\s/, '');
   $('qr').innerHTML = '';
   new QRCode($('qr'), { text: order.promptpay, width: 230, height: 230, correctLevel: QRCode.CorrectLevel.M });
+  $('saveQr').onclick = () => saveQr(order);
   $('doneQueue').classList.toggle('hidden', !order.queue);
   if (order.queue) $('doneQueue').innerHTML = esc(order.queue.text).replace(/\n/g, '<br>');
   const busyMsg = order.queue && order.queue.busy ? order.queue.busyText : '';
@@ -980,6 +1049,7 @@ function showDone(order, again) {
   state.cart = [];
   delete formData.note;   // หมายเหตุ/โต๊ะ ใช้ครั้งเดียว — ชื่อ เบอร์ ที่อยู่ จำไว้ให้ครั้งหน้า
   delete formData.table;
+  if (state.qrTable) formData.table = state.qrTable;   // สแกนจาก QR โต๊ะ: สั่งเพิ่มก็ยังเป็นโต๊ะเดิม
   state.lastOrder = { orderNo: order.orderNo, total: order.total, promptpay: order.promptpay, method: order.method, lines: [], at: Date.now() };
   state.myOrders = null;   // มีออเดอร์ใหม่ → ถามระบบใหม่
   loadMyOrders(false);
@@ -1022,7 +1092,7 @@ const READY_LABEL = {
 const OW_QUIET = new Set(['owner.orders', 'owner.products', 'owner.menu', 'owner.sales', 'owner.shop', 'owner.broadcastInfo', 'owner.payInfo', 'owner.history']);
 const OW_BUSY_TEXT = {
   'owner.theme': 'กำลังเปลี่ยนสี...',
-  'owner.saveProduct': 'กำลังบันทึกเมนู...', 'owner.uploadImage': 'กำลังอัปโหลดรูป...', 'owner.walkin': 'กำลังบันทึกการขาย...',
+  'owner.location': 'กำลังบันทึกที่ตั้ง...', 'owner.saveProduct': 'กำลังบันทึกเมนู...', 'owner.uploadImage': 'กำลังอัปโหลดรูป...', 'owner.walkin': 'กำลังบันทึกการขาย...',
   'owner.walkinPreview': 'กำลังคิดยอด...', 'owner.broadcast': 'กำลังส่งประกาศ...', 'owner.payPreview': 'กำลังสร้าง QR ทดสอบ...',
   'owner.deleteProduct': 'กำลังลบ...', 'owner.deleteGroup': 'กำลังลบ...'
 };
@@ -1208,13 +1278,17 @@ function speakTh(line, done) {
   try {
     const synth = window.speechSynthesis;
     if (!synth || !window.SpeechSynthesisUtterance) return fin();
-    const u = new SpeechSynthesisUtterance(line);
+    const u = new SpeechSynthesisUtterance(sayNumbers(line));
     u.lang = 'th-TH'; u.rate = 0.95;
     const v = synth.getVoices().find((x) => /^th/i.test(x.lang));
     if (v) u.voice = v;
     u.onend = fin; u.onerror = fin;
     synth.speak(u);
   } catch (e) { fin(); /* เครื่องนี้พูดไม่ได้ — ยังมีเสียงกริ๊ง + ป๊อปอัพ */ }
+}
+/** เว้นวรรคหน้า-หลังตัวเลขทุกตัว กันเครื่องอ่านรวบไปกับคำข้าง ๆ ("โต๊ะ3คุณ" → "โต๊ะ 3 คุณ") */
+function sayNumbers(t) {
+  return String(t).replace(/[0-9\u0E50-\u0E59]+(?:\.[0-9]+)?/g, ' $& ').replace(/ +,/g, ',').replace(/\s+/g, ' ').trim();
 }
 /** คิวเสียง: ออเดอร์จ่ายพร้อมกันหลายใบ → ดังทีละใบ (กริ๊ง → พูด → ใบต่อไป) ไม่พูดทับกัน */
 const SAYQ = { jobs: [], busy: false };
@@ -1258,7 +1332,7 @@ function alertLine(o, kind) {
     SAY.opt.no ? `ออเดอร์ ${num}` : '',
     SAY.opt.table && o.method === 'นั่งทานที่ร้าน' && o.pickup ? sayClean(o.pickup) : '',
     SAY.opt.name && name ? 'คุณ' + name : ''
-  ].filter(Boolean).map((x) => x + ' ').join('');
+  ].filter(Boolean).map((x) => x + ', ').join('');   // คั่นด้วย , ให้เว้นจังหวะ ("ออเดอร์ 5, โต๊ะ 3" ไม่ใช่ "ออเดอร์ห้าโต๊ะ")
   const amt = sayAmount(o.total);
   let speak;
   if (kind === 'paid') {
@@ -1330,7 +1404,7 @@ function checkOrders(data) {
       lines.push(alertLine(o, kind));
     });
     const sl = data.slip;
-    if (sl && sl.on && SAY.left > 0 && sl.left <= 0) extra = 'โควตาตรวจสลิปเดือนนี้หมดแล้ว ต่อจากนี้ต้องเช็คสลิปเอง';
+    if (sl && sl.on && SAY.left > 0 && sl.left <= 0) extra = 'ระบบตรวจสลิปอัตโนมัติพักชั่วคราว ต่อจากนี้ต้องเช็คสลิปเอง';
   }
   SAY.last = st;
   SAY.slip = slip;
@@ -1355,12 +1429,6 @@ function focusCard() {
   card.classList.add('flash');
   setTimeout(() => card.classList.remove('flash'), 2500);
 }
-function slipNote(sl) {
-  if (!sl || !sl.on) return '';
-  if (sl.left <= 0) return `<div class="ow-info warn slip-quota"><b>⚠️ โควตาตรวจสลิปเดือนนี้หมดแล้ว</b>ใช้ไป ${sl.used}/${sl.quota} ครั้ง — ตอนนี้ต้องเช็คยอดในแอปธนาคารเอง<br><small>ติดต่อคนดูแลระบบเพื่อเพิ่มโควตา</small></div>`;
-  if (sl.left <= Math.max(10, Math.round(sl.quota * 0.1))) return `<div class="ow-info wait slip-quota">⏳ โควตาตรวจสลิปเดือนนี้เหลือ ${sl.left} ครั้ง (จาก ${sl.quota})</div>`;
-  return '';
-}
 
 function startOwner() {
   document.title = 'หน้าร้าน';
@@ -1371,10 +1439,10 @@ function startOwner() {
   });
   sayInit();
   ownerTab('orders');
-  // เช็คออเดอร์ใหม่ทุก 20 วินาที (เปิดเสียงแจ้งจ่ายเงินไว้ = เช็คแม้อยู่แท็บอื่น)
+  // เช็คออเดอร์ใหม่ทุก 10 วินาที ตอนจอเปิดอยู่ (เปิดเสียงแจ้งเตือนไว้ = เช็คแม้อยู่แท็บอื่น)
   owner.timer = setInterval(() => {
     if (document.visibilityState === 'visible' && (owner.tab === 'orders' || SAY.on)) loadOwnerOrders(true);
-  }, 20000);
+  }, 10000);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && (owner.tab === 'orders' || SAY.on)) loadOwnerOrders(true);
   });
@@ -1432,10 +1500,10 @@ function renderOwnerOrders(data) {
   const tools = `<div class="ow-tools"><button class="ow-tool" data-tool="walkin">🧾 ขายหน้าร้าน</button><button class="ow-tool" data-tool="history">📖 ออเดอร์ย้อนหลัง</button></div>`;
   // หน้านี้เน้นเห็นออเดอร์ให้ได้มากที่สุด: เสียง/เวลาร้าน → แท็บร้าน · ยอดขาย → แท็บยอดขาย
   const closed = data.shop && !data.shop.open ? `<div class="ow-slim closed" data-goto="hours">🔴 ปิดรับออเดอร์อยู่ · กดเพื่อดู</div>` : '';
-  const quotaOut = data.slip && data.slip.on && data.slip.left <= 0 ? `<div class="ow-slim closed" data-goto="hours">⚠️ โควตาตรวจสลิปเดือนนี้หมด — เช็คยอดในแอปธนาคารเอง</div>` : '';
+  const quotaOut = data.slip && data.slip.on && data.slip.left <= 0 ? `<div class="ow-slim closed">⚠️ ระบบตรวจสลิปอัตโนมัติพักชั่วคราว — เช็คยอดในแอปธนาคารเอง</div>` : '';
   const head = closed + sayHintHtml() + quotaOut + tools;
   if (!list.length) {
-    $('owBody').innerHTML = head + '<div class="ow-empty"><img class="mascot" alt="" src="' + esc(BRAND.empty) + '">ยังไม่มีออเดอร์ที่ต้องทำ<br><small>ระบบจะเช็คออเดอร์ใหม่ให้เองทุก 20 วินาที</small></div>';
+    $('owBody').innerHTML = head + '<div class="ow-empty"><img class="mascot" alt="" src="' + esc(BRAND.empty) + '">ยังไม่มีออเดอร์ที่ต้องทำ</div>';
     return;
   }
   $('owBody').innerHTML = head + list.map(orderCard).join('');
@@ -1758,6 +1826,10 @@ function renderOwnerHours(shop) {
   if (owner.tab !== 'hours') return;
   const off = new Set(shop.closedDays);
   $('owBody').innerHTML = `
+    <div class="ow-tile">
+      <div style="font-size:21px;font-weight:600">📢 ประกาศถึงลูกค้า</div>
+      <div id="annBox"></div>
+    </div>
     <div class="ow-tile" style="text-align:center">
       <div style="font-size:26px;font-weight:600">${shop.open ? '🟢 ตอนนี้เปิดรับออเดอร์' : '🔴 ตอนนี้ปิดรับออเดอร์'}</div>
       <div class="sub">${esc(shop.hoursText)}</div>
@@ -1766,7 +1838,6 @@ function renderOwnerHours(shop) {
         ? '<button class="ow-big money" id="hResume">▶️ เปิดรับออเดอร์อีกครั้ง</button>'
         : '<button class="ow-big" style="background:var(--red)" id="hPause">⏸️ ปิดรับออเดอร์วันนี้</button><div class="sub" style="margin-top:8px">พรุ่งนี้จะเปิดรับเองตามเวลาปกติ</div>'}
     </div>
-    ${sayTileHtml()}
     <div class="ow-tile">
       <div style="font-size:21px;font-weight:600">เวลาร้านปกติ</div>
       <div class="ow-times">
@@ -1781,25 +1852,55 @@ function renderOwnerHours(shop) {
       <button class="ow-big money" id="hSave">💾 บันทึกเวลาร้าน</button>
     </div>
     <div class="ow-tile">
-      <div style="font-size:21px;font-weight:600">🎨 สีหน้าเมนู</div>
-      <div class="ow-hint" style="margin-top:2px">สีที่ลูกค้าเห็นตอนสั่ง (หน้าร้านนี้ใช้สีเดิม)</div>
-      <div id="themeBox"></div>
-    </div>
-    ${shop.slip && shop.slip.on ? `<div class="ow-tile">
-      <div style="font-size:21px;font-weight:600">🧾 ตรวจสลิปอัตโนมัติ</div>
-      <div class="ow-hint" style="margin-top:2px">เดือนนี้ใช้ไป <b>${shop.slip.used}</b> จาก ${shop.slip.quota} ครั้ง · เหลือ ${shop.slip.left} ครั้ง${shop.slip.left <= 0 ? '<br>⚠️ หมดแล้ว ตอนนี้ต้องเช็คยอดในแอปธนาคารเอง' : ''}</div>
-    </div>` : ''}
-    <div class="ow-tile">
       <div style="font-size:21px;font-weight:600">💳 เลขพร้อมเพย์รับเงิน</div>
       <div id="payBox"></div>
     </div>
     <div class="ow-tile">
-      <div style="font-size:21px;font-weight:600">📢 ประกาศถึงลูกค้า</div>
-      <div id="annBox"></div>
+      <div style="font-size:21px;font-weight:600">🪑 QR สั่งอาหารประจำโต๊ะ</div>
+      <div class="ow-hint" style="margin-top:2px;text-align:left">พิมพ์แปะไว้ที่โต๊ะ ลูกค้าสแกนแล้วเปิดเมนูร้านในไลน์ พร้อมเลขโต๊ะให้อัตโนมัติ</div>
+      <div class="ow-field" style="margin-top:6px">เลขโต๊ะ <small>(เช่น 1-10 หรือ 1-8, A1, A2)</small></div>
+      <div class="tq-row"><input id="tqList" value="1-10" autocomplete="off"><button class="ow-switch on" id="tqMake">สร้าง QR</button></div>
+      <p class="err" id="tqErr"></p>
+      <div class="tq-out" id="tqOut"></div>
+    </div>
+    <div class="ow-tile">
+      <div style="font-size:21px;font-weight:600">🎨 สีหน้าเมนู</div>
+      <div class="ow-hint" style="margin-top:2px">สีที่ลูกค้าเห็นตอนสั่ง (หน้าร้านนี้ใช้สีเดิม)</div>
+      <div id="themeBox"></div>
+    </div>
+    ${sayTileHtml()}
+    <div class="ow-tile">
+      <div style="font-size:21px;font-weight:600">📍 ที่ตั้งร้าน</div>
+      <div class="ow-hint" style="margin-top:2px;text-align:left">${shop.map ? '✅ ลูกค้ากด "📍 แผนที่ร้าน" ที่หน้าเมนูแล้วเปิดแอปแผนที่ได้' : 'ยังไม่ได้ตั้ง — ตั้งแล้วหน้าเมนูจะมีปุ่ม "📍 แผนที่ร้าน" ให้ลูกค้ากด'}</div>
+      <div class="ow-field" style="margin-top:6px">ลิงก์ Google Maps ของร้าน <small>(กดแชร์จากแอป Google Maps แล้ววางได้เลย)</small></div>
+      <textarea id="locUrl" rows="2" style="width:100%;margin-top:6px;padding:10px;font-size:16px;border:2px solid var(--line);border-radius:14px" placeholder="https://maps.app.goo.gl/...">${esc(shop.map || '')}</textarea>
+      <button class="ow-tool" id="locHere" style="width:100%;margin-top:8px">📍 ใช้ตำแหน่งที่ยืนอยู่ตอนนี้ (ยืนอยู่ที่ร้าน)</button>
+      <input id="locPin" class="ow-input" type="password" inputmode="numeric" autocomplete="off" placeholder="รหัสร้าน (ยืนยันทุกครั้งที่บันทึก)" style="margin-top:8px">
+      <p class="err" id="locErr"></p>
+      <div class="tq-row"><button class="ow-switch on" id="locSave" style="flex:1">💾 บันทึกที่ตั้ง</button>${shop.map ? '<button class="ow-switch" id="locTest" style="flex:1">🗺️ ลองเปิดดู</button>' : ''}</div>
     </div>`;
   renderPayTile();
   renderAnnounce();
   renderThemeTile(shop.theme);
+  $('tqMake').onclick = () => makeTableQr(shop.theme);
+  $('locHere').onclick = () => {
+    if (!navigator.geolocation) { $('locErr').textContent = 'เครื่องนี้หาตำแหน่งไม่ได้ ใช้ลิงก์ Google Maps แทนนะครับ'; return; }
+    busy('กำลังหาตำแหน่ง...');
+    navigator.geolocation.getCurrentPosition((p) => {
+      unbusy(); $('locErr').textContent = '';
+      $('locUrl').value = p.coords.latitude.toFixed(6) + ', ' + p.coords.longitude.toFixed(6);
+      toast('ได้ตำแหน่งแล้ว กด "บันทึกที่ตั้ง" เพื่อยืนยัน');
+    }, () => { unbusy(); $('locErr').textContent = 'หาตำแหน่งไม่ได้ (อาจไม่ได้อนุญาต) ใช้ลิงก์ Google Maps แทนได้ครับ'; },
+    { enableHighAccuracy: true, timeout: 15000 });
+  };
+  $('locSave').onclick = async () => {
+    $('locErr').textContent = '';
+    const pin = $('locPin').value.trim();
+    if (!pin) { $('locErr').textContent = 'ใส่รหัสร้านก่อนนะครับ'; $('locPin').focus(); return; }
+    try { const { data } = await ownerCall('owner.location', { map: $('locUrl').value, pin }); toast(data.map ? '✅ บันทึกที่ตั้งร้านแล้ว' : 'ลบที่ตั้งร้านแล้ว'); renderOwnerHours(data); }
+    catch (err) { $('locErr').textContent = err.message; $('locPin').value = ''; }
+  };
+  if ($('locTest')) $('locTest').onclick = () => openMap(shop.map);
 
   $('hDays').onclick = (e) => {
     const b = e.target.closest('.ow-chip'); if (!b) return;
@@ -1822,6 +1923,79 @@ function renderOwnerHours(shop) {
       toast('✅ บันทึกเวลาร้านแล้ว'); renderOwnerHours(data);
     } catch (err) { $('hErr').textContent = err.message; $('hSave').disabled = false; $('hSave').textContent = '💾 บันทึกเวลาร้าน'; }
   };
+}
+
+// ---------- QR ประจำโต๊ะ (สร้างในเครื่อง ไม่ต้องส่งข้อมูลไปไหน) ----------
+/** "1-10, A1, A2" → ['1',...,'10','A1','A2'] (สูงสุด 60 โต๊ะ) */
+function parseTables(text) {
+  const out = [];
+  String(text).split(/[,\s]+/).filter(Boolean).forEach((part) => {
+    const m = part.match(/^(\d{1,3})-(\d{1,3})$/);
+    if (m) { for (let i = +m[1]; i <= +m[2] && out.length < 61; i++) out.push(String(i)); }
+    else out.push(part.slice(0, 10));
+  });
+  return [...new Set(out)].filter((t) => /^[\w฀-๿-]+$/.test(t));
+}
+function qrCanvas(text, size) {
+  const box = document.createElement('div');
+  new QRCode(box, { text, width: size, height: size, correctLevel: QRCode.CorrectLevel.M });
+  return box.querySelector('canvas');
+}
+function loadImg(src) {
+  return new Promise((ok) => { if (!src) return ok(null); const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = src; });
+}
+/** แผ่น A4 (150 dpi) แผ่นละ 6 โต๊ะ มีเส้นประให้ตัด */
+async function makeTableQr(theme) {
+  const tables = parseTables($('tqList').value);
+  $('tqErr').textContent = '';
+  if (!LIFF_ID) { $('tqErr').textContent = 'ร้านนี้ยังไม่มี LIFF ID ใน shops.json'; return; }
+  if (!tables.length) { $('tqErr').textContent = 'ใส่เลขโต๊ะก่อนนะครับ เช่น 1-10'; return; }
+  if (tables.length > 60) { $('tqErr').textContent = 'ทำได้ครั้งละไม่เกิน 60 โต๊ะ'; return; }
+  busy('กำลังสร้าง QR...');
+  try {
+    await (document.fonts ? document.fonts.ready : Promise.resolve());
+    const p = resolveTheme(theme);
+    const logo = await loadImg(SHOP_INFO && SHOP_INFO.logo && safeImg(SHOP_INFO.logo));
+    const font = getComputedStyle(document.body).fontFamily;
+    const W = 1240, H = 1754, cols = 2, rows = 3, cw = W / cols, ch = H / rows;
+    const pages = [];
+    for (let i = 0; i < tables.length; i += cols * rows) {
+      const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      const g = cv.getContext('2d');
+      g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+      tables.slice(i, i + cols * rows).forEach((t, k) => {
+        const x = (k % cols) * cw, y = Math.floor(k / cols) * ch;
+        g.save();
+        g.setLineDash([10, 10]); g.strokeStyle = '#bbb'; g.lineWidth = 2; g.strokeRect(x + 1, y + 1, cw - 2, ch - 2);
+        g.restore();
+        g.fillStyle = p.accent; g.fillRect(x + 30, y + 30, cw - 60, 92);
+        if (logo) g.drawImage(logo, x + 44, y + 40, 72, 72);
+        g.fillStyle = '#fff'; g.textAlign = logo ? 'left' : 'center'; g.textBaseline = 'middle';
+        g.font = `600 38px ${font}`;
+        const name = (SHOP_INFO && SHOP_INFO.name) || '';
+        g.fillText(name.length > 18 ? name.slice(0, 17) + '…' : name, logo ? x + 132 : x + cw / 2, y + 76, logo ? cw - 190 : cw - 90);
+        g.textAlign = 'center'; g.fillStyle = p.ink;
+        g.font = `500 30px ${font}`; g.fillText('📱 สแกนเพื่อสั่งผ่านไลน์', x + cw / 2, y + 152);
+        const qr = qrCanvas(`https://liff.line.me/${LIFF_ID}?table=${encodeURIComponent(t)}`, 300);
+        g.drawImage(qr, x + (cw - 300) / 2, y + 178, 300, 300);
+        g.fillStyle = p.accentDark; g.font = `600 52px ${font}`; g.fillText('โต๊ะ ' + t, x + cw / 2, y + 538);
+      });
+      pages.push(cv.toDataURL('image/png'));
+    }
+    const base = `qr-tables-${SHOP_KEY}`;
+    $('tqOut').innerHTML = `<div class="ow-hint" style="text-align:left">${tables.length} โต๊ะ · ${pages.length} แผ่น A4 · พิมพ์ขนาดจริงแล้วตัดตามเส้นประ</div>
+      <button class="ow-big money" data-tqsave="all">💾 บันทึกทั้งหมด (${pages.length} แผ่น)</button>` +
+      pages.map((src, i) => `<img src="${src}" alt="QR โต๊ะ แผ่นที่ ${i + 1}">
+        <button class="ow-tool" style="width:100%;margin-top:6px" data-tqsave="${i}">💾 บันทึกแผ่นที่ ${i + 1}</button>`).join('') +
+      `<div class="ow-hint">ถ้ากดแล้วไม่มีอะไรขึ้น: กดค้างที่รูป → บันทึกรูป</div>`;
+    $('tqOut').onclick = (e) => {
+      const b = e.target.closest('[data-tqsave]'); if (!b) return;
+      const k = b.dataset.tqsave;
+      saveImages(k === 'all' ? pages : [pages[+k]], k === 'all' ? base : `${base}-${+k + 1}`);
+    };
+  } catch (err) {
+    $('tqErr').textContent = 'สร้างไม่สำเร็จ: ' + err.message;
+  } finally { unbusy(); }
 }
 
 // ---------- เลือกสีหน้าเมนู ----------
@@ -2222,6 +2396,97 @@ async function loadShop() {
   SHOP_INFO = shop;
 }
 
+/** อ่านค่าจากลิงก์ (รวมถึงตอนที่ LINE ส่งมาเป็น liff.state ก่อน liff.init) */
+function urlParam(name) {
+  const q = new URLSearchParams(location.search);
+  if (q.get(name)) return q.get(name);
+  const st = q.get('liff.state');
+  if (!st) return '';
+  const inner = decodeURIComponent(st);
+  return new URLSearchParams(inner.slice(inner.indexOf('?') + 1)).get(name) || '';
+}
+/** QR ประจำโต๊ะ: ?table=5 → เลือก "นั่งทานที่ร้าน" + ใส่เลขโต๊ะให้เลย */
+function applyQrTable() {
+  const t = String(urlParam('table') || '').trim().slice(0, 10);
+  if (!t || !/^[\w\u0E00-\u0E7F -]+$/.test(t)) return;
+  if (!state.menu.shop.pickupMethods.includes('นั่งทานที่ร้าน')) return;
+  state.qrTable = t;
+  state.method = 'นั่งทานที่ร้าน';
+  formData.table = t;
+  const chip = $('qrTable');
+  if (chip) { chip.textContent = '🪑 โต๊ะ ' + t; chip.classList.remove('hidden'); }
+}
+
+// ---------- ดึงหน้าจอลงเพื่ออัปเดต (หน้าเมนู + หน้าร้าน) ----------
+const PTR = { y0: null, dy: 0, busy: false, ready: false };
+function ptrEl() {
+  let el = $('ptr');
+  if (!el) { el = document.createElement('div'); el.id = 'ptr'; el.className = 'ptr'; document.body.appendChild(el); }
+  return el;
+}
+function ptrShow(d) {
+  const el = ptrEl();
+  el.style.transform = `translate(-50%, ${Math.min(d * 0.5, 70) - 40}px)`;
+  el.textContent = d > 80 ? '🔄 ปล่อยเพื่ออัปเดต' : '⬇️ ดึงลงเพื่ออัปเดต';
+  el.classList.toggle('show', d > 12);
+}
+function ptrInit() {
+  // ไม่ทำงานตอนเปิดป๊อปอัพ/ช่องกรอก/แผนที่ และต้องอยู่บนสุดของหน้าเท่านั้น
+  const blocked = (t) => document.body.style.position === 'fixed' || !PTR.ready ||
+    (t && t.closest && t.closest('#map, input, textarea, select, .sheet-backdrop, .chips'));
+  document.addEventListener('touchstart', (e) => {
+    PTR.y0 = (!PTR.busy && window.scrollY <= 0 && e.touches.length === 1 && !blocked(e.target)) ? e.touches[0].clientY : null;
+    PTR.dy = 0;
+  }, { passive: true });
+  document.addEventListener('touchmove', (e) => {
+    if (PTR.y0 === null) return;
+    PTR.dy = e.touches[0].clientY - PTR.y0;
+    ptrShow(window.scrollY > 0 ? 0 : Math.max(0, PTR.dy));
+  }, { passive: true });
+  document.addEventListener('touchend', () => {
+    if (PTR.y0 === null) return;
+    const go = PTR.dy > 80 && window.scrollY <= 0;
+    PTR.y0 = null;
+    if (go) ptrRefresh(); else ptrShow(0);
+  });
+}
+async function ptrRefresh() {
+  PTR.busy = true;
+  const el = ptrEl();
+  el.textContent = '⏳ กำลังอัปเดต...'; el.classList.add('show'); el.style.transform = 'translate(-50%, 16px)';
+  try { await (isOwnerMode() ? ownerRefresh() : menuRefresh()); el.textContent = '✅ อัปเดตแล้ว'; }
+  catch (e) { el.textContent = '⚠️ อัปเดตไม่สำเร็จ ลองอีกครั้ง'; }
+  setTimeout(() => { el.classList.remove('show'); el.style.transform = 'translate(-50%, -60px)'; PTR.busy = false; }, 900);
+}
+/** หน้าเมนู: โหลดเมนู/ราคา/สถานะร้านใหม่ ตะกร้ายังอยู่ (ของที่ปิดขายหรือเปลี่ยนราคาจะถูกปรับให้) */
+async function menuRefresh() {
+  const menu = await loadMenu();
+  persist();
+  state.menu = menu;
+  state.cart = [];
+  restore();
+  applyQrTable();
+  applyTheme(menu.shop.theme, true);
+  setVoice(menu.shop.voice);
+  renderMenu();
+  updateCartBar();
+  if (!$('cartView').classList.contains('hidden')) renderCart();
+  state.myOrders = null;
+  await loadMyOrders(false);
+}
+/** หน้าร้าน: โหลดแท็บที่เปิดอยู่ใหม่ */
+async function ownerRefresh() {
+  if (owner.tab === 'orders' && owner.view !== 'history') return loadOwnerOrders(false);
+  ownerTab(owner.tab);
+}
+
+/** เปิดแอปแผนที่: ในไลน์ให้เด้งออกไปเบราว์เซอร์/แอปแผนที่ของเครื่อง (ไม่เปิดในไลน์) */
+function openMap(url) {
+  if (!/^https:\/\//.test(url || '')) return;
+  try { if (LIFF_ID && window.liff && liff.isInClient && liff.isInClient()) return liff.openWindow({ url, external: true }); } catch (e) { /* ใช้แบบปกติ */ }
+  window.open(url, '_blank', 'noopener');
+}
+
 function isOwnerMode() {
   const q = new URLSearchParams(location.search);
   if (q.get('mode') === 'owner') return true;
@@ -2235,15 +2500,18 @@ function isOwnerMode() {
     if (isOwnerMode()) applyBrand(THEMES.pumpkin);           // หน้าร้านใช้สีมาตรฐาน
     else applyTheme(cachedTheme(), false);                   // สีเดิมที่จำไว้ ระหว่างรอเมนู
     await initLiff();
-    if (isOwnerMode()) { startOwner(); return; }
+    ptrInit();
+    if (isOwnerMode()) { startOwner(); PTR.ready = true; return; }
     state.menu = await loadMenu();
     applyTheme(state.menu.shop.theme, true);
     setVoice(state.menu.shop.voice);
     restore();
+    applyQrTable();
     $('loading').classList.add('hidden');
     renderMenu();
     renderLastOrder();
     show('menuView');
+    PTR.ready = true;
     loadMyOrders(false);   // ถามระบบว่ามีออเดอร์ค้างไหม (ไม่มืดจอ)
   } catch (err) {
     if (err.message === 'redirecting') return;
