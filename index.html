@@ -23,6 +23,7 @@
     --line: #EADCC6;
     --green: #3FAE5A;
     --red: #C9483B;
+    --tint: #FFF1E2;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--brown); font-family: 'Mitr', sans-serif; font-weight: 400; }
@@ -94,7 +95,7 @@
   label.field textarea { min-height: 70px; resize: vertical; }
   .methods { display: flex; gap: 8px; flex-wrap: wrap; }
   .methods button { flex: 1; min-width: 120px; padding: 11px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; }
-  .methods button.active { border-color: var(--orange); background: #FFF1E2; font-weight: 500; }
+  .methods button.active { border-color: var(--orange); background: var(--tint); font-weight: 500; }
   .field-label { margin-top: 14px; font-size: 14px; color: var(--muted); }
   .last-order { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1.5px solid var(--orange); border-radius: 14px; padding: 10px 12px; margin: 12px 0 0; font-size: 15px; }
   .last-order span { flex: 1; }
@@ -216,17 +217,60 @@
   .ow-tile .sub { font-size: 17px; color: var(--muted); }
   .ow-modal h3 { font-size: 23px; }
   .ow-modal p { font-size: 19px; color: var(--muted); }
+  /* รอระบบ: จอมืด + วงหมุน + กดอะไรไม่ได้ */
+  .busy { position: fixed; inset: 0; z-index: 60; background: rgba(60, 40, 25, .5); display: grid; place-items: center; animation: fadeIn .15s ease-out; touch-action: none; }
+  .busy-card { background: var(--bg); border-radius: 26px; padding: 24px 30px 20px; text-align: center; min-width: 210px; box-shadow: 0 14px 40px rgba(40, 25, 15, .35); }
+  .busy-ring { width: 78px; height: 78px; margin: 0 auto 14px; border-radius: 50%; border: 7px solid var(--cream); border-top-color: var(--orange); display: grid; place-items: center; animation: spin .9s linear infinite; }
+  .busy-ring img { width: 58px; height: 58px; border-radius: 50%; object-fit: cover; animation: spin .9s linear infinite reverse; }
+  .mascot { display: block; margin: 0 auto 8px; width: 120px; height: 120px; object-fit: contain; }
+  .shop-head { display: flex; align-items: center; gap: 12px; }
+  .shop-logo { width: 54px; height: 54px; flex: none; border-radius: 16px; object-fit: cover; background: var(--card); box-shadow: 0 1px 0 var(--line); }
+  .th-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
+  .th-sw { border: 3px solid transparent; background: #fff; border-radius: 16px; padding: 8px 4px 6px; cursor: pointer; font-size: 15px; color: var(--brown); }
+  .th-sw.on { border-color: var(--brown); }
+  .th-dots { display: flex; justify-content: center; margin-bottom: 4px; }
+  .th-dots i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; margin-left: -6px; box-shadow: 0 0 0 1px rgba(0,0,0,.08); }
+  .th-dots i:first-child { margin-left: 0; }
+  .th-custom { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 18px; }
+  .th-custom input { width: 56px; height: 44px; border: 2px solid var(--line); border-radius: 12px; padding: 2px; background: #fff; }
+  .th-preview { background: var(--bg); border-radius: 18px; padding: 12px; margin-top: 14px; border: 2px dashed #D8CBB8; color: var(--brown); font-size: 16px; }
+  .th-preview .item { margin-bottom: 0; cursor: default; }
+  .th-preview .pv-top { display: flex; gap: 6px; margin-bottom: 10px; }
+  .th-preview .pv-btn { margin-top: 10px; border: none; background: var(--brown); color: #fff; border-radius: 14px; padding: 12px; text-align: center; font-weight: 500; }
+  .busy-text { font-size: 19px; font-weight: 600; }
+  .busy-sub { font-size: 14px; color: var(--muted); margin-top: 2px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeIn { from { opacity: 0; } }
+  .sheet { overscroll-behavior: contain; }
+  .done-queue { background: #FFF4DC; color: #7A5A12; border-radius: 16px; padding: 12px 14px; margin: 12px 0 0; text-align: left; font-size: 15px; line-height: 1.6; }
+  .my-card { background: var(--card); border-radius: 18px; padding: 14px; margin-top: 12px; }
+  .my-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .my-top b { font-size: 20px; }
+  .my-top span { font-size: 14px; color: var(--muted); }
+  .my-items { font-size: 15px; margin-top: 6px; line-height: 1.6; }
+  .my-total { font-weight: 600; color: var(--orange-dark); margin-top: 4px; }
+  .my-q { border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: 15px; line-height: 1.55; background: #FFF4DC; color: #7A5A12; }
+  .my-q.queue { background: var(--tint); color: var(--orange-dark); font-weight: 500; }
+  .my-q.ready, .my-q.parcel, .my-q.done { background: #E3F4E6; color: #23733A; font-weight: 500; }
+  .my-q.cancelled { background: #FBE3E0; color: var(--red); }
+  .my-card .primary { margin-top: 10px; padding: 12px; }
+  .busy-note { background: #FFE9E1; color: #8A3B1E; border-radius: 14px; padding: 12px 14px; margin-top: 10px; font-size: 15px; line-height: 1.6; text-align: left; animation: popIn .45s cubic-bezier(.2, 1.4, .4, 1) both; animation-delay: .25s; }
+  @keyframes popIn { from { opacity: 0; transform: translateY(8px) scale(.96); } }
+  .my-note { font-size: 13px; color: var(--muted); text-align: center; margin: 14px 0 10px; }
+  .ow-q { display: inline-block; font-size: 17px; font-weight: 600; background: #FFF1E2; color: var(--orange-dark); border-radius: 999px; padding: 3px 12px; margin-left: 8px; vertical-align: middle; }
+  .ow-hint { font-size: 16px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+  .ow-hint button { border: 2px solid var(--line); background: #fff; border-radius: 12px; padding: 6px 12px; font-size: 16px; margin-top: 6px; cursor: pointer; }
   .ow-toast { position: fixed; left: 50%; top: 84px; transform: translateX(-50%); pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,.25); background: var(--brown); color: #fff; font-size: 20px; padding: 14px 22px; border-radius: 16px; z-index: 40; max-width: 90%; text-align: center; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div id="loading" class="loading">กำลังโหลดเมนู... 🐶</div>
+  <div id="loading" class="loading"><img class="mascot" id="loadingImg" alt="" style="visibility:hidden">กำลังโหลด...</div>
 
   <!-- หน้าเมนู -->
   <section id="menuView" class="hidden">
     <header>
-      <h1 class="shop-name" id="shopName"></h1>
+      <div class="shop-head"><img id="shopLogo" class="shop-logo hidden" alt=""><h1 class="shop-name" id="shopName"></h1></div>
       <div class="shop-meta"><span id="openBadge" class="badge"></span><span id="hoursText"></span></div>
     </header>
     <div id="closedBox" class="closed-box hidden">ตอนนี้ร้านปิดรับออเดอร์อยู่ ดูเมนูไว้ก่อนได้นะครับ</div>
@@ -258,18 +302,21 @@
   <!-- หน้าชำระเงิน -->
   <section id="doneView" class="hidden">
     <div class="done">
-      <div class="big">🧾</div>
+      <img class="mascot" alt="" id="doneImg">
       <h2>รับออเดอร์ <span id="doneNo"></span> แล้วครับ</h2>
       <div style="color:var(--muted)">สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</div>
       <div class="amount" id="doneTotal"></div>
       <div id="qr"></div>
+      <div id="doneQueue" class="done-queue hidden"></div>
+      <div id="doneBusy" class="busy-note hidden"></div>
       <div class="steps">
         1. สแกน QR หรือแคปหน้าจอไปสแกนในแอปธนาคาร<br>
         2. ยอดเงินจะขึ้นให้อัตโนมัติ<br>
         3. จ่ายแล้ว <b>ส่งรูปสลิปในแชท</b> ร้านจะยืนยันให้ครับ<br>
         4. <span id="doneNotify"></span> 🐾
       </div>
-      <button class="primary" id="closeBtn" style="margin-top:16px">กลับไปที่แชท</button>
+      <button class="ghost" id="doneMyOrders" style="margin-top:14px">🧾 เช็คคิว / ดูออเดอร์ของฉัน</button>
+      <button class="primary" id="closeBtn" style="margin-top:10px">กลับไปที่แชท</button>
     </div>
   </section>
 
@@ -295,6 +342,13 @@
 </div>
 <div id="owModal" class="sheet-backdrop hidden"><div class="sheet ow ow-modal" id="owModalBody"></div></div>
 <div id="owToast" class="ow-toast hidden"></div>
+<div id="busy" class="busy hidden" role="alert" aria-live="assertive">
+  <div class="busy-card">
+    <div class="busy-ring"><img alt="" id="busyImg"></div>
+    <div class="busy-text" id="busyText">กำลังบันทึก...</div>
+    <div class="busy-sub">รอแป๊บนะครับ</div>
+  </div>
+</div>
 
 <script>
 // ====== หน้าเดียวใช้ทุกร้าน ======
@@ -347,11 +401,216 @@ function restore() {
 }
 
 function renderLastOrder() {
-  const o = state.lastOrder;
+  const mine = state.myOrders;
+  if (mine && mine.length) {
+    const waiting = mine.find((o) => o.stage === 'queue');
+    $('lastOrderBox').classList.remove('hidden');
+    $('lastOrderText').textContent = mine.length === 1
+      ? `🧾 ออเดอร์ ${mine[0].no} · ${mine[0].stage === 'unpaid' ? 'ยังไม่จ่าย' : waiting ? (waiting.ahead ? 'คิวก่อนหน้า ' + waiting.ahead : 'ถึงคิวแล้ว') : mine[0].statusName}`
+      : `🧾 ออเดอร์ของฉัน ${mine.length} รายการ`;
+    $('lastOrderQr').textContent = 'เช็คคิว';
+    return;
+  }
+  const o = mine ? null : state.lastOrder;   // ถามระบบแล้วไม่มีออเดอร์ค้าง = ไม่ต้องโชว์
   $('lastOrderBox').classList.toggle('hidden', !o);
-  if (o) $('lastOrderText').textContent = `🧾 ออเดอร์ ${o.orderNo} ยอด ${baht(o.total)}`;
+  if (o) { $('lastOrderText').textContent = `🧾 ออเดอร์ ${o.orderNo} ยอด ${baht(o.total)}`; $('lastOrderQr').textContent = 'ดู QR จ่ายเงิน'; }
+}
+
+// ---------- ออเดอร์ของฉัน + เช็คคิว ----------
+async function loadMyOrders(loud) {
+  if (!API_URL) return;
+  const run = async () => {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'my.orders', userId: state.user.userId, idToken: state.user.idToken })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    state.myOrders = data.data.orders;
+  };
+  try { if (loud) await withBusy('กำลังเช็คคิว...', run); else await run(); }
+  catch (e) { /* เช็คไม่ได้ ใช้ข้อมูลเดิมในเครื่องไปก่อน */ }
+  if ($('menuView') && !$('menuView').classList.contains('hidden')) renderLastOrder();
+}
+
+function openMyOrders() {
+  const list = state.myOrders || [];
+  $('sheetBody').innerHTML = `
+    <h3>🧾 ออเดอร์ของฉัน</h3>
+    ${list.length ? list.map((o) => `
+      <div class="my-card">
+        <div class="my-top"><b>${esc(o.no)}</b><span>${METHOD_ICON[o.method] || ''} ${esc(o.method)} · ${esc(o.time)}</span></div>
+        <div class="my-items">${o.items.map((i) => `${i.qty} × ${esc(i.name)}${i.options ? ' (' + esc(i.options) + ')' : ''}`).join('<br>')}</div>
+        <div class="my-total">ยอด ${baht(o.total)}</div>
+        <div class="my-q ${esc(o.stage)}">${esc(o.text).replace(/\n/g, '<br>')}</div>
+        ${o.busy ? `<div class="busy-note">${esc(o.busyText).replace(/\n/g, '<br>')}</div>` : ''}
+        ${o.stage === 'unpaid' && o.promptpay ? `<button class="primary" data-pay="${esc(o.no)}">ดู QR จ่ายเงิน</button>` : ''}
+      </div>`).join('') : '<div class="my-card">ตอนนี้ยังไม่มีออเดอร์ที่ค้างอยู่ครับ 🐾</div>'}
+    <div class="my-note">แต่ละออเดอร์มีคิวของตัวเอง · ร้านทำให้ตามลำดับคิว</div>
+    <button class="primary" id="myRefresh">🔄 เช็คคิวอีกครั้ง</button>
+    <button class="ghost" id="sheetClose">ปิด</button>`;
+  $('sheetBody').onchange = null;
+  $('sheetBody').onclick = (e) => {
+    const b = e.target.closest('[data-pay]'); if (!b) return;
+    const o = list.find((x) => x.no === b.dataset.pay);
+    closeSheet();
+    showDone({ orderNo: o.no, total: o.total, method: o.method, promptpay: o.promptpay, queue: o }, true);
+  };
+  $('myRefresh').onclick = async () => { await loadMyOrders(true); openMyOrders(); };
+  $('sheetClose').onclick = closeSheet;
+  openSheet();
 }
 const $ = (id) => document.getElementById(id);
+// ---------- รูปประจำจุดต่าง ๆ (หน้าโหลด / วงหมุนรอ / ไม่มีออเดอร์ / สั่งเสร็จ) ----------
+// ค่าเริ่มต้น = ไอคอนกลาง ๆ สีตามธีมร้าน · ร้านที่มีโลโก้/มาสคอต ตั้งใน shops.json ("logo" หรือ "images")
+const ICON_SPOTS = ['loading', 'busy', 'empty', 'done'];
+function defaultIcon(kind, p) {
+  const ink = p.ink, ac = p.accent, cr = p.cream, ln = p.line;
+  const receipt = `<path d="M36 24h48v68l-6-5-6 5-6-5-6 5-6-5-6 5-6-5-6 5z" fill="#fff" stroke="${ink}" stroke-width="3.5" stroke-linejoin="round"/>`;
+  const svg = {
+    // หน้าร้านมีกันสาด = กำลังเปิดร้าน
+    loading: `<circle cx="60" cy="60" r="56" fill="${cr}"/><rect x="30" y="50" width="60" height="42" rx="4" fill="#fff" stroke="${ink}" stroke-width="3.5"/>`
+      + `<rect x="51" y="66" width="18" height="26" rx="2" fill="${ac}"/><rect x="36" y="58" width="11" height="11" rx="2" fill="${cr}" stroke="${ink}" stroke-width="2.5"/><rect x="73" y="58" width="11" height="11" rx="2" fill="${cr}" stroke="${ink}" stroke-width="2.5"/>`
+      + `<path d="M26 34h68l-2 16H28z" fill="${ac}" stroke="${ink}" stroke-width="3.5" stroke-linejoin="round"/><path d="M43 34l-2 16M60 34v16M77 34l2 16" stroke="#fff" stroke-width="5"/>`
+      + `<path d="M26 34l6-10h56l6 10" fill="none" stroke="${ink}" stroke-width="3.5" stroke-linejoin="round"/>`,
+    // นาฬิกาทราย = รอแป๊บ
+    busy: `<circle cx="60" cy="60" r="60" fill="${cr}"/><path d="M44 30c0 18 16 21 16 30s-16 12-16 30h32c0-18-16-21-16-30s16-12 16-30z" fill="#fff" stroke="${ink}" stroke-width="5" stroke-linejoin="round"/>`
+      + `<path d="M49 38h22c-2 7-11 9-11 14 0-5-9-7-11-14zM49 86c2-9 11-11 11-16 0 5 9 7 11 16z" fill="${ac}"/><path d="M38 28h44M38 92h44" stroke="${ink}" stroke-width="6" stroke-linecap="round"/>`,
+    // ใบออเดอร์ว่าง + Zz = ยังไม่มีออเดอร์
+    empty: `<circle cx="60" cy="60" r="56" fill="${cr}"/>${receipt}<path d="M46 42h28M46 54h28M46 66h16" stroke="${ln}" stroke-width="5" stroke-linecap="round"/>`
+      + `<text x="82" y="34" font-family="sans-serif" font-weight="700" font-size="20" fill="${ac}">z</text><text x="93" y="22" font-family="sans-serif" font-weight="700" font-size="14" fill="${ac}">z</text>`,
+    // ใบออเดอร์ + เครื่องหมายถูก = สั่งสำเร็จ
+    done: `<circle cx="60" cy="60" r="56" fill="${cr}"/>${receipt}<path d="M46 42h28M46 54h22M46 66h14" stroke="${ln}" stroke-width="5" stroke-linecap="round"/>`
+      + `<circle cx="80" cy="78" r="18" fill="${ac}" stroke="#fff" stroke-width="4"/><path d="M71 78l6 6 11-12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`
+  }[kind];
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">${svg}</svg>`);
+}
+let SHOP_INFO = {};     // ข้อมูลร้านจาก shops.json
+let BRAND = {};         // รูปที่ใช้จริงแต่ละจุด
+
+/** รับเฉพาะลิงก์รูป https หรือไฟล์ในเว็บเดียวกัน (เช่น brands/ร้าน/logo.png) */
+function safeImg(u) {
+  u = String(u || '').trim();
+  return /^https:\/\/[^\s"'<>]+$/.test(u) || /^[\w][\w./-]*\.(png|jpe?g|webp|gif|svg)$/i.test(u) ? u : '';
+}
+/** ตั้งรูปประจำร้าน: images.จุด > logo > ไอคอนกลางสีตามธีม */
+function applyBrand(palette) {
+  const shop = SHOP_INFO;
+  const logo = safeImg(shop.logo);
+  const imgs = shop.images || {};
+  const p = palette || THEMES.pumpkin;
+  ICON_SPOTS.forEach((k) => { BRAND[k] = safeImg(imgs[k]) || logo || defaultIcon(k, p); });
+  $('loadingImg').src = BRAND.loading; $('loadingImg').style.visibility = '';
+  $('busyImg').src = BRAND.busy;
+  $('doneImg').src = BRAND.done;
+  $('shopLogo').classList.toggle('hidden', !logo);
+  if (logo) $('shopLogo').src = logo;
+}
+
+// ---------- สีหน้าเมนู (ร้านเลือกเองที่หน้าร้าน → ร้าน) ----------
+const THEMES = {
+  pumpkin:  { label: 'ส้มพั้มกิ้น',   bg: '#FBF4E8', cream: '#F6E8D1', accent: '#D99354', accentDark: '#B8723A', ink: '#5A3F2D', muted: '#8C7563', line: '#EADCC6', tint: '#FFF1E2' },
+  matcha:   { label: 'เขียวมัทฉะ',   bg: '#F3F6EC', cream: '#E3EBD3', accent: '#6B9A4B', accentDark: '#4E7A33', ink: '#2F3E26', muted: '#6E7A63', line: '#D8E2C8', tint: '#EAF2DF' },
+  sakura:   { label: 'ชมพูซากุระ',   bg: '#FDF2F4', cream: '#F8DDE3', accent: '#D96A86', accentDark: '#B44A66', ink: '#5A2F3A', muted: '#8F6A73', line: '#F0D3DA', tint: '#FCE6EB' },
+  ocean:    { label: 'ฟ้าทะเล',      bg: '#EFF6FA', cream: '#D6E8F2', accent: '#3D8FC4', accentDark: '#2A6F9E', ink: '#1F3A4D', muted: '#5F7A8C', line: '#CFE0EB', tint: '#E1EFF8' },
+  chili:    { label: 'แดงพริก',      bg: '#FCF1EE', cream: '#F6DAD3', accent: '#D2553F', accentDark: '#A93A28', ink: '#4A2219', muted: '#8A645B', line: '#EED2CB', tint: '#FBE4DE' },
+  coffee:   { label: 'กาแฟ',         bg: '#F5EFEA', cream: '#E8DBCF', accent: '#8B5E3C', accentDark: '#6B4329', ink: '#3B2A20', muted: '#7D6A5D', line: '#E0D3C7', tint: '#EFE4DA' },
+  lavender: { label: 'ม่วงลาเวนเดอร์', bg: '#F5F2FA', cream: '#E5DCF2', accent: '#8A6BC4', accentDark: '#6A4CA3', ink: '#352A4A', muted: '#75698A', line: '#DED5EC', tint: '#ECE5F7' },
+  mono:     { label: 'ขาวดำ',        bg: '#F5F5F4', cream: '#E7E5E4', accent: '#292524', accentDark: '#1C1917', ink: '#1C1917', muted: '#78716C', line: '#E2E0DE', tint: '#ECEBEA' }
+};
+const hexRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+const rgbHex = (a) => '#' + a.map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+const mixC = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+const lum = (a) => { const f = a.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * f[0] + 0.7152 * f[1] + 0.0722 * f[2]; };
+/** สีหลักสีเดียว → ชุดสีทั้งหน้า (สีอ่อนเกินจะถูกเข้มขึ้นให้ตัวหนังสือขาวบนปุ่มยังอ่านออก) */
+function themeFromColor(hex) {
+  let a = hexRgb(hex);
+  for (let i = 0; i < 12 && (1.05 / (lum(a) + 0.05)) < 3; i++) a = mixC(a, [0, 0, 0], 0.12);
+  const W = [255, 255, 255], K = [0, 0, 0];
+  return { label: 'สีของร้าน', bg: rgbHex(mixC(a, W, 0.93)), cream: rgbHex(mixC(a, W, 0.8)), accent: rgbHex(a), accentDark: rgbHex(mixC(a, K, 0.25)),
+    ink: rgbHex(mixC(a, K, 0.68)), muted: rgbHex(mixC(mixC(a, K, 0.5), W, 0.35)), line: rgbHex(mixC(a, W, 0.84)), tint: rgbHex(mixC(a, W, 0.88)) };
+}
+function resolveTheme(t) {
+  if (t && /^#[0-9a-f]{6}$/i.test(t.color || '')) return themeFromColor(t.color);
+  return THEMES[(t && t.name) || 'pumpkin'] || THEMES.pumpkin;
+}
+function themeVars(p) {
+  return `--bg:${p.bg};--cream:${p.cream};--orange:${p.accent};--orange-dark:${p.accentDark};--brown:${p.ink};--muted:${p.muted};--line:${p.line};--tint:${p.tint}`;
+}
+/** ใช้สีกับหน้าเมนู + จำไว้ในเครื่อง (เปิดครั้งหน้าไม่กระพริบสีเดิม) */
+function applyTheme(t, save) {
+  const p = resolveTheme(t);
+  document.documentElement.style.cssText = themeVars(p);
+  applyBrand(p);
+  if (save) { try { localStorage.setItem('pumpkin-theme-' + SHOP_KEY, JSON.stringify(t || {})); } catch (e) { /* ไม่เป็นไร */ } }
+}
+function cachedTheme() {
+  try { return JSON.parse(localStorage.getItem('pumpkin-theme-' + SHOP_KEY) || 'null'); } catch (e) { return null; }
+}
+
+// ---------- น้ำเสียงของร้าน: ครับ/ค่ะ (ตั้งใน Script Properties ของร้าน: SHOP_VOICE) ----------
+// ข้อความในหน้าเขียนเป็น "ครับ" ไว้ ถ้าร้านตั้งเป็น "ค่ะ" จะแปลงทุกตัวหนังสือบนหน้าจอให้อัตโนมัติ
+let VOICE = { particle: 'ครับ', seller: 'พ่อค้า' };
+let voiceWatch = null;
+function voiced(s) {
+  s = String(s).replace(/\{(พ่อค้า|แม่ค้า)\}/g, VOICE.seller);
+  if (VOICE.particle !== 'ค่ะ' || s.indexOf('ครับ') === -1) return s;
+  return s.replace(/ครับผม/g, 'ค่ะ').replace(/นะครับ/g, 'นะคะ').replace(/ครับ(?=\s*\?)/g, 'คะ')
+    .replace(/(ไหม|มั้ย|หรือเปล่า|รึเปล่า|หรือยัง|ไหน|อะไร|ยังไง|อย่างไร|เท่าไหร่|เท่าไร|ใคร|เมื่อไหร่|กี่\S*?)ครับ/g, '$1คะ')
+    .replace(/ครับ/g, 'ค่ะ');
+}
+function voiceNode(root) {
+  if (root.nodeType === 3) { const t = voiced(root.nodeValue); if (t !== root.nodeValue) root.nodeValue = t; return; }
+  if (root.nodeType !== 1) return;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let n = w.nextNode(); n; n = w.nextNode()) { const t = voiced(n.nodeValue); if (t !== n.nodeValue) n.nodeValue = t; }
+}
+function setVoice(v) {
+  if (!v || !v.particle) return;
+  VOICE = v;
+  if (v.particle !== 'ค่ะ' || voiceWatch) return;
+  voiceNode(document.body);
+  voiceWatch = new MutationObserver((list) => list.forEach((m) => {
+    if (m.type === 'characterData') voiceNode(m.target);
+    else m.addedNodes.forEach(voiceNode);
+  }));
+  voiceWatch.observe(document.body, { childList: true, characterData: true, subtree: true });
+}
+
+// ---------- ล็อกหน้าจอหลัก (ตอนมีป๊อปอัพ หรือรอระบบ) ----------
+let lockCount = 0, lockY = 0;
+function lockScroll() {
+  if (lockCount++ > 0) return;
+  lockY = window.scrollY;
+  Object.assign(document.body.style, { position: 'fixed', top: -lockY + 'px', left: '0', right: '0' });
+}
+function unlockScroll() {
+  if (lockCount === 0 || --lockCount > 0) return;
+  Object.assign(document.body.style, { position: '', top: '', left: '', right: '' });
+  window.scrollTo(0, lockY);
+}
+/** เลื่อนขึ้นบนสุด (ถ้าจอล็อกอยู่ จะขึ้นบนสุดตอนปลดล็อก) */
+function toTop() { if (lockCount) lockY = 0; else window.scrollTo(0, 0); }
+
+// ---------- รอระบบ: จอมืด + วงหมุน ----------
+let busyCount = 0;
+function busy(msg) {
+  $('busyText').textContent = msg || 'กำลังบันทึก...';
+  if (busyCount++ > 0) return;
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); // เก็บคีย์บอร์ด
+  $('busy').classList.remove('hidden');
+  lockScroll();
+}
+function unbusy() {
+  if (busyCount === 0 || --busyCount > 0) return;
+  $('busy').classList.add('hidden');
+  unlockScroll();
+}
+async function withBusy(msg, fn) {
+  busy(msg);
+  try { return await fn(); } finally { unbusy(); }
+}
 const baht = (n) => '฿' + Number(n).toLocaleString('th-TH');
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -373,7 +632,7 @@ async function loadMenu() {
 function show(view) {
   ['menuView', 'cartView', 'doneView'].forEach((v) => $(v).classList.toggle('hidden', v !== view));
   $('cartBar').classList.toggle('hidden', view !== 'menuView' || state.cart.length === 0);
-  window.scrollTo(0, 0);
+  toTop();
 }
 
 // ---------- หน้าเมนู ----------
@@ -455,6 +714,7 @@ function openItem(id) {
   const refresh = () => { $('qVal').textContent = qty; $('addToCart').textContent = `ใส่ตะกร้า · ${baht(unitPrice() * qty)}`; };
 
   $('sheetBody').onchange = refresh;
+  $('sheetBody').onclick = null;
   $('qMinus').onclick = () => { qty = Math.max(1, qty - 1); refresh(); };
   $('qPlus').onclick = () => { qty = Math.min(99, qty + 1); refresh(); };
   $('sheetClose').onclick = closeSheet;
@@ -474,9 +734,17 @@ function openItem(id) {
     renderMenu();
   };
   refresh();
-  $('sheet').classList.remove('hidden');
+  openSheet();
 }
-function closeSheet() { $('sheet').classList.add('hidden'); }
+function openSheet() {
+  if ($('sheet').classList.contains('hidden')) { $('sheet').classList.remove('hidden'); lockScroll(); }
+  $('sheetBody').scrollTop = 0;
+}
+function closeSheet() {
+  if ($('sheet').classList.contains('hidden')) return;
+  $('sheet').classList.add('hidden');
+  unlockScroll();
+}
 $('sheet').onclick = (e) => { if (e.target === $('sheet')) closeSheet(); };
 
 // ---------- ตะกร้า ----------
@@ -636,6 +904,7 @@ async function submitOrder() {
   $('orderErr').textContent = '';
   $('submitBtn').disabled = true;
   $('submitBtn').textContent = 'กำลังส่งออเดอร์...';
+  busy('กำลังส่งออเดอร์...');
   try {
     const res = await fetch(API_URL, {
       method: 'POST',
@@ -656,6 +925,8 @@ async function submitOrder() {
     $('orderErr').textContent = err.message === 'Failed to fetch' ? 'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้งนะครับ' : err.message;
     $('submitBtn').disabled = false;
     $('submitBtn').textContent = 'ยืนยันสั่งซื้อ';
+  } finally {
+    unbusy();
   }
 }
 
@@ -665,12 +936,19 @@ function showDone(order, again) {
   $('doneNotify').textContent = (NOTIFY_TEXT[order.method] || NOTIFY_TEXT['รับหน้าร้าน']).replace(/^\S+\s/, '');
   $('qr').innerHTML = '';
   new QRCode($('qr'), { text: order.promptpay, width: 230, height: 230, correctLevel: QRCode.CorrectLevel.M });
+  $('doneQueue').classList.toggle('hidden', !order.queue);
+  if (order.queue) $('doneQueue').innerHTML = esc(order.queue.text).replace(/\n/g, '<br>');
+  const busyMsg = order.queue && order.queue.busy ? order.queue.busyText : '';
+  $('doneBusy').classList.toggle('hidden', !busyMsg);
+  if (busyMsg) $('doneBusy').innerHTML = esc(busyMsg).replace(/\n/g, '<br>');
   show('doneView');
   if (again) return;
   state.cart = [];
   delete formData.note;   // หมายเหตุ/โต๊ะ ใช้ครั้งเดียว — ชื่อ เบอร์ ที่อยู่ จำไว้ให้ครั้งหน้า
   delete formData.table;
   state.lastOrder = { orderNo: order.orderNo, total: order.total, promptpay: order.promptpay, method: order.method, lines: [], at: Date.now() };
+  state.myOrders = null;   // มีออเดอร์ใหม่ → ถามระบบใหม่
+  loadMyOrders(false);
   persist();
 
   // ส่งข้อความสรุปเข้าแชทในนามลูกค้า (ไม่เสียโควตาข้อความของร้าน)
@@ -682,8 +960,12 @@ function showDone(order, again) {
 
 $('cartBtn').onclick = () => { renderCart(); show('cartView'); };
 $('customerFields').addEventListener('input', () => { saveFields(); persist(); });
-$('lastOrderQr').onclick = () => showDone(state.lastOrder, true);
-$('lastOrderHide').onclick = () => { state.lastOrder = null; persist(); renderLastOrder(); };
+$('lastOrderQr').onclick = () => {
+  if (state.myOrders && state.myOrders.length) openMyOrders();
+  else showDone(state.lastOrder, true);
+};
+$('lastOrderHide').onclick = () => { state.lastOrder = null; state.myOrders = []; persist(); renderLastOrder(); };
+$('doneMyOrders').onclick = async () => { await loadMyOrders(true); openMyOrders(); };
 $('backToMenu').onclick = () => { saveFields(); renderMenu(); show('menuView'); };
 $('submitBtn').onclick = submitOrder;
 $('closeBtn').onclick = () => {
@@ -702,7 +984,20 @@ const READY_LABEL = {
   'ส่งพัสดุ': '📦 ส่งพัสดุแล้ว แจ้งลูกค้า'
 };
 
+// คำสั่งที่โหลดข้อมูลเฉย ๆ (ไม่ต้องมืดจอ) — ที่เหลือ = กดปุ่มบันทึก ให้มืดจอรอ
+const OW_QUIET = new Set(['owner.orders', 'owner.products', 'owner.menu', 'owner.sales', 'owner.shop', 'owner.broadcastInfo', 'owner.payInfo', 'owner.history']);
+const OW_BUSY_TEXT = {
+  'owner.theme': 'กำลังเปลี่ยนสี...',
+  'owner.saveProduct': 'กำลังบันทึกเมนู...', 'owner.uploadImage': 'กำลังอัปโหลดรูป...', 'owner.walkin': 'กำลังบันทึกการขาย...',
+  'owner.walkinPreview': 'กำลังคิดยอด...', 'owner.broadcast': 'กำลังส่งประกาศ...', 'owner.payPreview': 'กำลังสร้าง QR ทดสอบ...',
+  'owner.deleteProduct': 'กำลังลบ...', 'owner.deleteGroup': 'กำลังลบ...'
+};
 async function ownerCall(action, extra) {
+  const loud = !OW_QUIET.has(action);
+  if (loud) busy(OW_BUSY_TEXT[action]);
+  try { return await ownerFetch(action, extra); } finally { if (loud) unbusy(); }
+}
+async function ownerFetch(action, extra) {
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -719,6 +1014,8 @@ async function ownerCall(action, extra) {
     const err = new Error(data.error); err.code = data.code; throw err;
   }
   sessionStorage.removeItem('relogin');
+  const shopInfo = data.data && (data.data.shop || data.data);
+  if (shopInfo && shopInfo.voice) setVoice(shopInfo.voice);   // หน้าร้านพูดตามเสียงร้านด้วย
   return data;
 }
 
@@ -753,7 +1050,7 @@ function ownerTab(tab) {
   document.querySelectorAll('.ow-tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
   $('owAlert').classList.add('hidden');
   $('owBody').innerHTML = '<div class="ow-empty">กำลังโหลด...</div>';
-  window.scrollTo(0, 0);
+  toTop();
   if (tab === 'orders') loadOwnerOrders(false);
   if (tab === 'menu') loadOwnerMenu();
   if (tab === 'hours') loadOwnerHours();
@@ -798,7 +1095,7 @@ function renderOwnerOrders(data) {
   const tools = `<div class="ow-tools"><button class="ow-tool" data-tool="walkin">🧾 ขายหน้าร้าน</button><button class="ow-tool" data-tool="history">📖 ออเดอร์ย้อนหลัง</button></div>`;
   const head = shopLine(data.shop) + tools + `<div class="ow-today"><span>ขายได้วันนี้<br><small style="color:var(--muted)">${data.today.count} ออเดอร์</small></span><b>${baht(data.today.total)}</b></div>`;
   if (!list.length) {
-    $('owBody').innerHTML = head + '<div class="ow-empty">ยังไม่มีออเดอร์ที่ต้องทำ 🐶<br><small>ระบบจะเช็คออเดอร์ใหม่ให้เองทุก 20 วินาที</small></div>';
+    $('owBody').innerHTML = head + '<div class="ow-empty"><img class="mascot" alt="" src="' + esc(BRAND.empty) + '">ยังไม่มีออเดอร์ที่ต้องทำ<br><small>ระบบจะเช็คออเดอร์ใหม่ให้เองทุก 20 วินาที</small></div>';
     return;
   }
   $('owBody').innerHTML = head + list.map(orderCard).join('');
@@ -811,7 +1108,7 @@ function orderCard(o) {
   const phoneLink = o.phone ? `<a href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a>` : '';
   const mapLink = o.map ? `<a href="${esc(o.map)}" target="_blank" rel="noopener">📍 เปิดแผนที่</a>` : '';
   return `<div class="ow-card${paid ? '' : ' unpaid'}" data-no="${esc(o.no)}">
-    <div class="ow-top"><span class="ow-no">${esc(o.no)}</span><span class="ow-tag ${paid ? 'paid' : 'unpaid'}">${paid ? 'จ่ายแล้ว' : 'ยังไม่จ่าย'}</span></div>
+    <div class="ow-top"><span><span class="ow-no">${esc(o.no)}</span>${o.queue ? `<span class="ow-q">คิว ${o.queue}</span>` : ''}</span><span class="ow-tag ${paid ? 'paid' : 'unpaid'}">${paid ? 'จ่ายแล้ว' : 'ยังไม่จ่าย'}</span></div>
     <div class="ow-who">${esc(o.name || 'ลูกค้า')} · ${METHOD_ICON[o.method] || ''} ${esc(o.method)} · ${esc(o.time)}${o.day && o.day !== new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) ? ' (' + esc(o.day) + ')' : ''}</div>
     ${o.pickup && o.method === 'นั่งทานที่ร้าน' ? `<div class="ow-table">🪑 ${esc(o.pickup)}</div>` : ''}
     <div class="ow-items">${items}</div>
@@ -949,10 +1246,14 @@ function shrinkImage(file, max) {
 function openModal(html) {
   $('owModalBody').onclick = null; // ล้าง handler ของหน้าก่อน
   $('owModalBody').innerHTML = html;
-  $('owModal').classList.remove('hidden');
+  if ($('owModal').classList.contains('hidden')) { $('owModal').classList.remove('hidden'); lockScroll(); }
   $('owModalBody').scrollTop = 0;
 }
-function closeModal() { $('owModal').classList.add('hidden'); }
+function closeModal() {
+  if ($('owModal').classList.contains('hidden')) return;
+  $('owModal').classList.add('hidden');
+  unlockScroll();
+}
 
 function editProduct(p) {
   const { products, groups } = owner.menu;
@@ -1094,7 +1395,7 @@ const WEEK = ['จันทร์', 'อังคาร', 'พุธ', 'พฤ�
 
 function shopLine(shop) {
   return shop.open
-    ? `<div class="ow-shopline open" data-goto="hours">🟢 เปิดรับออเดอร์อยู่ · ${esc(shop.openTime)}–${esc(shop.closeTime)}</div>`
+    ? `<div class="ow-shopline open" data-goto="hours">🟢 เปิดรับออเดอร์อยู่ · ${shop.allDay ? 'เปิด 24 ชม.' : esc(shop.openTime) + '–' + esc(shop.closeTime)}</div>`
     : `<div class="ow-shopline closed" data-goto="hours">🔴 ปิดรับออเดอร์อยู่ · กดเพื่อดู</div>`;
 }
 
@@ -1111,6 +1412,7 @@ function renderOwnerHours(shop) {
   $('owBody').innerHTML = `
     <div class="ow-tile" style="text-align:center">
       <div style="font-size:26px;font-weight:600">${shop.open ? '🟢 ตอนนี้เปิดรับออเดอร์' : '🔴 ตอนนี้ปิดรับออเดอร์'}</div>
+      <div class="sub">${esc(shop.hoursText)}</div>
       ${shop.open ? '' : `<div class="sub" style="margin-top:4px">${esc(shop.closedReason)}</div>`}
       ${shop.paused
         ? '<button class="ow-big money" id="hResume">▶️ เปิดรับออเดอร์อีกครั้ง</button>'
@@ -1122,10 +1424,17 @@ function renderOwnerHours(shop) {
         <label>เปิด<input type="time" id="hOpen" value="${esc(shop.openTime)}"></label>
         <label>ปิด<input type="time" id="hClose" value="${esc(shop.closeTime)}"></label>
       </div>
+      <div class="ow-hint">${shop.allDay ? '🕛 ตอนนี้ตั้งเป็น <b>เปิด 24 ชั่วโมง</b> (เวลาเปิด = เวลาปิด)' : '💡 อยากเปิด 24 ชั่วโมง ให้ตั้งเวลาเปิดกับปิดเท่ากัน'}<br>
+        <button id="h24">🕛 ตั้งเป็นเปิด 24 ชม.</button></div>
       <div class="ow-field">วันหยุดประจำ <small>(กดเลือกวันที่หยุด)</small></div>
       <div class="ow-chips" id="hDays">${WEEK.map((d) => `<button class="ow-chip day${off.has(d) ? ' on' : ''}" data-d="${d}">${d}</button>`).join('')}</div>
       <p class="err" id="hErr"></p>
       <button class="ow-big money" id="hSave">💾 บันทึกเวลาร้าน</button>
+    </div>
+    <div class="ow-tile">
+      <div style="font-size:21px;font-weight:600">🎨 สีหน้าเมนู</div>
+      <div class="ow-hint" style="margin-top:2px">สีที่ลูกค้าเห็นตอนสั่ง (หน้าร้านนี้ใช้สีเดิม)</div>
+      <div id="themeBox"></div>
     </div>
     <div class="ow-tile">
       <div style="font-size:21px;font-weight:600">💳 เลขพร้อมเพย์รับเงิน</div>
@@ -1137,6 +1446,7 @@ function renderOwnerHours(shop) {
     </div>`;
   renderPayTile();
   renderAnnounce();
+  renderThemeTile(shop.theme);
 
   $('hDays').onclick = (e) => {
     const b = e.target.closest('.ow-chip'); if (!b) return;
@@ -1149,6 +1459,7 @@ function renderOwnerHours(shop) {
   };
   if ($('hPause')) $('hPause').onclick = () => confirmBox('ปิดรับออเดอร์วันนี้ใช่ไหม?', 'ลูกค้าจะดูเมนูได้ แต่สั่งไม่ได้ จนถึงพรุ่งนี้ หรือจนกว่าจะกดเปิดอีกครั้ง', 'ใช่ ปิดรับออเดอร์', () => pause(true));
   if ($('hResume')) $('hResume').onclick = () => pause(false);
+  $('h24').onclick = () => { $('hOpen').value = '00:00'; $('hClose').value = '00:00'; toast('กด "บันทึกเวลาร้าน" ด้านล่างเพื่อยืนยันนะครับ'); };
   $('hSave').onclick = async () => {
     const open = $('hOpen').value, close = $('hClose').value;
     if (!open || !close) { $('hErr').textContent = 'ใส่เวลาเปิดและปิดให้ครบนะครับ'; return; }
@@ -1158,6 +1469,38 @@ function renderOwnerHours(shop) {
       toast('✅ บันทึกเวลาร้านแล้ว'); renderOwnerHours(data);
     } catch (err) { $('hErr').textContent = err.message; $('hSave').disabled = false; $('hSave').textContent = '💾 บันทึกเวลาร้าน'; }
   };
+}
+
+// ---------- เลือกสีหน้าเมนู ----------
+function renderThemeTile(current) {
+  let pick = current && current.color ? { color: current.color } : { name: (current && current.name) || 'pumpkin' };
+  const same = (a, b) => (a.color && a.color === b.color) || (a.name && a.name === b.name);
+  const draw = () => {
+    const p = resolveTheme(pick);
+    $('themeBox').innerHTML = `
+      <div class="th-list">${Object.keys(THEMES).map((k) => { const t = THEMES[k]; return `
+        <button class="th-sw${pick.name === k ? ' on' : ''}" data-th="${k}">
+          <div class="th-dots"><i style="background:${t.bg}"></i><i style="background:${t.accent}"></i><i style="background:${t.ink}"></i></div>${esc(t.label)}</button>`; }).join('')}
+      </div>
+      <label class="th-custom">หรือเลือกสีเอง <input type="color" id="thColor" value="${pick.color || THEMES[pick.name].accent}"></label>
+      <div class="th-preview" style="${themeVars(p)}">
+        <div style="font-size:14px;color:var(--muted);margin-bottom:6px">ตัวอย่างที่ลูกค้าเห็น</div>
+        <div class="pv-top"><span class="chip active">ทั้งหมด</span><span class="chip">เมนูแนะนำ</span></div>
+        <div class="item"><div class="thumb">🍽️</div><div class="item-info"><div class="item-name">เมนูตัวอย่าง</div><div class="item-price">฿50</div></div><button class="add-btn" tabindex="-1">+</button></div>
+        <div class="pv-btn">🧺 ดูตะกร้า · ฿50</div>
+      </div>
+      ${same(pick, current || { name: 'pumpkin' }) ? '<div class="ow-hint" style="text-align:center">✅ ใช้สีนี้อยู่</div>' : '<button class="ow-big money" id="thSave">💾 ใช้สีนี้</button>'}`;
+    $('themeBox').querySelector('.th-list').onclick = (e) => {
+      const b = e.target.closest('[data-th]'); if (!b) return;
+      pick = { name: b.dataset.th }; draw();
+    };
+    $('thColor').onchange = (e) => { pick = { color: e.target.value.toLowerCase() }; draw(); };
+    if ($('thSave')) $('thSave').onclick = async () => {
+      try { const { data } = await ownerCall('owner.theme', pick); toast('🎨 เปลี่ยนสีหน้าเมนูแล้ว'); current = data.theme; renderThemeTile(current); }
+      catch (err) { toast('❌ ' + err.message); }
+    };
+  };
+  draw();
 }
 
 // ---------- ขายหน้าร้าน (ลูกค้าเดินมาซื้อเอง) ----------
@@ -1523,6 +1866,7 @@ async function loadShop() {
   LIFF_ID = shop.liff || '';
   API_URL = shop.api;
   STORE_KEY = 'pumpkin-order-' + SHOP_KEY;
+  SHOP_INFO = shop;
 }
 
 function isOwnerMode() {
@@ -1535,14 +1879,19 @@ function isOwnerMode() {
 (async function start() {
   try {
     await loadShop();
+    if (isOwnerMode()) applyBrand(THEMES.pumpkin);           // หน้าร้านใช้สีมาตรฐาน
+    else applyTheme(cachedTheme(), false);                   // สีเดิมที่จำไว้ ระหว่างรอเมนู
     await initLiff();
     if (isOwnerMode()) { startOwner(); return; }
     state.menu = await loadMenu();
+    applyTheme(state.menu.shop.theme, true);
+    setVoice(state.menu.shop.voice);
     restore();
     $('loading').classList.add('hidden');
     renderMenu();
     renderLastOrder();
     show('menuView');
+    loadMyOrders(false);   // ถามระบบว่ามีออเดอร์ค้างไหม (ไม่มืดจอ)
   } catch (err) {
     if (err.message === 'redirecting') return;
     $('loading').textContent = 'โหลดเมนูไม่สำเร็จ: ' + err.message;
