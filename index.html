@@ -445,7 +445,7 @@ function openMyOrders() {
         <div class="my-total">ยอด ${baht(o.total)}</div>
         <div class="my-q ${esc(o.stage)}">${esc(o.text).replace(/\n/g, '<br>')}</div>
         ${o.busy ? `<div class="busy-note">${esc(o.busyText).replace(/\n/g, '<br>')}</div>` : ''}
-        ${o.stage === 'unpaid' && o.promptpay ? `<button class="primary" data-pay="${esc(o.no)}">ดู QR จ่ายเงิน</button>` : ''}
+        ${o.stage === 'unpaid' && o.promptpay ? `<button class="primary" data-pay="${esc(o.key || o.no)}">ดู QR จ่ายเงิน</button>` : ''}
       </div>`).join('') : '<div class="my-card">ตอนนี้ยังไม่มีออเดอร์ที่ค้างอยู่ครับ 🐾</div>'}
     <div class="my-note">แต่ละออเดอร์มีคิวของตัวเอง · ร้านทำให้ตามลำดับคิว</div>
     <button class="primary" id="myRefresh">🔄 เช็คคิวอีกครั้ง</button>
@@ -453,7 +453,7 @@ function openMyOrders() {
   $('sheetBody').onchange = null;
   $('sheetBody').onclick = (e) => {
     const b = e.target.closest('[data-pay]'); if (!b) return;
-    const o = list.find((x) => x.no === b.dataset.pay);
+    const o = list.find((x) => (x.key || x.no) === b.dataset.pay);
     closeSheet();
     showDone({ orderNo: o.no, total: o.total, method: o.method, promptpay: o.promptpay, queue: o }, true);
   };
@@ -1112,7 +1112,7 @@ function orderCard(o) {
   const phoneLink = o.phone ? `<a href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a>` : '';
   const mapLink = o.map ? `<a href="${esc(o.map)}" target="_blank" rel="noopener">📍 เปิดแผนที่</a>` : '';
   return `<div class="ow-card${paid ? '' : ' unpaid'}" data-no="${esc(o.no)}">
-    <div class="ow-top"><span><span class="ow-no">${esc(o.no)}</span>${o.queue ? `<span class="ow-q">คิว ${o.queue}</span>` : ''}</span><span class="ow-tag ${paid ? 'paid' : 'unpaid'}">${paid ? 'จ่ายแล้ว' : 'ยังไม่จ่าย'}</span></div>
+    <div class="ow-top"><span><span class="ow-no">${esc(o.disp || o.no)}</span>${o.queue ? `<span class="ow-q">คิว ${o.queue}</span>` : ''}</span><span class="ow-tag ${paid ? 'paid' : 'unpaid'}">${paid ? 'จ่ายแล้ว' : 'ยังไม่จ่าย'}</span></div>
     <div class="ow-who">${esc(o.name || 'ลูกค้า')} · ${METHOD_ICON[o.method] || ''} ${esc(o.method)} · ${esc(o.time)}${o.day && o.day !== new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) ? ' (' + esc(o.day) + ')' : ''}</div>
     ${o.pickup && o.method === 'นั่งทานที่ร้าน' ? `<div class="ow-table">🪑 ${esc(o.pickup)}</div>` : ''}
     <div class="ow-items">${items}</div>
@@ -1668,7 +1668,7 @@ async function loadHistory(params) {
     const total = data.filter((o) => o.status >= 2 && o.status <= 5).reduce((s, o) => s + o.total, 0);
     $('hList').innerHTML = (params.date ? `<div class="ow-hint">${data.length} ออเดอร์ · ขายได้ ${baht(total)}</div>` : `<div class="ow-hint">เจอ ${data.length} ออเดอร์ (ย้อนหลัง 60 วัน)</div>`) +
       data.map((o) => `<div class="ow-card ow-hist">
-        <div class="ow-top"><span class="ow-no" style="font-size:24px">${esc(o.no)}</span><span class="ow-tag ${o.status === 6 ? 'unpaid' : o.status === 1 ? 'unpaid' : 'paid'}">${esc(o.statusName)}</span></div>
+        <div class="ow-top"><span class="ow-no" style="font-size:24px">${esc(o.disp || o.no)}</span><span class="ow-tag ${o.status === 6 ? 'unpaid' : o.status === 1 ? 'unpaid' : 'paid'}">${esc(o.statusName)}</span></div>
         <div class="ow-who">${esc(o.name || 'ลูกค้า')} · ${METHOD_ICON[o.method] || '🧾'} ${esc(o.method)} · ${esc(o.day)} ${esc(o.time)}${o.phone ? ' · ' + esc(o.phone) : ''}</div>
         <div class="ow-items" style="font-size:19px">${o.items.map((x) => `${x.qty} × ${esc(x.name)}${x.options ? ` <span style="color:var(--muted)">(${esc(x.options)})</span>` : ''}`).join('<br>')}</div>
         ${o.note ? `<div class="ow-info note">📝 ${esc(o.note)}</div>` : ''}
