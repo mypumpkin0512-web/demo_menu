@@ -260,6 +260,18 @@
   .ow-q { display: inline-block; font-size: 17px; font-weight: 600; background: #FFF1E2; color: var(--orange-dark); border-radius: 999px; padding: 3px 12px; margin-left: 8px; vertical-align: middle; }
   .ow-hint { font-size: 16px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
   .ow-hint button { border: 2px solid var(--line); background: #fff; border-radius: 12px; padding: 6px 12px; font-size: 16px; margin-top: 6px; cursor: pointer; }
+  .paid-pop { position: fixed; left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top)); z-index: 50; background: var(--green); color: #fff; border-radius: 20px; padding: 16px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.28); animation: popIn .35s ease-out; cursor: pointer; }
+  .paid-pop div { font-size: 24px; font-weight: 700; line-height: 1.35; }
+  .paid-pop div + div { margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,.35); }
+  .paid-pop small { display: block; font-size: 17px; font-weight: 500; opacity: .92; }
+  .paid-pop.urgent { background: #C2571A; }
+  .paid-pop .pop-tap { margin: 8px 0 0; font-size: 15px; opacity: .85; text-align: center; }
+  .ow-card.flash { box-shadow: 0 0 0 4px var(--orange); transition: box-shadow .3s; }
+  .say-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 10px 14px; margin-bottom: 12px; font-size: 19px; font-weight: 600; }
+  .say-bar button { border: none; border-radius: 12px; padding: 10px 16px; font-size: 18px; font-weight: 600; background: var(--cream); color: var(--brown); white-space: nowrap; }
+  .say-bar.on button { background: var(--green); color: #fff; }
+  .say-hint { display: block; color: var(--orange-dark); font-size: 16px; font-weight: 500; }
+  .slip-quota { margin: 0 0 12px; }
   .ow-toast { position: fixed; left: 50%; top: 84px; transform: translateX(-50%); pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,.25); background: var(--brown); color: #fff; font-size: 20px; padding: 14px 22px; border-radius: 16px; z-index: 40; max-width: 90%; text-align: center; }
 </style>
 </head>
@@ -329,6 +341,7 @@
       <button class="ow-tab" data-tab="hours">ร้าน</button>
     </div>
     <div id="owAlert" class="ow-alert hidden">🔔 มีออเดอร์ใหม่!</div>
+    <div id="paidPop" class="paid-pop hidden"></div>
     <div id="owBody"></div>
   </section>
 </div>
@@ -514,14 +527,14 @@ function applyBrand(palette) {
 
 // ---------- สีหน้าเมนู (ร้านเลือกเองที่หน้าร้าน → ร้าน) ----------
 const THEMES = {
-  pumpkin:  { label: 'ส้มพั้มกิ้น',   bg: '#FBF4E8', cream: '#F6E8D1', accent: '#D99354', accentDark: '#B8723A', ink: '#5A3F2D', muted: '#8C7563', line: '#EADCC6', tint: '#FFF1E2' },
-  matcha:   { label: 'เขียวมัทฉะ',   bg: '#F3F6EC', cream: '#E3EBD3', accent: '#6B9A4B', accentDark: '#4E7A33', ink: '#2F3E26', muted: '#6E7A63', line: '#D8E2C8', tint: '#EAF2DF' },
-  sakura:   { label: 'ชมพูซากุระ',   bg: '#FDF2F4', cream: '#F8DDE3', accent: '#D96A86', accentDark: '#B44A66', ink: '#5A2F3A', muted: '#8F6A73', line: '#F0D3DA', tint: '#FCE6EB' },
-  ocean:    { label: 'ฟ้าทะเล',      bg: '#EFF6FA', cream: '#D6E8F2', accent: '#3D8FC4', accentDark: '#2A6F9E', ink: '#1F3A4D', muted: '#5F7A8C', line: '#CFE0EB', tint: '#E1EFF8' },
-  chili:    { label: 'แดงพริก',      bg: '#FCF1EE', cream: '#F6DAD3', accent: '#D2553F', accentDark: '#A93A28', ink: '#4A2219', muted: '#8A645B', line: '#EED2CB', tint: '#FBE4DE' },
-  coffee:   { label: 'กาแฟ',         bg: '#F5EFEA', cream: '#E8DBCF', accent: '#8B5E3C', accentDark: '#6B4329', ink: '#3B2A20', muted: '#7D6A5D', line: '#E0D3C7', tint: '#EFE4DA' },
-  lavender: { label: 'ม่วงลาเวนเดอร์', bg: '#F5F2FA', cream: '#E5DCF2', accent: '#8A6BC4', accentDark: '#6A4CA3', ink: '#352A4A', muted: '#75698A', line: '#DED5EC', tint: '#ECE5F7' },
-  mono:     { label: 'ขาวดำ',        bg: '#F5F5F4', cream: '#E7E5E4', accent: '#292524', accentDark: '#1C1917', ink: '#1C1917', muted: '#78716C', line: '#E2E0DE', tint: '#ECEBEA' }
+  pumpkin:  { label: 'ส้ม', bg: '#FBF4E8', cream: '#F6E8D1', accent: '#D99354', accentDark: '#B8723A', ink: '#5A3F2D', muted: '#8C7563', line: '#EADCC6', tint: '#FFF1E2' },
+  matcha:   { label: 'เขียว', bg: '#F3F6EC', cream: '#E3EBD3', accent: '#6B9A4B', accentDark: '#4E7A33', ink: '#2F3E26', muted: '#6E7A63', line: '#D8E2C8', tint: '#EAF2DF' },
+  sakura:   { label: 'ชมพู', bg: '#FDF2F4', cream: '#F8DDE3', accent: '#D96A86', accentDark: '#B44A66', ink: '#5A2F3A', muted: '#8F6A73', line: '#F0D3DA', tint: '#FCE6EB' },
+  ocean:    { label: 'ฟ้า', bg: '#EFF6FA', cream: '#D6E8F2', accent: '#3D8FC4', accentDark: '#2A6F9E', ink: '#1F3A4D', muted: '#5F7A8C', line: '#CFE0EB', tint: '#E1EFF8' },
+  chili:    { label: 'แดง', bg: '#FCF1EE', cream: '#F6DAD3', accent: '#D2553F', accentDark: '#A93A28', ink: '#4A2219', muted: '#8A645B', line: '#EED2CB', tint: '#FBE4DE' },
+  coffee:   { label: 'น้ำตาล', bg: '#F5EFEA', cream: '#E8DBCF', accent: '#8B5E3C', accentDark: '#6B4329', ink: '#3B2A20', muted: '#7D6A5D', line: '#E0D3C7', tint: '#EFE4DA' },
+  lavender: { label: 'ม่วง', bg: '#F5F2FA', cream: '#E5DCF2', accent: '#8A6BC4', accentDark: '#6A4CA3', ink: '#352A4A', muted: '#75698A', line: '#DED5EC', tint: '#ECE5F7' },
+  mono:     { label: 'ดำ', bg: '#F5F5F4', cream: '#E7E5E4', accent: '#292524', accentDark: '#1C1917', ink: '#1C1917', muted: '#78716C', line: '#E2E0DE', tint: '#ECEBEA' }
 };
 const hexRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const rgbHex = (a) => '#' + a.map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
@@ -1031,6 +1044,182 @@ function toast(msg) {
   t._h = setTimeout(() => t.classList.add('hidden'), 2600);
 }
 
+// ---------- เสียงแจ้งเตือนหน้าร้าน ----------
+// 1) สลิปผ่าน → "ออเดอร์ 5 คุณนก จ่ายเงินแล้ว เริ่มทำได้เลย" (ไม่พูดตอนกดรับเงินเองในเครื่องนี้)
+// 2) ระบบตรวจสลิปให้ไม่ได้ (โควตาหมด / บริการตรวจล่ม / ส่งรูปหลายครั้ง / ไม่มีระบบตรวจ)
+//    → "ออเดอร์ 5 คุณนก ส่งสลิปมาแล้ว ช่วยเช็คยอดในแอปธนาคาร แล้วกดได้รับเงินแล้วด้วย" ป๊อปอัพค้างจนกว่าจะแตะ
+// 3) สลิปมีปัญหา (ยอดไม่ตรง โอนผิดบัญชี สลิปเก่า) → "ออเดอร์ 5 สลิปมีปัญหา ช่วยเช็คในแอปธนาคารก่อนนะ" — สลิปซ้ำไม่ดัง
+// 4) โควตาตรวจสลิปเพิ่งหมด → พูดบอก 1 ครั้ง
+// มือถือยอมให้เว็บส่งเสียงหลังแตะจอ 1 ครั้ง → แตะตรงไหนก็ได้ ระบบเปิดเสียงให้เอง
+const SAY = { on: true, unlocked: false, last: null, slip: {}, told: {}, mine: new Set(), ctx: null, lines: [], left: null };
+const SAY_AGAIN_MS = 3 * 60 * 1000;   // ออเดอร์เดิมเตือนเรื่องสลิปซ้ำได้ทุก 3 นาที (ลูกค้าส่งรูปรัว ๆ จะไม่ดังรัว)
+const ALERT = {
+  paid: { icon: '💰', sub: 'จ่ายเงินแล้ว เริ่มทำได้เลย', say: 'จ่ายเงินแล้ว เริ่มทำได้เลย' },
+  check: { icon: '📎', sub: 'ส่งสลิปมาแล้ว — เช็คยอดในแอปธนาคาร แล้วกด "ได้รับเงินแล้ว"', say: 'ส่งสลิปมาแล้ว ช่วยเช็คยอดในแอปธนาคาร แล้วกดได้รับเงินแล้วด้วย' },
+  warn: { icon: '⚠️', sub: 'สลิปมีปัญหา — เช็คในแอปธนาคารก่อน', say: 'สลิปมีปัญหา ช่วยเช็คในแอปธนาคารก่อนนะ' }
+};
+
+function sayKey() { return 'pumpkin-say-' + SHOP_KEY; }
+function sayInit() {
+  try { SAY.on = localStorage.getItem(sayKey()) !== '0'; } catch (e) { /* ใช้ค่าเริ่มต้น = เปิด */ }
+  ['click', 'touchend'].forEach((ev) => document.addEventListener(ev, sayUnlock, true));
+}
+function sayUnlock() {
+  if (SAY.unlocked) return;
+  SAY.unlocked = true;
+  ['click', 'touchend'].forEach((ev) => document.removeEventListener(ev, sayUnlock, true));
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) { SAY.ctx = SAY.ctx || new AC(); SAY.ctx.resume(); }
+  } catch (e) { /* ไม่มีเสียงกริ๊ง */ }
+  try {
+    if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
+      const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u);
+    }
+  } catch (e) { /* เครื่องนี้พูดไม่ได้ */ }
+  renderSayBar();
+}
+function toggleSay() {
+  SAY.on = !SAY.on;
+  try { localStorage.setItem(sayKey(), SAY.on ? '1' : '0'); } catch (e) { /* ไม่เป็นไร */ }
+  sayUnlock();
+  if (SAY.on) { chime(false); setTimeout(() => speakTh('เปิดเสียงแจ้งเตือนแล้ว'), 700); }
+  renderSayBar();
+}
+function sayBarHtml() {
+  const hint = SAY.on && !SAY.unlocked ? '<span class="say-hint">แตะจอ 1 ครั้งเพื่อเปิดเสียง</span>' : '';
+  return `<div class="say-bar${SAY.on ? ' on' : ''}" id="sayBar"><span>${SAY.on ? '🔊' : '🔇'} เสียงแจ้งเตือน${hint}</span><button data-say>${SAY.on ? 'เปิดอยู่' : 'ปิดอยู่'}</button></div>`;
+}
+function renderSayBar() {
+  const el = $('sayBar');
+  if (el) el.outerHTML = sayBarHtml();
+}
+/** เสียงกริ๊ง: จ่ายแล้ว = ติ๊ง-ต่อง · ต้องเช็คเอง = ปี๊บต่ำ 3 ครั้ง */
+function chime(urgent) {
+  const ac = SAY.ctx;
+  if (!ac) return;
+  try {
+    const t = ac.currentTime;
+    const notes = urgent ? [[660, 0], [660, 0.3], [660, 0.6]] : [[988, 0], [784, 0.24]];
+    notes.forEach(([f, d]) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = urgent ? 'triangle' : 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + d);
+      g.gain.exponentialRampToValueAtTime(0.6, t + d + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d + (urgent ? 0.25 : 0.7));
+      o.connect(g); g.connect(ac.destination); o.start(t + d); o.stop(t + d + 0.75);
+    });
+  } catch (e) { /* ไม่เป็นไร */ }
+}
+function speakTh(line) {
+  try {
+    const synth = window.speechSynthesis;
+    if (!synth || !window.SpeechSynthesisUtterance) return;
+    const u = new SpeechSynthesisUtterance(line);
+    u.lang = 'th-TH'; u.rate = 0.95;
+    const v = synth.getVoices().find((x) => /^th/i.test(x.lang));
+    if (v) u.voice = v;
+    synth.speak(u);
+  } catch (e) { /* เครื่องนี้พูดไม่ได้ — ยังมีเสียงกริ๊ง + ป๊อปอัพ */ }
+}
+/** ชื่อสำหรับอ่านออกเสียง: ตัดอีโมจิ/สัญลักษณ์ และคำว่า "คุณ" ที่มีอยู่แล้ว */
+function sayName(name) {
+  return String(name || '').replace(/[^\p{L}\p{M}\p{N}\s.]/gu, ' ').replace(/\s+/g, ' ').trim().replace(/^คุณ\s*/, '').slice(0, 30);
+}
+function alertLine(o, kind) {
+  const a = ALERT[kind];
+  const num = parseInt(((o.disp || o.no).match(/(\d+)$/) || ['', '0'])[1], 10);
+  const name = sayName(o.name);
+  const why = kind === 'check' ? ((o.slip || '').match(/\(([^)]+)\)/) || ['', ''])[1] : '';
+  return {
+    kind, no: o.no,
+    title: `${a.icon} ${o.disp || o.no}${name ? ' · ' + name : ''}`,
+    sub: a.sub + (why ? ` (${why})` : ''),
+    speak: `ออเดอร์ ${num}${name ? ' คุณ' + name : ''} ${a.say}`
+  };
+}
+/** ป๊อปอัพ: จ่ายแล้ว (เขียว หายเองใน 12 วิ) · ต้องเช็คเอง (ส้ม ค้างจนแตะ แตะแล้วพาไปที่ออเดอร์) */
+function renderPop() {
+  const pop = $('paidPop');
+  clearTimeout(pop._h);
+  if (!SAY.lines.length) { pop.classList.add('hidden'); return; }
+  const urgent = SAY.lines.some((l) => l.kind !== 'paid');
+  pop.className = 'paid-pop' + (urgent ? ' urgent' : '');
+  pop.innerHTML = SAY.lines.map((l) => `<div data-go="${esc(l.no)}">${esc(l.title)}<small>${esc(l.sub)}</small></div>`).join('') +
+    (urgent ? '<p class="pop-tap">แตะเพื่อไปที่ออเดอร์</p>' : '');
+  pop.onclick = (e) => {
+    const d = e.target.closest('[data-go]');
+    SAY.lines = []; renderPop();
+    if (d) goOrder(d.dataset.go);
+  };
+  if (!urgent) pop._h = setTimeout(() => { SAY.lines = []; renderPop(); }, 12000);
+}
+function announce(lines, extra) {
+  if (lines.length) {
+    SAY.lines = SAY.lines.filter((l) => !lines.some((n) => n.no === l.no)).concat(lines).slice(-4);
+    renderPop();
+  }
+  const urgent = !!extra || lines.some((l) => l.kind !== 'paid');
+  if (!lines.length && !extra) return;
+  if (navigator.vibrate) navigator.vibrate(urgent ? [400, 150, 400, 150, 400] : [250, 120, 250]);
+  if (!SAY.on || !SAY.unlocked) return;
+  chime(urgent);
+  setTimeout(() => { lines.forEach((l) => speakTh(l.speak)); if (extra) speakTh(extra); }, urgent ? 1100 : 900);
+}
+/** เทียบกับรอบก่อน แล้วเตือนเฉพาะสิ่งที่เพิ่งเกิด (เปิดหน้าครั้งแรกไม่เตือนของเก่า) */
+function checkOrders(data) {
+  const list = data.orders, st = {}, slip = {}, byNo = {};
+  list.forEach((o) => { st[o.no] = o.status; slip[o.no] = o.slip || ''; byNo[o.no] = o; });
+  const lines = [];
+  let extra = '';
+  if (SAY.last) {
+    const t = Date.now();
+    list.forEach((o) => {
+      const was = SAY.last[o.no];
+      if (o.status >= 2) {
+        if ((was === 1 || was === undefined) && !SAY.mine.has(o.no)) lines.push(alertLine(o, 'paid'));
+        return;
+      }
+      if (!o.slip || o.slip === (SAY.slip[o.no] || '')) return;
+      const kind = o.slipState === 'sent' ? 'check' : o.slipState === 'warn' ? 'warn' : '';
+      if (kind === 'warn' && /สลิปซ้ำ/.test(o.slip)) return;   // สลิปเดิมส่งซ้ำ: ไม่ต้องดัง (การ์ดยังขึ้นกล่องแดงให้เห็น)
+      if (!kind || t - (SAY.told[o.no] || 0) < SAY_AGAIN_MS) return;
+      SAY.told[o.no] = t;
+      lines.push(alertLine(o, kind));
+    });
+    const sl = data.slip;
+    if (sl && sl.on && SAY.left > 0 && sl.left <= 0) extra = 'โควตาตรวจสลิปเดือนนี้หมดแล้ว ต่อจากนี้ต้องเช็คสลิปเอง';
+  }
+  SAY.last = st;
+  SAY.slip = slip;
+  if (data.slip) SAY.left = data.slip.left;
+  // ออเดอร์ที่จัดการไปแล้ว (รับเงิน/ยกเลิก) เอาออกจากป๊อปอัพ "ต้องเช็คเอง"
+  const keep = SAY.lines.filter((l) => l.kind === 'paid' || (byNo[l.no] && byNo[l.no].status === 1));
+  if (keep.length !== SAY.lines.length) { SAY.lines = keep; renderPop(); }
+  announce(lines, extra);
+}
+/** แตะป๊อปอัพ → ไปที่การ์ดออเดอร์นั้น */
+function goOrder(no) {
+  owner.focus = no;
+  if (owner.tab !== 'orders' || owner.view === 'history') return ownerTab('orders');
+  focusCard();
+}
+function focusCard() {
+  if (!owner.focus) return;
+  const card = [...document.querySelectorAll('.ow-card')].find((c) => c.dataset.no === owner.focus);
+  owner.focus = null;
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card.classList.add('flash');
+  setTimeout(() => card.classList.remove('flash'), 2500);
+}
+function slipNote(sl) {
+  if (!sl || !sl.on) return '';
+  if (sl.left <= 0) return `<div class="ow-info warn slip-quota"><b>⚠️ โควตาตรวจสลิปเดือนนี้หมดแล้ว</b>ใช้ไป ${sl.used}/${sl.quota} ครั้ง — ตอนนี้ต้องเช็คยอดในแอปธนาคารเอง<br><small>ติดต่อคนดูแลระบบเพื่อเพิ่มโควตา</small></div>`;
+  if (sl.left <= Math.max(10, Math.round(sl.quota * 0.1))) return `<div class="ow-info wait slip-quota">⏳ โควตาตรวจสลิปเดือนนี้เหลือ ${sl.left} ครั้ง (จาก ${sl.quota})</div>`;
+  return '';
+}
+
 function startOwner() {
   document.title = 'หน้าร้าน';
   $('loading').classList.add('hidden');
@@ -1038,13 +1227,14 @@ function startOwner() {
   document.querySelectorAll('.ow-tab').forEach((b) => {
     b.onclick = () => ownerTab(b.dataset.tab);
   });
+  sayInit();
   ownerTab('orders');
-  // เช็คออเดอร์ใหม่ทุก 20 วินาที ตอนเปิดหน้าออเดอร์อยู่
+  // เช็คออเดอร์ใหม่ทุก 20 วินาที (เปิดเสียงแจ้งจ่ายเงินไว้ = เช็คแม้อยู่แท็บอื่น)
   owner.timer = setInterval(() => {
-    if (owner.tab === 'orders' && document.visibilityState === 'visible') loadOwnerOrders(true);
+    if (document.visibilityState === 'visible' && (owner.tab === 'orders' || SAY.on)) loadOwnerOrders(true);
   }, 20000);
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && owner.tab === 'orders') loadOwnerOrders(true);
+    if (document.visibilityState === 'visible' && (owner.tab === 'orders' || SAY.on)) loadOwnerOrders(true);
   });
 }
 
@@ -1074,6 +1264,7 @@ function ownerError(err) {
 async function loadOwnerOrders(silent) {
   try {
     const { data } = await ownerCall('owner.orders');
+    checkOrders(data);
     if (owner.tab !== 'orders' || owner.view === 'history') return;
     const nos = data.orders.map((o) => o.no);
     if (owner.seen && nos.some((n) => !owner.seen.includes(n))) {
@@ -1090,6 +1281,7 @@ async function loadOwnerOrders(silent) {
 function renderOwnerOrders(data) {
   $('owBody').onclick = (e) => {
     if (e.target.closest('[data-goto]')) return ownerTab('hours');
+    if (e.target.closest('[data-say]')) return toggleSay();
     const t = e.target.closest('[data-tool]');
     if (t) return t.dataset.tool === 'walkin' ? openWalkin() : openHistory();
     onOrderClick(e);
@@ -1097,12 +1289,13 @@ function renderOwnerOrders(data) {
   const list = data.orders;
   $('owCount').textContent = list.length ? ` (${list.length})` : '';
   const tools = `<div class="ow-tools"><button class="ow-tool" data-tool="walkin">🧾 ขายหน้าร้าน</button><button class="ow-tool" data-tool="history">📖 ออเดอร์ย้อนหลัง</button></div>`;
-  const head = shopLine(data.shop) + tools + `<div class="ow-today"><span>ขายได้วันนี้<br><small style="color:var(--muted)">${data.today.count} ออเดอร์</small></span><b>${baht(data.today.total)}</b></div>`;
+  const head = shopLine(data.shop) + sayBarHtml() + slipNote(data.slip) + tools + `<div class="ow-today"><span>ขายได้วันนี้<br><small style="color:var(--muted)">${data.today.count} ออเดอร์</small></span><b>${baht(data.today.total)}</b></div>`;
   if (!list.length) {
     $('owBody').innerHTML = head + '<div class="ow-empty"><img class="mascot" alt="" src="' + esc(BRAND.empty) + '">ยังไม่มีออเดอร์ที่ต้องทำ<br><small>ระบบจะเช็คออเดอร์ใหม่ให้เองทุก 20 วินาที</small></div>';
     return;
   }
   $('owBody').innerHTML = head + list.map(orderCard).join('');
+  focusCard();
 }
 
 function orderCard(o) {
@@ -1138,7 +1331,8 @@ function slipBox(o, paid) {
   if (paid) return '';
   if (o.slipState === 'warn') return `<div class="ow-info warn"><b>⚠️ สลิปมีปัญหา</b>${msg}<br><small>เช็คในแอปธนาคารก่อนกด "ได้รับเงินแล้ว"</small></div>`;
   if (o.slipState === 'wait') return `<div class="ow-info wait">⏳ ${msg}</div>`;
-  return `<div class="ow-info slip">📎 ลูกค้าส่งสลิปแล้ว — เช็คยอดในแอปธนาคาร</div>`;
+  const why = (o.slip.match(/\(([^)]+)\)/) || ['', ''])[1];
+  return `<div class="ow-info slip">📎 ลูกค้าส่งสลิปแล้ว — เช็คยอดในแอปธนาคาร${why ? `<br><small>${esc(why)}</small>` : ''}</div>`;
 }
 
 function onOrderClick(e) {
@@ -1147,7 +1341,7 @@ function onOrderClick(e) {
   const card = btn.closest('.ow-card');
   const no = card.dataset.no;
   const to = Number(btn.dataset.act);
-  if (to === 6) return confirmCancel(no);
+  if (to === 6) return confirmCancel(no, card.querySelector('.ow-no').textContent);
   const trackEl = card.querySelector('[data-track]');
   const track = trackEl ? trackEl.value.trim() : '';
   if (trackEl && !track) { toast('ใส่เลขพัสดุก่อนนะครับ'); trackEl.focus(); return; }
@@ -1155,6 +1349,7 @@ function onOrderClick(e) {
 }
 
 async function setStatus(no, to, btn, track) {
+  if (to === 2) SAY.mine.add(no);   // กดรับเงินเอง ไม่ต้องพูด
   if (btn) { btn.disabled = true; btn.textContent = 'กำลังบันทึก...'; }
   try {
     const res = await ownerCall('owner.setStatus', { orderNo: no, to, track });
@@ -1165,8 +1360,8 @@ async function setStatus(no, to, btn, track) {
   loadOwnerOrders(false);
 }
 
-function confirmCancel(no) {
-  confirmBox(`ยกเลิกออเดอร์ ${no} ใช่ไหม?`, 'ลูกค้าจะได้รับข้อความว่าออเดอร์ถูกยกเลิก', 'ใช่ ยกเลิกออเดอร์', () => setStatus(no, 6, null, ''));
+function confirmCancel(no, disp) {
+  confirmBox(`ยกเลิกออเดอร์ ${disp || no} ใช่ไหม?`, 'ลูกค้าจะได้รับข้อความว่าออเดอร์ถูกยกเลิก', 'ใช่ ยกเลิกออเดอร์', () => setStatus(no, 6, null, ''));
 }
 
 // ---------- เมนู (เพิ่ม/แก้ราคา/ของหมด/ตัวเลือกเสริม) ----------
@@ -1440,6 +1635,10 @@ function renderOwnerHours(shop) {
       <div class="ow-hint" style="margin-top:2px">สีที่ลูกค้าเห็นตอนสั่ง (หน้าร้านนี้ใช้สีเดิม)</div>
       <div id="themeBox"></div>
     </div>
+    ${shop.slip && shop.slip.on ? `<div class="ow-tile">
+      <div style="font-size:21px;font-weight:600">🧾 ตรวจสลิปอัตโนมัติ</div>
+      <div class="ow-hint" style="margin-top:2px">เดือนนี้ใช้ไป <b>${shop.slip.used}</b> จาก ${shop.slip.quota} ครั้ง · เหลือ ${shop.slip.left} ครั้ง${shop.slip.left <= 0 ? '<br>⚠️ หมดแล้ว ตอนนี้ต้องเช็คยอดในแอปธนาคารเอง' : ''}</div>
+    </div>` : ''}
     <div class="ow-tile">
       <div style="font-size:21px;font-weight:600">💳 เลขพร้อมเพย์รับเงิน</div>
       <div id="payBox"></div>
