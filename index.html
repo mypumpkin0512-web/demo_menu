@@ -51,6 +51,12 @@
 
   .chips { position: sticky; top: 0; z-index: 5; background: var(--bg); display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
   .chips::-webkit-scrollbar { display: none; }
+  /* จอสัมผัส: ปัดซ้าย-ขวา · ยังมีหมวดซ่อนอยู่ = ขอบจางให้รู้ว่าเลื่อนได้ */
+  .chips.more-r { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 40px), transparent); }
+  .chips.more-l { -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px); mask-image: linear-gradient(90deg, transparent, #000 40px); }
+  .chips.more-l.more-r { -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent); }
+  /* คอม (เมาส์): เลื่อนข้างไม่ถนัด → ขึ้นบรรทัดใหม่ เห็นทุกหมวด */
+  @media (hover: hover) and (pointer: fine) { .chips { flex-wrap: wrap; overflow-x: visible; } }
   .chip { flex: none; border: 2px solid var(--line); background: var(--card); border-radius: 999px; padding: 9px 18px; font-size: 17px; cursor: pointer; }
   .chip.active { background: var(--brown); border-color: var(--brown); color: #fff; }
 
@@ -74,6 +80,10 @@
   .sheet { position: relative; }
   .pd-hero { margin: -20px -16px 14px; aspect-ratio: 16 / 9; max-height: 32vh; background: var(--cream); overflow: hidden; }   /* มือถือ: ผืนผ้าแนวนอน ไม่สูงเกิน ตัดขอบบน-ล่าง เก็บกลางรูป */
   .pd-hero img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
+  /* ✕ มุมขวาบนของทุกป๊อปอัพ (ลอยติดขอบบนตอนเลื่อน) — ทำงานเหมือนปุ่มปิด/ย้อนกลับของป๊อปอัพนั้น */
+  .pop-x { float: right; position: sticky; top: 0; z-index: 6; width: 46px; height: 46px; margin: -6px -4px 4px 10px; border-radius: 50%; border: 2px solid var(--line); background: #fff; color: var(--brown); font-size: 21px; font-weight: 600; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(60,40,25,.12); }
+  .rp-card { position: relative; }
+  .rp-card .pop-x { position: absolute; float: none; top: 10px; right: 10px; margin: 0; }
   .pd-x { position: absolute; top: 12px; right: 12px; z-index: 2; width: 46px; height: 46px; border-radius: 50%; border: none; background: rgba(255,255,255,.94); color: var(--brown); font-size: 22px; font-weight: 600; box-shadow: 0 2px 8px rgba(60,40,25,.25); cursor: pointer; }
   .pd-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .pd:not(.has-img) .pd-head { padding-right: 52px; }   /* ไม่มีรูป: เว้นที่ให้ปุ่ม ✕ */
@@ -155,6 +165,13 @@
   .last-order button { border: none; background: var(--btn); color: #fff; border-radius: 12px; padding: 11px 14px; font-size: 16px; cursor: pointer; white-space: nowrap; }
   .last-order button#lastOrderHide { background: transparent; color: var(--muted); padding: 0; width: 44px; height: 44px; font-size: 20px; }
   .notify-note { background: #E3F4E6; color: #23733A; border-radius: 14px; padding: 12px 14px; margin-top: 12px; font-size: 17px; }
+  .loc-wrap { position: relative; height: min(50vh, 460px); min-height: 260px; border-radius: 16px; overflow: hidden; margin: 10px 0 6px; border: 2px solid var(--line); background: var(--cream); }
+  #locMap, #locMiniMap { position: absolute; inset: 0; }
+  .loc-mini { position: relative; height: 150px; border-radius: 14px; overflow: hidden; margin-top: 10px; border: 2px solid var(--line); background: var(--cream); cursor: pointer; }
+  .loc-mini .leaflet-control-attribution { font-size: 10px; }
+  .loc-link { margin: 12px 0 4px; }
+  .loc-link summary { min-height: 44px; display: flex; align-items: center; font-size: 17px; color: var(--brown); cursor: pointer; }
+  .loc-link textarea { width: 100%; margin: 6px 0 8px; padding: 10px; font: inherit; font-size: 16px; border: 2px solid var(--line); border-radius: 14px; }
   .map-wrap { position: relative; height: 240px; border-radius: 14px; overflow: hidden; margin-top: 6px; border: 1.5px solid var(--line); background: var(--cream); }
   #map { position: absolute; inset: 0; }
   .map-pin { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -100%); font-size: 36px; line-height: 1; z-index: 500; pointer-events: none; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); }
@@ -190,7 +207,7 @@
   .ow-today b { font-size: 30px; color: var(--orange-dark); }
   .ow-empty { text-align: center; padding: 40px 10px; color: var(--muted); font-size: 21px; line-height: 1.6; }
   .ow-card { background: #fff; border-radius: 18px; padding: 8px 14px 10px; margin-bottom: 8px; border: 2px solid var(--line); }
-  .ow-card.unpaid { border-color: var(--orange); }
+  .ow-card.unpaid, .ow-card.waitpay { border-color: var(--orange); }
   .ow-top { display: flex; justify-content: space-between; align-items: center; }
   .ow-no { font-size: 25px; font-weight: 600; }
   .ow-top > span:first-child { white-space: nowrap; overflow: hidden; }
@@ -312,8 +329,8 @@
   .ow-photo-btns { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
   .ow-photo-pick { display: inline-block; }
   .ow-tools { display: flex; gap: 8px; margin-bottom: 8px; }
-  .ow-tools.three .ow-tool { display: flex; flex-direction: column; align-items: center; padding: 3px 2px 4px; line-height: 1.2; }
-  .ow-tools.three .ow-tool i { font-style: normal; font-size: 19px; line-height: 1.2; }
+  .ow-tools.icons .ow-tool { display: flex; flex-direction: column; align-items: center; padding: 3px 2px 4px; line-height: 1.2; }
+  .ow-tools.icons .ow-tool i { font-style: normal; font-size: 19px; line-height: 1.2; }
   .ow-tool { flex: 1; border: 2px solid var(--line); background: #fff; border-radius: 14px; padding: 8px 4px; font-size: 17px; font-weight: 500; cursor: pointer; }
   .ow-walk-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 2px solid var(--line); background: #fff; border-radius: 16px; padding: 14px; margin-bottom: 8px; font-size: 20px; cursor: pointer; }
   .ow-walk-item span { flex: 1; }
@@ -425,7 +442,7 @@
   .bills { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
   .bills-h { font-size: 16px; font-weight: 600; color: var(--muted); white-space: nowrap; margin-right: 2px; }
   .bill-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 46px; padding: 3px 11px; border-radius: 14px; border: 2px dashed #B49A7C; background: #fff; font-size: 17px; color: var(--brown); cursor: pointer; white-space: nowrap; }
-  @media (max-width: 439px) { .oc-later-t { display: none; } .oc-later { padding: 2px 7px; } }   /* มือถือ: เหลือแค่ 🧾 (ไอคอนเดียวกับแถบเช็คบิล) แถวบนจะได้ไม่ล้น */
+  @media (max-width: 439px) { .oc-served { display: none; } .oc-later-t { display: none; } .oc-later { padding: 2px 7px; } }   /* มือถือ: เหลือแค่ 🧾 (ไอคอนเดียวกับแถบเช็คบิล) แถวบนจะได้ไม่ล้น */
   .bill-chip b { font-weight: 600; }
   .bill-chip span { color: var(--orange-dark); font-weight: 600; }
   .bill-chip.warn { border: 2px solid #F2B8AC; background: #FDE8E4; }
@@ -463,6 +480,7 @@
   .oc-act.money { background: var(--green); }
   .oc-act.ready { background: var(--btn); }
   .oc-act.served { background: #E3F4E6; color: #23733A; border: 2px solid #A9D8B3; }
+  .oc-wait { font-size: 15px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #FFF0D1; color: #7A4A00; }   /* ทำเสร็จแล้ว รอลูกค้ามารับ */
   .oc-act:disabled { background: #E9E1D6; color: #74655A; border-color: #E9E1D6; }
   /* ยกเลิก = ✕ มุมขวาบน (มีกล่องถามยืนยันก่อนเสมอ) · พื้นที่แตะ 44px แต่ไม่ดันการ์ดให้สูง */
   .oc-x { flex: none; width: 30px; height: 30px; margin: -7px -8px -7px 0; padding: 0; box-sizing: content-box; border: 7px solid transparent; background: #FBE3E0; background-clip: padding-box; color: #B3382C; border-radius: 50%; font-size: 15px; font-weight: 600; line-height: 30px; cursor: pointer; }
@@ -617,7 +635,7 @@
 </div>
 <button id="callBtn" class="call-btn hidden">🙋 เรียกพนักงาน</button>
 
-<div id="readyPop" class="ready-pop hidden" role="alertdialog" aria-live="assertive"><div class="rp-card"><div class="rp-icon">🔔</div><div class="rp-title" id="rpTitle"></div><div class="rp-sub" id="rpSub"></div><button class="primary" id="rpOk">รับทราบ</button></div></div>
+<div id="readyPop" class="ready-pop hidden" role="alertdialog" aria-live="assertive"><div class="rp-card"><button class="pop-x" id="rpX" aria-label="ปิด">✕</button><div class="rp-icon">🔔</div><div class="rp-title" id="rpTitle"></div><div class="rp-sub" id="rpSub"></div><button class="primary" id="rpOk">รับทราบ</button></div></div>
 <div id="sheet" class="sheet-backdrop hidden">
   <div class="sheet" id="sheetBody"></div>
 </div>
@@ -654,7 +672,7 @@
 // ====== หน้าเดียวใช้ทุกร้าน ======
 // ร้านไหน = ?s=รหัสร้าน ใน Endpoint URL ของ LIFF เช่น https://.../demo_menu/?s=demo
 // ค่าของแต่ละร้าน (LIFF ID + ลิงก์ /exec) อยู่ในไฟล์ shops.json ข้างไฟล์นี้ — เพิ่มร้านใหม่ = เพิ่ม 1 บรรทัดในนั้น
-const PAGE_VERSION = '16 พ.ย. 69 · 03:00';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
+const PAGE_VERSION = '16 พ.ย. 69 · 04:10';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
 let LIFF_ID = '';
 let API_URL = '';
 let SHOP_KEY = '';
@@ -847,6 +865,8 @@ function showReady(o) {
   const title = document.title;
   document.title = '🔔 พร้อมแล้ว! · ' + title.replace(/^🔔 พร้อมแล้ว! · /, '');
   $('rpOk').onclick = () => { $('readyPop').classList.add('hidden'); document.title = title.replace(/^🔔 พร้อมแล้ว! · /, ''); };
+  $('rpX').onclick = () => $('rpOk').click();
+  $('readyPop').onclick = (e) => { if (e.target === $('readyPop')) $('rpOk').click(); };   // แตะพื้นที่มืดด้านหลัง = รับทราบ
 }
 
 function openMyOrders() {
@@ -1083,7 +1103,10 @@ function renderMenu() {
   const tabs = cats.length > 1 ? ['ทั้งหมด', ...cats] : cats;
   if (!tabs.includes(state.cat)) state.cat = tabs[0];
   $('chips').classList.toggle('hidden', tabs.length < 2);
+  const keepX = $('chips').scrollLeft;   // วาดใหม่แล้วแถบหมวดไม่เด้งกลับไปซ้ายสุด
   $('chips').innerHTML = tabs.map((c) => `<button class="chip${c === state.cat ? ' active' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+  $('chips').scrollLeft = keepX;
+  chipsReveal();
   const shown = state.cat === 'ทั้งหมด' ? cats : [state.cat];
   $('menuList').innerHTML = shown.map((c) => `
     <h2 class="cat">${esc(c)}</h2>
@@ -1103,6 +1126,27 @@ function renderMenu() {
   };
   updateCartBar();
 }
+
+/** แถบหมวด (จอสัมผัส): หมวดที่เลือกอยู่ต้องเห็นเต็มปุ่ม + ขอบจางบอกว่ายังเลื่อนต่อได้ */
+function chipsReveal() {
+  const c = $('chips');
+  const act = c.querySelector('.chip.active');
+  if (act && c.scrollWidth > c.clientWidth) {
+    const l = act.offsetLeft, r = l + act.offsetWidth;
+    if (l < c.scrollLeft + 8) c.scrollLeft = Math.max(0, l - 24);
+    else if (r > c.scrollLeft + c.clientWidth - 8) c.scrollLeft = r - c.clientWidth + 24;
+  }
+  chipsEdge();
+}
+function chipsEdge() {
+  const c = $('chips');
+  const over = c.scrollWidth > c.clientWidth + 1;
+  c.classList.toggle('more-l', over && c.scrollLeft > 2);
+  c.classList.toggle('more-r', over && c.scrollLeft + c.clientWidth < c.scrollWidth - 2);
+}
+$('chips').addEventListener('scroll', chipsEdge, { passive: true });
+window.addEventListener('resize', chipsEdge);
+if (window.ResizeObserver) new ResizeObserver(chipsEdge).observe($('chips'));   // หน้าเมนูเพิ่งโชว์ (ตอนวาดยังซ่อนอยู่ วัดขนาดไม่ได้)
 
 function itemHtml(p) {
   const count = state.cart.filter((l) => l.id === p.id).reduce((s, l) => s + l.qty, 0);
@@ -1263,7 +1307,16 @@ function closeSheet() {
   $('sheet').classList.add('hidden');
   unlockScroll();
 }
-$('sheet').onclick = (e) => { if (e.target === $('sheet')) closeSheet(); };
+$('sheet').onclick = (e) => { if (e.target === $('sheet')) closeSheet(); };   // แตะพื้นที่มืดด้านหลัง = ปิด
+// ทุกหน้าต่างที่เด้งขึ้นมี ✕ มุมขวาบน (หน้ารายละเอียดเมนูมี ✕ บนรูปอยู่แล้ว)
+function ensurePopX(body, onX) {
+  if (body.querySelector(':scope > .pop-x, #sheetX, .pd-x')) return;
+  const x = document.createElement('button');
+  x.className = 'pop-x'; x.type = 'button'; x.setAttribute('aria-label', 'ปิด'); x.textContent = '✕';
+  x.onclick = (e) => { e.stopPropagation(); onX(); };
+  body.insertBefore(x, body.firstChild);
+}
+new MutationObserver(() => ensurePopX($('sheetBody'), closeSheet)).observe($('sheetBody'), { childList: true });
 
 // ---------- ตะกร้า ----------
 function cartSubtotal() { return state.cart.reduce((s, l) => s + l.unit * l.qty, 0); }
@@ -2243,7 +2296,8 @@ function renderOwnerOrders(data) {
   };
   const list = data.orders;
   $('owCount').textContent = list.length ? String(list.length) : '';
-  const tools = `<div class="ow-tools three"><button class="ow-tool" data-tool="walkin"><i>🧾</i>ขายหน้าร้าน</button><button class="ow-tool" data-tool="scan"><i>📷</i>สแกนสลิป</button><button class="ow-tool" data-tool="history"><i>📖</i>ย้อนหลัง</button></div>`;
+  // สแกนสลิปไม่มีปุ่มลอย ๆ ตรงนี้แล้ว (คนงงว่ากดตอนไหน) → อยู่ตอนกด "รับเงินแล้ว" ของออเดอร์ / ใบเช็คบิล / ขายหน้าร้าน
+  const tools = `<div class="ow-tools icons"><button class="ow-tool" data-tool="walkin"><i>🧾</i>ขายหน้าร้าน</button><button class="ow-tool" data-tool="history"><i>📖</i>ย้อนหลัง</button></div>`;
   // หน้านี้เน้นเห็นออเดอร์ให้ได้มากที่สุด: เสียง/เวลาร้าน → แท็บร้าน · ยอดขาย → แท็บยอดขาย
   const closed = data.shop && !data.shop.open ? `<div class="ow-slim closed" data-goto="hours">🔴 ปิดรับออเดอร์อยู่ · กดเพื่อดู</div>` : '';
   const quotaOut = data.slip && data.slip.on && data.slip.left <= 0 ? `<div class="ow-slim closed">⚠️ ระบบตรวจสลิปอัตโนมัติพักชั่วคราว — เช็คยอดในแอปธนาคารเอง</div>` : '';
@@ -2266,23 +2320,27 @@ function orderCard(o) {
   const dineIn = o.method === 'นั่งทานที่ร้าน';
   const items = o.items.map((x) => `<span class="oi">${x.qty} × ${esc(x.name)}${x.options ? ` <small>${esc(x.options)}</small>` : ''}</span>`).join('');
   const later = o.payment === PAY_LATER;   // นั่งทาน: จ่ายตอนเช็คบิล
+  const waitBill = later && o.waitBill;    // เสิร์ฟแล้ว ยังไม่เช็คบิล → รอชำระ (กดเช็คบิลจากการ์ดนี้ได้เลย)
+  const waitPickup = !!o.waitPickup;       // ห่อเสร็จ/ทำเสร็จแล้ว → รอลูกค้ามารับ (กด "มารับแล้ว" การ์ดถึงหาย)
   const delivery = isDelivery(o.method);
   const phoneLink = o.phone ? `<a href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a>` : '';
   const mapLink = o.map ? `<a href="${esc(o.map)}" target="_blank" rel="noopener">📍 เปิดแผนที่</a>` : '';
   const day = o.day && o.day !== new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) ? ' (' + esc(o.day) + ')' : '';
   // นั่งทานมีเลขโต๊ะ: โชว์ "🪑 โต๊ะ 5" (ตัวหนา) แทนคำว่านั่งทานที่ร้าน ในบรรทัดชื่อลูกค้า — แถวบนจะได้ไม่ตกบรรทัด
   const where = dineIn && o.pickup ? `🪑 <b>${esc(o.pickup.replace(/^โต๊ะ\s*/, 'โต๊ะ '))}</b>` : `${METHOD_ICON[o.method] || ''} ${esc(o.method)}`;
-  const pay = later ? '<span class="oc-later" title="จ่ายตอนเช็คบิล">🧾<span class="oc-later-t"> จ่ายทีหลัง</span></span>' : paid ? (o.slipState === 'ok' ? '<span class="oc-ok" title="ตรวจสลิปแล้ว">✅</span>' : '')
+  const pay = waitBill ? '<span class="oc-pay">🧾 รอชำระ</span>' : waitPickup ? '<span class="oc-wait">🛍️ รอมารับ</span>' : later ? '<span class="oc-later" title="จ่ายตอนเช็คบิล">🧾<span class="oc-later-t"> จ่ายทีหลัง</span></span>' : paid ? (o.slipState === 'ok' ? '<span class="oc-ok" title="ตรวจสลิปแล้ว">✅</span>' : '')
     : `<span class="oc-pay">${o.paid > 0 ? 'จ่ายไม่ครบ' : 'ยังไม่จ่าย'}</span>`;
   // นั่งทานที่ร้าน + จ่ายแล้ว: ปุ่มเบา ๆ ✓ เอาออกจากรายการ (คนขายยกไปเสิร์ฟเอง)
-  const act = !paid ? `<button class="oc-act money" data-act="2">${actLabel('💰', 'รับเงินแล้ว')}</button>`
+  const act = waitBill ? `<button class="oc-act money" data-bill="${esc(o.bill)}">${actLabel('🧾', 'เช็คบิล')}</button>`
+    : waitPickup ? `<button class="oc-act served ow-done" data-act="5">${actLabel('🤝', 'มารับแล้ว')}</button>`
+    : !paid ? `<button class="oc-act money" data-act="2">${actLabel('💰', 'รับเงินแล้ว')}</button>`
     : dineIn ? `<button class="oc-act served ow-done" data-act="4">${actLabel('✓', 'เสิร์ฟแล้ว')}</button>`
     : `<button class="oc-act ready" data-act="4" title="${esc(READY_LABEL[o.method] || READY_LABEL['รับหน้าร้าน'])}">${actLabel(...(READY_SHORT[o.method] || READY_SHORT['รับหน้าร้าน']))}</button>`;
-  return `<div class="ow-card${paid ? '' : ' unpaid'}" data-no="${esc(o.no)}">
-    <div class="oc-top"><span class="ow-no">${esc(o.disp || o.no)}</span>${o.queue ? `<span class="ow-q">คิว ${o.queue}</span>` : ''}<span class="oc-amt">${pay}${baht(paid ? o.total : Math.max(0, (o.pay || o.total) - (o.paid || 0)))}</span><button class="oc-x" data-act="6" aria-label="ยกเลิกออเดอร์" title="ยกเลิกออเดอร์">✕</button></div>
+  return `<div class="ow-card${waitBill ? ' waitpay' : paid ? '' : ' unpaid'}" data-no="${esc(o.no)}" data-due="${paid ? 0 : Math.max(0, (o.pay || o.total) - (o.paid || 0))}" data-name="${esc(o.name || '')}">
+    <div class="oc-top"><span class="ow-no">${esc(o.disp || o.no)}</span>${o.queue ? `<span class="ow-q">คิว ${o.queue}</span>` : ''}<span class="oc-amt">${pay}${baht(paid ? o.total : Math.max(0, (o.pay || o.total) - (o.paid || 0)))}</span>${waitBill || waitPickup ? '<span class="oc-x" aria-hidden="true" style="visibility:hidden"></span>' : '<button class="oc-x" data-act="6" aria-label="ยกเลิกออเดอร์" title="ยกเลิกออเดอร์">✕</button>'}</div>
     <div class="oc-body">
       <div class="oc-main">
-        <div class="oc-who">${dineIn && o.pickup ? `${where} · ${esc(o.name || 'ลูกค้า')}` : `${esc(o.name || 'ลูกค้า')} · ${where}`} · ${esc(o.time)}${day}</div>
+        <div class="oc-who">${dineIn && o.pickup ? `${where} · ${esc(o.name || 'ลูกค้า')}` : `${esc(o.name || 'ลูกค้า')} · ${where}`} · ${esc(o.time)}${day}${waitBill ? '<span class="oc-served"> · <b>✓ เสิร์ฟแล้ว</b></span>' : waitPickup ? '<span class="oc-served"> · <b>✓ ทำเสร็จแล้ว</b></span>' : ''}</div>
         <div class="oc-items">${items}</div>
       </div>
       <div class="oc-side">${act}</div>
@@ -2316,6 +2374,7 @@ function onOrderClick(e) {
   const no = card.dataset.no;
   const to = Number(btn.dataset.act);
   if (to === 6) return confirmCancel(no, card.querySelector('.ow-no').textContent);
+  if (to === 2) return payOrderSheet(no, card.querySelector('.ow-no').textContent, Number(card.dataset.due) || 0, card.dataset.name || '');
   const trackEl = card.querySelector('[data-track]');
   const track = trackEl ? trackEl.value.trim() : '';
   if (trackEl && !track) { toast('ใส่เลขพัสดุก่อนนะครับ'); trackEl.focus(); return; }
@@ -2327,11 +2386,26 @@ async function setStatus(no, to, btn, track) {
   if (btn) { btn.disabled = true; btn.textContent = 'กำลังบันทึก...'; }
   try {
     const res = await ownerCall('owner.setStatus', { orderNo: no, to, track });
-    toast(to === 2 ? '✅ บันทึกว่าได้รับเงินแล้ว' : res.notified ? '✅ แจ้งลูกค้าในไลน์แล้ว' : '✅ บันทึกแล้ว');
+    toast(to === 2 ? '✅ บันทึกว่าได้รับเงินแล้ว' : to === 5 ? '✅ ลูกค้ารับของแล้ว' : res.notified ? '✅ แจ้งลูกค้าในไลน์แล้ว' : '✅ บันทึกแล้ว');
   } catch (err) {
     toast('❌ ' + err.message);
   }
   loadOwnerOrders(false);
+}
+
+/** ออเดอร์ที่ยังไม่จ่าย กด "รับเงินแล้ว" → ได้เงินแล้ว (เงินสด/เช็คแอปเอง) หรือ สแกนสลิปที่ลูกค้ายื่นมาให้ระบบเช็ค */
+function payOrderSheet(no, disp, due, name) {
+  const back = () => payOrderSheet(no, disp, due, name);
+  const sub = (t) => `<small style="display:block;font-size:16px;font-weight:400;margin-top:2px">${t}</small>`;
+  openModal(`
+    <h3>💰 รับเงิน ${esc(disp)}${name ? ' · ' + esc(name) : ''}</h3>
+    <div class="amount" style="text-align:center">${baht(due)}</div>
+    <button class="ow-big money" id="poPaid">✅ ได้รับเงินแล้ว${sub('เงินสด หรือเช็คยอดในแอปธนาคารแล้ว')}</button>
+    <button class="ow-big ready" id="poScan">📷 สแกนสลิปที่ลูกค้ายื่นให้ดู${sub('ระบบเช็คกับธนาคาร: เงินเข้าจริง ยอดตรง')}</button>
+    <button class="ow-cancel plain" id="poClose">ยังไม่ได้รับเงิน</button>`);
+  $('poPaid').onclick = () => { closeModal(); setStatus(no, 2, null, ''); };
+  $('poScan').onclick = () => scanSlip({ order: { no, back } });
+  $('poClose').onclick = closeModal;
 }
 
 function confirmCancel(no, disp) {
@@ -2443,8 +2517,29 @@ function openModal(html, cls) {
 function closeModal() {
   if ($('owModal').classList.contains('hidden')) return;
   $('owModal').classList.add('hidden');
+  owner.dirty = false;
   unlockScroll();
 }
+// ✕ / แตะพื้นที่มืดด้านหลัง = ปุ่มย้อนกลับ/ปิดของป๊อปอัพนั้น (ซ้อนกันอยู่ → ย้อนไปหน้าก่อน เช่น ยืนยัน → ใบเสร็จ) · ไม่มีก็ปิดเลย
+// ห้ามใส่ปุ่มที่ทำอะไรจริงในรายการนี้ (เช่น ยกเลิกบิลนี้)
+const MODAL_BACK = ['cNo', 'sbBack', 'spBack', 'srBack', 'poClose', 'bClose', 'bDone', 'gBack', 'gCancel', 'fCancel', 'pBack', 'payBack', 'payCancel', 'wBack', 'wClose', 'spClose', 'srClose', 'locCancel'];
+function modalBack() {
+  const body = $('owModalBody');
+  for (const id of MODAL_BACK) {
+    const b = body.querySelector('#' + id);
+    if (b && !b.disabled && b.offsetParent !== null) { b.click(); return; }
+  }
+  closeModal();
+}
+const modalForm = () => !!$('owModalBody').querySelector('#fSave, #gSave, #paySave, #payNext');
+new MutationObserver(() => ensurePopX($('owModalBody'), modalBack)).observe($('owModalBody'), { childList: true });
+$('owModalBody').addEventListener('input', () => { if (modalForm()) owner.dirty = true; });
+$('owModal').addEventListener('click', (e) => {
+  if (e.target !== $('owModal')) return;
+  // กำลังกรอกฟอร์ม (แก้เมนู/ตัวเลือก/พร้อมเพย์) แล้วเผลอแตะข้างนอก → ไม่ปิด กันที่พิมพ์ไว้หาย
+  if (modalForm() && owner.dirty) { toast('ยังไม่ได้บันทึก · กดบันทึก หรือกด ✕ ถ้าไม่เอา'); return; }
+  modalBack();
+});
 
 /** ฟอร์มเพิ่ม/แก้เมนู · d = ค่าที่กรอกค้างไว้ (กลับมาจากหน้าแก้กลุ่มตัวเลือก ข้อมูลไม่หาย) */
 function editProduct(p, d) {
@@ -2621,6 +2716,71 @@ function confirmBox(title, detail, yesLabel, onYes, opt) {
 // ---------- เวลาร้าน ----------
 const WEEK = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์'];
 
+// ---------- ที่ตั้งร้าน: ปักหมุดบนแผนที่ (เลื่อนแผนที่ให้หมุดตรงร้าน) → บันทึกทันที ลูกค้าเห็นปุ่มแผนที่ร้าน ----------
+/** พิกัดจากลิงก์ที่ระบบเก็บไว้ (ลิงก์สั้นแบบ maps.app.goo.gl อ่านพิกัดไม่ได้ → null) */
+function mapLatLng(url) {
+  const m = String(url || '').match(/(?:query=|[?&]q=|[?&]ll=|@)(-?\d{1,2}\.\d+),\s*(-?\d{1,3}\.\d+)/);
+  if (!m) return null;
+  const lat = Number(m[1]), lng = Number(m[2]);
+  return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? [lat, lng] : null;
+}
+function osmTiles(m) {
+  m.attributionControl.setPrefix('Leaflet');
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(m);
+}
+/** แผนที่เล็กในแท็บร้าน (ดูอย่างเดียว แตะ = เปลี่ยนที่ตั้ง) */
+function miniShopMap(ll) {
+  if (!ll || typeof L === 'undefined' || !$('locMiniMap')) return;
+  if (owner.miniMap) { try { owner.miniMap.remove(); } catch (e) { /* แผนที่เก่าหายไปพร้อมหน้าแล้ว */ } }
+  const m = L.map('locMiniMap', { zoomControl: false, dragging: false, scrollWheelZoom: false, touchZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false, tap: false }).setView(ll, 16);
+  osmTiles(m);
+  owner.miniMap = m;
+  setTimeout(() => m.invalidateSize(), 150);
+}
+function pickShopLocation(shop) {
+  const start = mapLatLng(shop.map);
+  openModal(`
+    <h3>📍 ที่ตั้งร้าน</h3>
+    <div class="ow-hint" style="text-align:left;margin-top:-4px">เลื่อนแผนที่ให้หมุด 📍 อยู่ตรงร้าน แล้วกด "ใช้ตำแหน่งนี้"</div>
+    <div class="loc-wrap"><div id="locMap"></div><div class="map-pin">📍</div></div>
+    <div class="ow-hint" id="locHint" style="text-align:left"></div>
+    <button class="ow-big sr-alt" id="locMe">🎯 ไปที่ตำแหน่งที่ฉันอยู่ตอนนี้</button>
+    <button class="ow-big money" id="locUse">✅ ใช้ตำแหน่งนี้</button>
+    <details class="loc-link"><summary>หรือวางลิงก์ Google Maps แทน</summary>
+      <textarea id="locUrl" rows="2" placeholder="https://maps.app.goo.gl/..."></textarea>
+      <button class="ow-big ready" id="locUrlUse">💾 ใช้ลิงก์นี้</button>
+    </details>
+    <p class="err" id="locErr"></p>
+    <button class="ow-cancel plain" id="locCancel">ยกเลิก</button>`, 'wide');
+  $('locCancel').onclick = closeModal;
+  const hint = (t) => { $('locHint').textContent = t || ''; };
+  const save = async (map) => {
+    $('locErr').textContent = '';
+    try {
+      const { data } = await ownerCall('owner.location', { map });
+      closeModal();
+      toast('✅ บันทึกที่ตั้งร้านแล้ว · ลูกค้าเห็นปุ่ม "แผนที่ร้าน" แล้ว');
+      renderOwnerHours(data);
+    } catch (err) { $('locErr').textContent = err.message; }
+  };
+  $('locUrlUse').onclick = () => { if ($('locUrl').value.trim()) save($('locUrl').value.trim()); else $('locErr').textContent = 'วางลิงก์ก่อนนะครับ'; };
+  if (typeof L === 'undefined') { hint('โหลดแผนที่ไม่สำเร็จ — ใช้ "วางลิงก์ Google Maps" ด้านล่างแทนได้ครับ'); $('locUse').disabled = true; $('locMe').disabled = true; return; }
+  if (owner.locMap) { try { owner.locMap.remove(); } catch (e) { /* ไม่เป็นไร */ } }
+  const m = L.map('locMap', { zoomControl: true }).setView(start || [13.7563, 100.5018], start ? 18 : 11);
+  osmTiles(m);
+  owner.locMap = m;
+  setTimeout(() => m.invalidateSize(), 150);
+  const me = (auto) => {
+    if (!navigator.geolocation) { if (!auto) hint('เครื่องนี้หาตำแหน่งไม่ได้ — เลื่อนแผนที่เองได้ครับ'); return; }
+    hint('กำลังหาตำแหน่งของคุณ...');
+    navigator.geolocation.getCurrentPosition((p) => { m.setView([p.coords.latitude, p.coords.longitude], 18); hint('ถ้ายืนอยู่ที่ร้าน หมุดน่าจะตรงแล้ว — เลื่อนปรับได้'); },
+      () => hint(auto ? '' : 'หาตำแหน่งไม่ได้ (อาจไม่ได้อนุญาต) — เลื่อนแผนที่เองได้ครับ'), { enableHighAccuracy: true, timeout: 15000 });
+  };
+  $('locMe').onclick = () => me(false);
+  $('locUse').onclick = () => { const c = m.getCenter(); save(c.lat.toFixed(6) + ', ' + c.lng.toFixed(6)); };
+  if (!start) me(true);   // ยังไม่เคยตั้ง: ลองเริ่มจากตำแหน่งที่ยืนอยู่ (ส่วนใหญ่ตั้งตอนอยู่ที่ร้าน)
+}
+
 function shopLine(shop) {
   return shop.open
     ? `<div class="ow-shopline open" data-goto="hours">🟢 เปิดรับออเดอร์อยู่ · ${shop.allDay ? 'เปิด 24 ชม.' : esc(shop.openTime) + '–' + esc(shop.closeTime)}</div>`
@@ -2684,35 +2844,20 @@ function renderOwnerHours(shop) {
     <div class="ow-tile">
       <div style="font-size:21px;font-weight:600">📍 ที่ตั้งร้าน</div>
       <div class="ow-hint" style="margin-top:2px;text-align:left">${shop.map ? '✅ ลูกค้ากด "📍 แผนที่ร้าน" ที่หน้าเมนูแล้วเปิดแอปแผนที่ได้' : 'ยังไม่ได้ตั้ง — ตั้งแล้วหน้าเมนูจะมีปุ่ม "📍 แผนที่ร้าน" ให้ลูกค้ากด'}</div>
-      <div class="ow-field" style="margin-top:6px">ลิงก์ Google Maps ของร้าน <small>(กดแชร์จากแอป Google Maps แล้ววางได้เลย)</small></div>
-      <textarea id="locUrl" rows="2" style="width:100%;margin-top:6px;padding:10px;font-size:16px;border:2px solid var(--line);border-radius:14px" placeholder="https://maps.app.goo.gl/...">${esc(shop.map || '')}</textarea>
-      <button class="ow-tool" id="locHere" style="width:100%;margin-top:8px">📍 ใช้ตำแหน่งตอนนี้ (ยืนที่ร้าน)</button>
-      <input id="locPin" class="ow-input" type="password" inputmode="numeric" autocomplete="off" placeholder="รหัสร้าน (ยืนยันทุกครั้งที่บันทึก)" style="margin-top:8px">
-      <p class="err" id="locErr"></p>
-      <div class="tq-row"><button class="ow-switch on" id="locSave" style="flex:1">💾 บันทึกที่ตั้ง</button>${shop.map ? '<button class="ow-switch" id="locTest" style="flex:1">🗺️ ลองเปิดดู</button>' : ''}</div>
+      ${mapLatLng(shop.map) ? '<div class="loc-mini" id="locMini" role="button" aria-label="เปลี่ยนที่ตั้งบนแผนที่"><div id="locMiniMap"></div><div class="map-pin">📍</div></div>' : ''}
+      <button class="ow-big ready" id="locPick" style="margin-top:10px">🗺️ ${shop.map ? 'เปลี่ยนที่ตั้งบนแผนที่' : 'เลือกที่ตั้งบนแผนที่'}</button>
+      ${shop.map ? '<div class="tq-row"><button class="ow-switch" id="locTest" style="flex:1">🗺️ ลองเปิดดู</button><button class="ow-switch" id="locDel" style="flex:1">ลบที่ตั้ง</button></div>' : ''}
     </div>
     <div class="ow-hint" style="margin:6px 0 20px">หน้าเว็บ ${esc(PAGE_VERSION)} · ระบบ ${shop.core ? esc(shop.core) : '<b style="color:var(--red)">เวอร์ชันเก่า</b> (วาง Code.gs ใหม่ใน Pumpkin Core แล้ว deploy ร้านใหม่)'}</div>`;
   renderPayTile();
   renderAnnounce();
   renderThemeTile(shop.theme);
   $('tqMake').onclick = () => makeTableQr(shop.theme);
-  $('locHere').onclick = () => {
-    if (!navigator.geolocation) { $('locErr').textContent = 'เครื่องนี้หาตำแหน่งไม่ได้ ใช้ลิงก์ Google Maps แทนนะครับ'; return; }
-    busy('กำลังหาตำแหน่ง...');
-    navigator.geolocation.getCurrentPosition((p) => {
-      unbusy(); $('locErr').textContent = '';
-      $('locUrl').value = p.coords.latitude.toFixed(6) + ', ' + p.coords.longitude.toFixed(6);
-      toast('📍 ได้ตำแหน่งแล้ว · กด "บันทึกที่ตั้ง" เพื่อยืนยัน');
-    }, () => { unbusy(); $('locErr').textContent = 'หาตำแหน่งไม่ได้ (อาจไม่ได้อนุญาต) ใช้ลิงก์ Google Maps แทนได้ครับ'; },
-    { enableHighAccuracy: true, timeout: 15000 });
-  };
-  $('locSave').onclick = async () => {
-    $('locErr').textContent = '';
-    const pin = $('locPin').value.trim() || (SANDBOX ? window.parent.PumpkinSandbox.pin : '');
-    if (!pin) { $('locErr').textContent = 'ใส่รหัสร้านก่อนนะครับ'; $('locPin').focus(); return; }
-    try { const { data } = await ownerCall('owner.location', { map: $('locUrl').value, pin }); toast(data.map ? '✅ บันทึกที่ตั้งร้านแล้ว' : 'ลบที่ตั้งร้านแล้ว'); renderOwnerHours(data); }
-    catch (err) { $('locErr').textContent = err.message; $('locPin').value = ''; }
-  };
+  $('locPick').onclick = () => pickShopLocation(shop);
+  if ($('locMini')) { $('locMini').onclick = () => pickShopLocation(shop); miniShopMap(mapLatLng(shop.map)); }
+  if ($('locDel')) $('locDel').onclick = () => confirmBox('ลบที่ตั้งร้านใช่ไหม?', 'ปุ่ม "📍 แผนที่ร้าน" จะหายจากหน้าเมนูลูกค้า', 'ใช่ ลบที่ตั้ง', async () => {
+    try { const { data } = await ownerCall('owner.location', { map: '' }); toast('ลบที่ตั้งร้านแล้ว'); renderOwnerHours(data); } catch (err) { toast('❌ ' + err.message); }
+  });
   if ($('locTest')) $('locTest').onclick = () => openMap(shop.map);
 
   $('hDays').onclick = (e) => {
@@ -2989,7 +3134,7 @@ function slipPhotoSheet(ctx) {
     ${canLiffScan() ? '<button class="ow-big ready" id="spScan">📷 สแกนอีกครั้ง</button>' : ''}
     <label class="ow-big ready sp-pick">📸 ถ่ายรูปสลิป<input type="file" accept="image/*" capture="environment" hidden data-sp></label>
     <label class="ow-big sp-pick sp-alt">🖼️ เลือกรูปจากอัลบั้ม<input type="file" accept="image/*" hidden data-sp></label>
-    ${ctx && ctx.walk ? '<button class="ow-cancel" id="spBack">← กลับไปหน้า QR</button>' : ctx && ctx.bill ? '<button class="ow-cancel" id="spBack">← กลับไปใบเสร็จ</button>' : '<button class="ow-cancel" id="spClose">ปิด</button>'}`);
+    ${ctx && ctx.walk ? '<button class="ow-cancel" id="spBack">← กลับไปหน้า QR</button>' : ctx && ctx.bill ? '<button class="ow-cancel" id="spBack">← กลับไปใบเสร็จ</button>' : ctx && ctx.order ? '<button class="ow-cancel" id="spBack">← กลับ</button>' : '<button class="ow-cancel" id="spClose">ปิด</button>'}`);
   $('owModalBody').onchange = async (e) => {
     const inp = e.target.closest('[data-sp]'); if (!inp) return;
     const f = inp.files && inp.files[0]; inp.value = '';
@@ -2997,7 +3142,7 @@ function slipPhotoSheet(ctx) {
     try { checkSlip({ image: await slipDataUrl(f) }, ctx); } catch (err) { toast('❌ ' + err.message); }
   };
   if ($('spScan')) $('spScan').onclick = () => scanSlip(ctx);
-  if ($('spBack')) $('spBack').onclick = ctx && ctx.bill ? () => renderBill(ctx.bill) : showWalkinQr;
+  if ($('spBack')) $('spBack').onclick = ctx && ctx.bill ? () => renderBill(ctx.bill) : ctx && ctx.order ? ctx.order.back : showWalkinQr;
   if ($('spClose')) $('spClose').onclick = closeModal;
 }
 async function checkSlip(input, ctx) {
@@ -3032,13 +3177,13 @@ function renderSlipResult(r, ctx) {
     ${orders.length && r.ref ? `<div class="ow-field">${exact ? 'ตรงกับออเดอร์ที่รอจ่าย' : 'ยอดไม่ตรงกับออเดอร์ไหน · เลือกเองได้'}</div>` +
       orders.map((o) => `<button class="ow-big ${exact ? 'money' : 'sr-alt'}" data-apply="${esc(o.key)}" data-exact="${exact ? 1 : 0}">💰 รับเงิน ${esc(o.no)} · ${esc(o.name || 'ลูกค้า')} ${baht(o.due != null ? o.due : o.total)}</button>`).join('') : ''}
     <button class="ow-big ready" id="srNext">📷 สแกนใบต่อไป</button>
-    ${ctx && ctx.walk ? '<button class="ow-cancel" id="srBack">← กลับไปหน้า QR</button>' : bill ? '<button class="ow-cancel" id="srBack">← กลับไปใบเสร็จ</button>' : '<button class="ow-cancel" id="srClose">ปิด</button>'}`);
+    ${ctx && ctx.walk ? '<button class="ow-cancel" id="srBack">← กลับไปหน้า QR</button>' : bill ? '<button class="ow-cancel" id="srBack">← กลับไปใบเสร็จ</button>' : ctx && ctx.order ? '<button class="ow-cancel" id="srBack">← กลับ</button>' : '<button class="ow-cancel" id="srClose">ปิด</button>'}`);
   if (SAY.on && SAY.unlocked) {
     sayEnqueue(r.verdict !== 'ok', [r.verdict === 'ok' ? `สลิปถูกต้อง ${sayAmount(r.amount)}` : r.verdict === 'warn' ? `สลิปมีจุดต้องเช็ค${has ? ' ยอด ' + sayAmount(r.amount) : ''}` : 'อ่านสลิปไม่ได้']);
   }
   $('srNext').onclick = () => scanSlip(ctx);
   if ($('srClose')) $('srClose').onclick = closeModal;
-  if ($('srBack')) $('srBack').onclick = bill ? () => renderBill(bill) : showWalkinQr;
+  if ($('srBack')) $('srBack').onclick = bill ? () => renderBill(bill) : ctx && ctx.order ? ctx.order.back : showWalkinQr;
   if ($('srWalk')) $('srWalk').onclick = () => saveWalkin('โอน', $('srWalk'), r.ref);
   if ($('srBill')) $('srBill').onclick = () => payBill(bill, 'โอน', r.ref);
   $('owModalBody').onclick = (e) => {
@@ -3622,9 +3767,9 @@ function sandboxScanInfo(ctx) {
   openModal(`
     <h3>📷 สแกนสลิปลูกค้า</h3>
     <p style="font-size:18px;line-height:1.55">ร้านจริง: ส่องกล้องที่ QR บนสลิปในมือถือลูกค้า ระบบเช็คกับธนาคารให้ทันที ว่าเงินเข้าบัญชีร้านจริง ยอดตรง และไม่ใช่สลิปที่เคยใช้แล้ว</p>
-    <div class="ow-hint">ร้านทดลองไม่มีสลิปจริงให้ตรวจ — ใช้ปุ่ม "รับเงิน" / "โอนแล้ว" แทนได้เลย</div>
+    <div class="ow-hint">ร้านทดลองไม่มีสลิปจริงให้ตรวจ — กด "ได้รับเงินแล้ว" แทนได้เลย</div>
     <button class="ow-big ready" id="sbBack">เข้าใจแล้ว</button>`);
-  $('sbBack').onclick = ctx && ctx.bill ? () => renderBill(ctx.bill) : ctx && ctx.walk ? showWalkinQr : closeModal;
+  $('sbBack').onclick = ctx && ctx.bill ? () => renderBill(ctx.bill) : ctx && ctx.walk ? showWalkinQr : ctx && ctx.order ? ctx.order.back : closeModal;
 }
 /** try.html เรียกเมื่ออีกฝั่งเปลี่ยนข้อมูล → โหลดใหม่ทันที (ไม่ต้องรอรอบ 10–20 วิ) */
 window.sandboxPing = (kind) => {
