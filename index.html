@@ -212,6 +212,17 @@
   .ow-slim { border-radius: 12px; padding: 8px 12px; margin-bottom: 8px; font-size: 16px; font-weight: 500; }
   .ow-slim.closed { background: #FBE3E0; color: #B3382C; cursor: pointer; }
   .ow-slim.hint { background: #FFF4DC; color: #7A5A12; }
+  /* ข้อความไลน์เดือนนี้ (โควตา push ของร้าน) */
+  .lq { background: var(--cream); border-radius: 16px; padding: 12px 14px; margin-bottom: 12px; }
+  .lq-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 18px; }
+  .lq-top b { font-weight: 600; white-space: nowrap; }
+  .lq-top .n { font-size: 17px; white-space: nowrap; }
+  .lq-top .n b { font-size: 22px; }
+  .lq-bar { height: 12px; border-radius: 999px; background: #fff; margin: 8px 0 6px; overflow: hidden; border: 1px solid var(--line); }
+  .lq-bar i { display: block; height: 100%; background: #3C8A4E; border-radius: 999px; }
+  .lq.low .lq-bar i { background: #C4472F; }
+  .ow-tile .lq .sub { font-size: 15px; color: #5E4A3B; }
+  .lq-warn { margin-top: 8px; background: #FBE3E0; color: #9C2F22; border-radius: 12px; padding: 8px 10px; font-size: 16px; line-height: 1.5; }
   .ow-info.note { background: #FFF4DC; }
   .ow-info.slip { background: #E3F4E6; color: #23733A; }
   .ow-info.warn { background: #FDE8E4; color: #A8321E; border: 2px solid #F2B8AC; }
@@ -349,6 +360,17 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes fadeIn { from { opacity: 0; } }
   .sheet { overscroll-behavior: contain; }
+  .done-queue.ready { background: #E3F4E7; color: #1F6B35; font-weight: 600; font-size: 19px; }
+  /* ลูกค้า: ออเดอร์พร้อมแล้ว — ป๊อปอัพกลางจอ (ไม่ใช้ข้อความไลน์) */
+  .ready-pop { position: fixed; inset: 0; z-index: 80; background: rgba(40,28,18,.55); display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .ready-pop .rp-card { background: #fff; border-radius: 24px; padding: 26px 22px 20px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.25); animation: rp-in .25s ease-out; }
+  .ready-pop .rp-icon { font-size: 56px; line-height: 1; animation: rp-ring 1s ease-in-out 3; }
+  .ready-pop .rp-title { font-size: 26px; font-weight: 700; color: #1F6B35; margin: 12px 0 6px; line-height: 1.3; }
+  .ready-pop .rp-sub { font-size: 19px; color: var(--brown); line-height: 1.5; margin-bottom: 18px; white-space: pre-line; }
+  .ready-pop .primary { width: 100%; }
+  @keyframes rp-in { from { transform: scale(.9); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes rp-ring { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-18deg); } 40% { transform: rotate(16deg); } 60% { transform: rotate(-10deg); } 80% { transform: rotate(6deg); } }
+  @media (prefers-reduced-motion: reduce) { .ready-pop .rp-card, .ready-pop .rp-icon { animation: none; } }
   .done-queue { background: #FFF4DC; color: #7A5A12; border-radius: 16px; padding: 12px 14px; margin: 12px 0 0; text-align: left; font-size: 17px; line-height: 1.6; }
   .my-card { background: var(--card); border-radius: 18px; padding: 14px; margin-top: 12px; }
   .my-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
@@ -584,6 +606,7 @@
 </div>
 <button id="callBtn" class="call-btn hidden">🙋 เรียกพนักงาน</button>
 
+<div id="readyPop" class="ready-pop hidden" role="alertdialog" aria-live="assertive"><div class="rp-card"><div class="rp-icon">🔔</div><div class="rp-title" id="rpTitle"></div><div class="rp-sub" id="rpSub"></div><button class="primary" id="rpOk">รับทราบ</button></div></div>
 <div id="sheet" class="sheet-backdrop hidden">
   <div class="sheet" id="sheetBody"></div>
 </div>
@@ -620,7 +643,7 @@
 // ====== หน้าเดียวใช้ทุกร้าน ======
 // ร้านไหน = ?s=รหัสร้าน ใน Endpoint URL ของ LIFF เช่น https://.../demo_menu/?s=demo
 // ค่าของแต่ละร้าน (LIFF ID + ลิงก์ /exec) อยู่ในไฟล์ shops.json ข้างไฟล์นี้ — เพิ่มร้านใหม่ = เพิ่ม 1 บรรทัดในนั้น
-const PAGE_VERSION = '15 พ.ย. 69 · 23:00';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
+const PAGE_VERSION = '16 พ.ย. 69 · 02:00';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
 let LIFF_ID = '';
 let API_URL = '';
 let SHOP_KEY = '';
@@ -689,21 +712,112 @@ function renderLastOrder() {
 }
 
 // ---------- ออเดอร์ของฉัน + เช็คคิว ----------
-async function loadMyOrders(loud) {
+// poll = ถามอัตโนมัติ (แบบเบา: ส่งเลข "เปลี่ยนล่าสุด" ไป ถ้าในร้านไม่มีอะไรเปลี่ยน ระบบตอบทันที)
+async function loadMyOrders(loud, poll) {
   if (!API_URL) return;
+  let changed = false;
   const run = async () => {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'my.orders', userId: state.user.userId, idToken: state.user.idToken })
+      body: JSON.stringify({ action: 'my.orders', userId: state.user.userId, idToken: state.user.idToken, since: poll && MY.stamp ? MY.stamp : undefined })
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
+    if (data.data.same) return;
+    MY.stamp = data.data.stamp || '';
     state.myOrders = data.data.orders;
+    changed = true;
   };
   try { if (loud) await withBusy('กำลังเช็คคิว...', run); else await run(); }
   catch (e) { /* เช็คไม่ได้ ใช้ข้อมูลเดิมในเครื่องไปก่อน */ }
+  if (changed) myOrdersChanged();
   if ($('menuView') && !$('menuView').classList.contains('hidden')) renderLastOrder();
+  myPollSchedule();
+}
+
+// ---------- ลูกค้า: สถานะออเดอร์อัปเดตเอง (ไม่ใช้โควตาข้อความไลน์ของร้าน) ----------
+// มีออเดอร์ที่ยังรอ (รอจ่าย/รอคิว/กำลังแพ็ก) → ถามทุก 20 วิ ตอนเปิดหน้านี้อยู่ · สลับแอปแล้วกลับมา = ถามทันที
+// พร้อมแล้ว / กำลังไปส่ง / จัดส่งแล้ว → ป๊อปอัพกลางจอ + เสียงติ๊งต่อง + สั่น (ถ้าเครื่องรองรับ)
+const MY_POLL_MS = 20000;
+const MY_POLL_MAX_MS = 3 * 3600 * 1000;   // เปิดค้างเกิน 3 ชม. หยุดถาม (กลับมาหน้านี้ใหม่ก็ถามต่อ)
+const MY = { timer: null, stamp: '', prev: null, since: Date.now(), ctx: null };
+const MY_WAIT = ['unpaid', 'queue', 'parcel'];
+function myPollSchedule() {
+  clearTimeout(MY.timer);
+  const waiting = (state.myOrders || []).some((o) => MY_WAIT.includes(o.stage));
+  if (!waiting || isOwnerMode() || document.visibilityState === 'hidden' || Date.now() - MY.since > MY_POLL_MAX_MS) return;
+  MY.timer = setTimeout(() => loadMyOrders(false, true), MY_POLL_MS);
+}
+document.addEventListener('visibilitychange', () => {
+  if (isOwnerMode()) return;
+  if (document.visibilityState === 'hidden') { clearTimeout(MY.timer); return; }
+  MY.since = Date.now();
+  if ((state.myOrders || []).some((o) => MY_WAIT.includes(o.stage))) loadMyOrders(false, true);
+});
+// เสียงในเว็บต้องให้ลูกค้าแตะจอก่อน 1 ครั้ง (กดสั่งก็นับ) → เตรียมเสียงไว้ตอนแตะครั้งแรก
+function myAudioUnlock() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) { MY.ctx = MY.ctx || new AC(); MY.ctx.resume(); }
+  } catch (e) { /* ไม่มีเสียง ก็ยังมีป๊อปอัพ */ }
+}
+['touchend', 'click'].forEach((ev) => document.addEventListener(ev, myAudioUnlock, { capture: true, passive: true }));
+function myChime() {
+  const ac = MY.ctx;
+  if (!ac) return;
+  try {
+    if (ac.state !== 'running') ac.resume();
+    const t = ac.currentTime;
+    [[988, 0], [784, 0.25], [988, 0.9], [784, 1.15]].forEach(([f, d]) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + d);
+      g.gain.exponentialRampToValueAtTime(0.7, t + d + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.6);
+      o.connect(g); g.connect(ac.destination); o.start(t + d); o.stop(t + d + 0.65);
+    });
+  } catch (e) { /* ไม่เป็นไร */ }
+}
+const READY_TITLE = { 'ส่งถึงบ้าน': 'กำลังไปส่งแล้ว!', 'ส่งพัสดุ': 'จัดส่งแล้ว!' };
+/** ข้อมูลออเดอร์เปลี่ยน → อัปเดตทุกจุดที่ลูกค้าเห็น + เตือนถ้าเพิ่งพร้อม */
+function myOrdersChanged() {
+  const list = state.myOrders || [];
+  const now = {};
+  list.forEach((o) => { now[o.key || o.no] = o.stage; });
+  if (MY.prev) {
+    const ready = list.find((o) => o.stage === 'ready' && o.method !== 'นั่งทานที่ร้าน' && MY.prev[o.key || o.no] && MY.prev[o.key || o.no] !== 'ready');
+    const paid = list.find((o) => MY.prev[o.key || o.no] === 'unpaid' && o.stage !== 'unpaid');
+    if (ready) showReady(ready);
+    else if (paid) toast('✅ ร้านได้รับเงินแล้ว · ออเดอร์ ' + paid.no);
+  }
+  MY.prev = now;
+  // หน้าสั่งเสร็จ: อัปเดตกล่องคิวของออเดอร์นั้น
+  const lo = state.lastOrder;
+  const o = lo && list.find((x) => x.no === lo.orderNo);
+  if (o && !$('doneView').classList.contains('hidden')) {
+    const t = o.payLater ? o.text.split('\n').filter((l) => !/^🧾/.test(l)).join('\n') : o.text;
+    $('doneQueue').innerHTML = esc(t).replace(/\n/g, '<br>');
+    $('doneQueue').classList.remove('hidden');
+    $('doneQueue').classList.toggle('ready', o.stage === 'ready');
+    if (o.stage !== 'unpaid') { $('donePay').classList.add('hidden'); $('doneSteps').classList.add('hidden'); }
+  }
+  // แผ่น "ออเดอร์ของฉัน" เปิดอยู่ → วาดใหม่ (คงตำแหน่งเลื่อน)
+  if (!$('sheet').classList.contains('hidden') && $('sheetBody').querySelector('.my-card')) {
+    const y = $('sheetBody').scrollTop;
+    openMyOrders();
+    $('sheetBody').scrollTop = y;
+  }
+}
+function showReady(o) {
+  $('rpTitle').textContent = `ออเดอร์ ${o.no} ${READY_TITLE[o.method] || 'พร้อมแล้ว!'}`;
+  $('rpSub').textContent = o.text;
+  $('readyPop').classList.remove('hidden');
+  myChime();
+  try { if (navigator.vibrate) navigator.vibrate([400, 200, 400, 200, 400]); } catch (e) { /* ไม่เป็นไร */ }
+  const title = document.title;
+  document.title = '🔔 พร้อมแล้ว! · ' + title.replace(/^🔔 พร้อมแล้ว! · /, '');
+  $('rpOk').onclick = () => { $('readyPop').classList.add('hidden'); document.title = title.replace(/^🔔 พร้อมแล้ว! · /, ''); };
 }
 
 function openMyOrders() {
@@ -1202,9 +1316,9 @@ function isDelivery(method) { return method === 'ส่งถึงบ้าน'
 const NOTIFY_TEXT = {
   'นั่งทานที่ร้าน': '🍽️ นั่งรอที่โต๊ะได้เลย ร้านจะยกไปเสิร์ฟให้',
   'ห่อกลับบ้าน': '🔔 ไม่ต้องยืนรอ ร้านจะแจ้งในไลน์เมื่อห่อเสร็จ',
-  'รับหน้าร้าน': '🔔 ไม่ต้องรอหน้าร้าน ร้านจะแจ้งในไลน์เมื่อพร้อมให้มารับ',
-  'ส่งถึงบ้าน': '🔔 ร้านจะแจ้งในไลน์เมื่อกำลังออกไปส่ง',
-  'ส่งพัสดุ': '📦 ร้านจะส่งเลขพัสดุให้ในไลน์เมื่อจัดส่งแล้ว'
+  'รับหน้าร้าน': '🔔 เปิดหน้านี้ไว้ พร้อมแล้วจะมีเสียงเตือน (หรือพิมพ์ "เช็คคิว" ในแชท)',
+  'ส่งถึงบ้าน': '🛵 เปิดหน้านี้ไว้ จะขึ้นแจ้งเมื่อกำลังออกไปส่ง (หรือพิมพ์ "เช็คคิว" ในแชท)',
+  'ส่งพัสดุ': '📦 เลขพัสดุจะขึ้นที่ "ออเดอร์ของฉัน" เมื่อจัดส่งแล้ว (หรือพิมพ์ "เช็คคิว" ในแชท)'
 };
 
 const formData = {};
@@ -2056,9 +2170,15 @@ function ownerError(err) {
 }
 
 // ---------- ออเดอร์ ----------
+const OWNER_FULL_MS = 60 * 1000;   // อ่านเต็มอย่างน้อยทุก 1 นาที (นอกนั้นถามแค่ "มีอะไรเปลี่ยนไหม")
 async function loadOwnerOrders(silent) {
   try {
-    const { data } = await ownerCall('owner.orders');
+    // ดึงทุก 10 วิแบบเบา: ส่งเลข "เปลี่ยนล่าสุด" ไป ถ้าไม่มีอะไรเปลี่ยน ระบบตอบทันทีโดยไม่ต้องเปิดชีต
+    const full = !silent || !owner.stamp || Date.now() - (owner.fullAt || 0) > OWNER_FULL_MS;
+    const { data } = await ownerCall('owner.orders', full ? {} : { since: owner.stamp });
+    if (data.same) return;
+    owner.stamp = data.stamp || '';
+    owner.fullAt = Date.now();
     owner.bills = data.bills || [];
     owner.shopName = data.shopName || owner.shopName || '';
     checkOrders(data);
@@ -2091,7 +2211,8 @@ function renderOwnerOrders(data) {
   // หน้านี้เน้นเห็นออเดอร์ให้ได้มากที่สุด: เสียง/เวลาร้าน → แท็บร้าน · ยอดขาย → แท็บยอดขาย
   const closed = data.shop && !data.shop.open ? `<div class="ow-slim closed" data-goto="hours">🔴 ปิดรับออเดอร์อยู่ · กดเพื่อดู</div>` : '';
   const quotaOut = data.slip && data.slip.on && data.slip.left <= 0 ? `<div class="ow-slim closed">⚠️ ระบบตรวจสลิปอัตโนมัติพักชั่วคราว — เช็คยอดในแอปธนาคารเอง</div>` : '';
-  const head = closed + sayHintHtml() + quotaOut + tools + billsHtml(owner.bills);
+  const lineLow = data.line && data.line.low ? `<div class="ow-slim hint" data-goto>💬 ข้อความไลน์เดือนนี้เหลือ ${data.line.left} — หยุดแจ้ง "ห่อเสร็จ" แล้ว (ลูกค้าดูสถานะในหน้าออเดอร์ได้)</div>` : '';
+  const head = closed + sayHintHtml() + quotaOut + lineLow + tools + billsHtml(owner.bills);
   if (!list.length) {
     $('owBody').innerHTML = head + '<div class="ow-empty"><img class="mascot" alt="" src="' + esc(BRAND.empty) + '">ยังไม่มีออเดอร์ที่ต้องทำ</div>';
     return;
@@ -3063,16 +3184,29 @@ const ANNOUNCE_TEMPLATES = [
   '🙏 ขอบคุณที่อุดหนุนนะครับ'
 ];
 
+/** แถบ "ข้อความไลน์เดือนนี้": เหลือเท่าไหร่ ใช้กับอะไร เหลือน้อยแล้วระบบทำอะไร */
+function lineQuotaHtml(q) {
+  if (!q || q.limit === undefined) return '';
+  if (q.left === null) return `<div class="lq"><div class="lq-top"><b>💬 ข้อความไลน์</b><span class="n">${q.limit === null && q.used !== null ? 'ไม่จำกัด' : 'อ่านไม่ได้'}</span></div></div>`;
+  const pct = q.limit ? Math.min(100, Math.round(q.used / q.limit * 100)) : 100;
+  return `<div class="lq${q.low ? ' low' : ''}">
+    <div class="lq-top"><b>💬 ข้อความไลน์</b><span class="n">เหลือ <b>${q.left}</b> / ${q.limit}</span></div>
+    <div class="lq-bar" role="progressbar" aria-valuenow="${q.used}" aria-valuemax="${q.limit}" aria-label="ใช้ไปแล้ว ${q.used}"><i style="width:${pct}%"></i></div>
+    <div class="sub">ของเดือนนี้ · ใช้ตอนแจ้ง "ห่อเสร็จ" · แจ้งยกเลิก · ประกาศ (ตอบแชทไม่นับ)</div>
+    ${q.low ? `<div class="lq-warn">⚠️ เหลือน้อย: หยุดแจ้ง "ห่อเสร็จ" แล้ว เก็บ ${q.reserve} ข้อความไว้แจ้งยกเลิก · ลูกค้ายังเห็นสถานะในหน้าออเดอร์ · เดือนหน้าเต็มใหม่</div>` : ''}
+  </div>`;
+}
+function renderAnnounceBack() { closeModal(); }
 async function renderAnnounce() {
   const box = $('annBox'); if (!box) return;
   box.innerHTML = '<div class="sub">กำลังโหลด...</div>';
   let info;
   try { info = (await ownerCall('owner.broadcastInfo')).data; } catch (err) { box.innerHTML = `<div class="sub">${esc(err.message)}</div>`; return; }
-  const q = info.quota;
-  const left = q.limit !== null && q.used !== null ? q.limit - q.used : null;
-  box.innerHTML = `
-    <div class="sub">ส่งถึงลูกค้าที่เคยสั่งผ่านไลน์ <b>${info.customers} คน</b></div>
-    <div class="sub">${left === null ? 'โควตาข้อความ: อ่านไม่ได้ / ไม่จำกัด' : `โควตาข้อความเดือนนี้ เหลือ <b>${left}</b> จาก ${q.limit}`}</div>
+  const q = info.quota || {};
+  const left = q.left === undefined ? null : q.left;
+  const canSend = left === null ? Infinity : Math.max(0, left - q.reserve);   // ประกาศใช้ส่วนที่เก็บไว้แจ้งยกเลิกไม่ได้
+  box.innerHTML = lineQuotaHtml(q) + `
+    <div class="sub">ส่งถึงลูกค้าที่เคยสั่งผ่านไลน์ <b>${info.customers} คน</b> · ใช้ข้อความ ${info.customers} ข้อความ</div>
     <div class="ow-chips" id="annTpl">${ANNOUNCE_TEMPLATES.map((t, i) => `<button class="ow-chip" data-t="${i}" style="font-size:16px">${esc(t)}</button>`).join('')}</div>
     <textarea id="annText" class="ow-input" rows="4" maxlength="1000" placeholder="พิมพ์ข้อความ หรือกดเลือกข้อความด้านบน" style="margin-top:10px;resize:vertical"></textarea>
     <p class="err" id="annErr"></p>
@@ -3081,11 +3215,11 @@ async function renderAnnounce() {
   $('annSend').onclick = () => {
     const text = $('annText').value.trim();
     if (!text) { $('annErr').textContent = 'พิมพ์ข้อความก่อนนะครับ'; return; }
-    if (left !== null && info.customers > left) { $('annErr').textContent = `โควตาไม่พอ (เหลือ ${left} ต้องใช้ ${info.customers})`; return; }
-    confirmBox(`ส่งถึงลูกค้า ${info.customers} คน ใช่ไหม?`, `จะใช้โควตาข้อความ ${info.customers} ข้อความ (ส่งแล้วยกเลิกไม่ได้)`, 'ใช่ ส่งเลย', async () => {
+    if (info.customers > canSend) { $('annErr').textContent = `ข้อความเดือนนี้ไม่พอ: ส่งประกาศได้อีก ${canSend} คน แต่ลูกค้ามี ${info.customers} คน (เก็บ ${q.reserve} ข้อความไว้แจ้งยกเลิก)`; return; }
+    confirmBox(`ส่งถึงลูกค้า ${info.customers} คน ใช่ไหม?`, `จะใช้ข้อความไลน์ ${info.customers} ข้อความ${left === null ? '' : ` · หลังส่งเหลือ ${left - info.customers}`} (ส่งแล้วยกเลิกไม่ได้)`, 'ใช่ ส่งเลย', async () => {
       try { const r = await ownerCall('owner.broadcast', { text }); toast(`✅ ส่งประกาศถึง ${r.sent} คนแล้ว`); renderAnnounce(); }
       catch (err) { toast('❌ ' + err.message); }
-    });
+    }, { good: true, back: renderAnnounceBack });
   };
 }
 
