@@ -49,14 +49,20 @@
   .badge.closed { background: #FBE3E0; color: var(--red); }
   .closed-box { background: #FBE3E0; color: var(--red); padding: 12px 14px; border-radius: 14px; margin: 12px 0; font-size: 15px; }
 
-  .chips { position: sticky; top: 0; z-index: 5; background: var(--bg); display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
+  .chips-bar { position: sticky; top: 0; z-index: 5; background: var(--bg); }
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
   .chips::-webkit-scrollbar { display: none; }
   /* จอสัมผัส: ปัดซ้าย-ขวา · ยังมีหมวดซ่อนอยู่ = ขอบจางให้รู้ว่าเลื่อนได้ */
   .chips.more-r { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 40px), transparent); }
   .chips.more-l { -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px); mask-image: linear-gradient(90deg, transparent, #000 40px); }
   .chips.more-l.more-r { -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent); }
-  /* คอม (เมาส์): เลื่อนข้างไม่ถนัด → ขึ้นบรรทัดใหม่ เห็นทุกหมวด */
-  @media (hover: hover) and (pointer: fine) { .chips { flex-wrap: wrap; overflow-x: visible; } }
+  /* คอม (เมาส์): แถวเดียวเหมือนมือถือ + ลูกศร ‹ › ที่ขอบ · หมุนล้อเมาส์/ลากเลื่อนได้ */
+  .chips-arr { display: none; position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--line); background: #fff; color: var(--brown); font-size: 24px; line-height: 1; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(60,40,25,.18); cursor: pointer; padding: 0 0 3px; }
+  .chips-arr.l { left: -6px; } .chips-arr.r { right: -6px; }
+  @media (hover: hover) and (pointer: fine) {
+    .chips-bar.more-l .chips-arr.l, .chips-bar.more-r .chips-arr.r { display: flex; }
+    .chips { cursor: grab; } .chips.dragging { cursor: grabbing; } .chips.dragging .chip { pointer-events: none; }
+  }
   .chip { flex: none; border: 2px solid var(--line); background: var(--card); border-radius: 999px; padding: 9px 18px; font-size: 17px; cursor: pointer; }
   .chip.active { background: var(--brown); border-color: var(--brown); color: #fff; }
 
@@ -568,7 +574,7 @@
       <button id="lastOrderQr">ดู QR จ่ายเงิน</button>
       <button id="lastOrderHide" aria-label="ซ่อน">✕</button>
     </div>
-    <nav class="chips" id="chips"></nav>
+    <div class="chips-bar" id="chipsBar"><nav class="chips" id="chips"></nav><button class="chips-arr l" data-dir="-1" aria-label="หมวดก่อนหน้า">‹</button><button class="chips-arr r" data-dir="1" aria-label="หมวดถัดไป">›</button></div>
     <div id="menuList"></div>
   </section>
 
@@ -672,7 +678,7 @@
 // ====== หน้าเดียวใช้ทุกร้าน ======
 // ร้านไหน = ?s=รหัสร้าน ใน Endpoint URL ของ LIFF เช่น https://.../demo_menu/?s=demo
 // ค่าของแต่ละร้าน (LIFF ID + ลิงก์ /exec) อยู่ในไฟล์ shops.json ข้างไฟล์นี้ — เพิ่มร้านใหม่ = เพิ่ม 1 บรรทัดในนั้น
-const PAGE_VERSION = '16 พ.ย. 69 · 04:10';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
+const PAGE_VERSION = '16 พ.ย. 69 · 04:15';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
 let LIFF_ID = '';
 let API_URL = '';
 let SHOP_KEY = '';
@@ -1102,7 +1108,7 @@ function renderMenu() {
   const cats = [...new Set(products.map((p) => p.category))];
   const tabs = cats.length > 1 ? ['ทั้งหมด', ...cats] : cats;
   if (!tabs.includes(state.cat)) state.cat = tabs[0];
-  $('chips').classList.toggle('hidden', tabs.length < 2);
+  $('chipsBar').classList.toggle('hidden', tabs.length < 2);
   const keepX = $('chips').scrollLeft;   // วาดใหม่แล้วแถบหมวดไม่เด้งกลับไปซ้ายสุด
   $('chips').innerHTML = tabs.map((c) => `<button class="chip${c === state.cat ? ' active' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
   $('chips').scrollLeft = keepX;
@@ -1141,9 +1147,40 @@ function chipsReveal() {
 function chipsEdge() {
   const c = $('chips');
   const over = c.scrollWidth > c.clientWidth + 1;
-  c.classList.toggle('more-l', over && c.scrollLeft > 2);
-  c.classList.toggle('more-r', over && c.scrollLeft + c.clientWidth < c.scrollWidth - 2);
+  const l = over && c.scrollLeft > 2, r = over && c.scrollLeft + c.clientWidth < c.scrollWidth - 2;
+  [c, $('chipsBar')].forEach((el) => { el.classList.toggle('more-l', l); el.classList.toggle('more-r', r); });
 }
+// คอม: ลูกศร ‹ › · หมุนล้อเมาส์ = เลื่อนข้าง · กดค้างแล้วลาก = เลื่อน (ลากแล้วไม่นับเป็นการกดหมวด)
+document.querySelectorAll('.chips-arr').forEach((b) => {
+  b.onclick = () => { const c = $('chips'); c.scrollBy({ left: Number(b.dataset.dir) * Math.max(120, c.clientWidth * 0.7), behavior: 'smooth' }); };
+});
+$('chips').addEventListener('wheel', (e) => {
+  const c = $('chips');
+  if (c.scrollWidth <= c.clientWidth || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
+  const end = e.deltaY > 0 ? c.scrollLeft + c.clientWidth >= c.scrollWidth - 1 : c.scrollLeft <= 0;
+  if (end) return;   // สุดแถบแล้ว → ปล่อยให้หน้าเลื่อนขึ้นลงตามปกติ
+  c.scrollLeft += e.deltaY;
+  e.preventDefault();
+}, { passive: false });
+(() => {
+  const c = $('chips');
+  let drag = null;
+  c.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && e.button === 0) drag = { x: e.clientX, left: c.scrollLeft, moved: false }; });
+  window.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x;
+    if (!drag.moved && Math.abs(dx) < 6) return;
+    drag.moved = true;
+    c.classList.add('dragging');
+    c.scrollLeft = drag.left - dx;
+  });
+  window.addEventListener('pointerup', () => {
+    if (!drag) return;
+    const moved = drag.moved;
+    drag = null;
+    if (moved) setTimeout(() => c.classList.remove('dragging'), 0);   // ลากเสร็จ: คลิกที่ตามมาไม่เลือกหมวด
+  });
+})();
 $('chips').addEventListener('scroll', chipsEdge, { passive: true });
 window.addEventListener('resize', chipsEdge);
 if (window.ResizeObserver) new ResizeObserver(chipsEdge).observe($('chips'));   // หน้าเมนูเพิ่งโชว์ (ตอนวาดยังซ่อนอยู่ วัดขนาดไม่ได้)
