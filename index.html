@@ -64,6 +64,40 @@
   .add-btn { width: 48px; height: 48px; flex: none; border-radius: 50%; border: none; background: var(--btn); color: #fff; font-size: 28px; line-height: 1; cursor: pointer; }
   .item.disabled { opacity: .55; cursor: default; }
   .item.disabled .add-btn { background: #C9B8A6; }
+  .item.soldout { cursor: default; }
+  .item.soldout .thumb img { filter: grayscale(1); opacity: .6; }
+  .item.soldout .item-name, .item.soldout .item-price { color: var(--muted); }
+  .soldout-tag { flex: none; padding: 6px 12px; border-radius: 999px; background: #FBE3E0; color: #B3382C; font-size: 16px; font-weight: 600; white-space: nowrap; }
+  .left-tag { font-size: 15px; font-weight: 600; color: #A04A12; margin-top: 2px; }
+  /* หน้าเลือกเมนู: รูปใหญ่ — มือถือ (แนวตั้ง) รูปเต็มกว้างบนสุด · จอกว้าง/แนวนอน รูปซ้าย ตัวเลือกขวา */
+  .sheet { position: relative; }
+  .pd-hero { margin: -20px -16px 14px; aspect-ratio: 16 / 9; max-height: 32vh; background: var(--cream); overflow: hidden; }   /* มือถือ: ผืนผ้าแนวนอน ไม่สูงเกิน ตัดขอบบน-ล่าง เก็บกลางรูป */
+  .pd-hero img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
+  .pd-x { position: absolute; top: 12px; right: 12px; z-index: 2; width: 46px; height: 46px; border-radius: 50%; border: none; background: rgba(255,255,255,.94); color: var(--brown); font-size: 22px; font-weight: 600; box-shadow: 0 2px 8px rgba(60,40,25,.25); cursor: pointer; }
+  .pd-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .pd:not(.has-img) .pd-head { padding-right: 52px; }   /* ไม่มีรูป: เว้นที่ให้ปุ่ม ✕ */
+  .pd-head h3 { margin: 0; font-size: 24px; line-height: 1.3; }
+  .pd-price { color: var(--orange-dark); font-weight: 600; font-size: 22px; white-space: nowrap; }
+  .pd-foot { position: sticky; bottom: calc(-16px - env(safe-area-inset-bottom)); margin: 14px -16px calc(-16px - env(safe-area-inset-bottom)); padding: 10px 16px calc(14px + env(safe-area-inset-bottom)); background: var(--bg); box-shadow: 0 -6px 14px rgba(60,40,25,.08); display: flex; flex-wrap: wrap; align-items: center; gap: 10px; z-index: 1; }
+  .pd-foot .err { flex: 1 0 100%; margin: 0; min-height: 0; }
+  .pd-foot .err:empty { display: none; }
+  .pd-foot .qty { margin: 0; gap: 10px; flex: none; }
+  .pd-foot .qty button { width: 48px; height: 48px; }
+  .pd-foot .primary { flex: 1 1 170px; width: auto; }
+  .choice.out { cursor: default; }
+  .choice.out .name { color: var(--muted); text-decoration: line-through; }
+  .choice.out .extra { color: #B3382C; font-weight: 600; }
+  @media (min-width: 760px) {
+    .sheet-backdrop.pd-open { align-items: center; padding: 24px; }
+    .sheet.sheet-pd { border-radius: 22px; }
+    .sheet.sheet-pd.has-img { max-width: 980px; height: min(86vh, 680px); padding: 0; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+    .sheet-pd.has-img .pd { display: contents; }
+    .sheet-pd.has-img .pd-hero { margin: 0; aspect-ratio: auto; max-height: none; height: 100%; }
+    .sheet-pd.has-img .pd-side { display: flex; flex-direction: column; min-height: 0; }
+    .sheet-pd.has-img .pd-main { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 22px 22px 8px; }
+    .sheet-pd.has-img .pd-foot { position: static; margin: 0; padding: 12px 22px 18px; }
+    .sheet-pd.has-img .pd-head { padding-right: 52px; }
+  }
 
   .cart-bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 30%); z-index: 10; }
   .cart-bar button { width: 100%; max-width: 528px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; border: none; background: var(--brown); color: #fff; padding: 16px 20px; border-radius: 16px; font-size: 19px; font-weight: 500; cursor: pointer; }
@@ -225,6 +259,40 @@
   .ow-times { display: flex; gap: 10px; margin-top: 10px; }
   .ow-times label { flex: 1; min-width: 0; font-size: 18px; color: var(--muted); }
   .ow-times input { display: block; width: 100%; min-width: 0; -webkit-appearance: none; appearance: none; margin-top: 6px; padding: 12px; font-size: 24px; border: 2px solid var(--line); border-radius: 14px; background: #fff; font-family: inherit; }
+  /* ตัวเลือกเสริม: แตะสลับ มี / หมด (แท็บเมนู) */
+  .og-card { background: #fff; border-radius: 18px; padding: 12px 14px 14px; margin-bottom: 10px; }
+  .og-top { display: flex; align-items: center; gap: 10px; }
+  .og-top .og-title { flex: 1; min-width: 0; font-size: 21px; font-weight: 500; }
+  .og-top .og-title small { display: block; font-size: 15px; color: var(--muted); font-weight: 400; }
+  .og-edit { flex: none; min-height: 44px; border: 2px solid var(--line); background: #fff; border-radius: 12px; padding: 6px 14px; font-size: 17px; color: var(--brown); cursor: pointer; white-space: nowrap; }
+  .opt-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .opt-chip { min-height: 46px; border: 2px solid #BFE3C6; background: #EEF8F0; color: #1F6B35; border-radius: 999px; padding: 6px 14px; font-size: 18px; cursor: pointer; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .opt-chip.out { border-color: #F2B8AC; background: #FDE8E4; color: #B3382C; }
+  .opt-chip.out .t { text-decoration: line-through; }
+  .ow-prod .lim { color: #A04A12; font-weight: 500; }
+  .ow-prod .lim.zero { color: #B3382C; font-weight: 600; }
+  /* ฟอร์มแก้เมนู: กลุ่มตัวเลือก = การ์ดแตะเลือก + เห็นรายการข้างในเลย + ปุ่มแก้ */
+  .og-list { display: grid; gap: 8px; margin-top: 8px; }
+  .og { display: flex; align-items: flex-start; gap: 10px; border: 2px solid var(--line); background: #fff; border-radius: 16px; padding: 10px 10px 10px 12px; cursor: pointer; }
+  .og.on { border-color: var(--brown); background: #FFF6EC; }
+  .og-box { flex: none; width: 30px; height: 30px; margin-top: 2px; border-radius: 9px; border: 2px solid #B9A58F; display: grid; place-items: center; font-size: 18px; font-weight: 700; color: transparent; background: #fff; }
+  .og.on .og-box { background: var(--brown); border-color: var(--brown); color: #fff; }
+  .og-txt { flex: 1; min-width: 0; }
+  .og-txt b { display: block; font-size: 19px; font-weight: 600; }
+  .og-txt > span { display: block; font-size: 16px; color: var(--muted); line-height: 1.45; margin-top: 2px; }
+  .og-txt .x { color: #B3382C; }
+  .og-add { display: block; width: 100%; margin-top: 8px; min-height: 52px; padding: 8px 12px; border: 2px dashed #B49A7C; background: transparent; border-radius: 16px; font-size: 18px; font-weight: 500; color: var(--brown); cursor: pointer; }
+  .og-add small { display: block; font-size: 15px; font-weight: 400; color: var(--muted); }
+  .ow-field small.now { display: block; color: #A04A12; font-size: 15px; margin-top: 2px; }
+  /* คอม/iPad แนวนอน: แท็บเมนูกว้างขึ้น เมนูเรียง 2 คอลัมน์ · ฟอร์มแก้เมนูกว้าง กลุ่มตัวเลือก 2 คอลัมน์ */
+  @media (min-width: 900px) {
+    body.ow-mid .wrap { max-width: 1120px; }
+    .ow-prods { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+    .og-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+    .sheet.ow-modal.wide { max-width: 880px; }
+    .ow-modal.wide .og-list { grid-template-columns: 1fr 1fr; }
+  }
+  @media (min-width: 1400px) { .og-cards { grid-template-columns: repeat(3, 1fr); } }
   .ow-thumb { width: 56px; height: 56px; flex: none; border-radius: 12px; background: var(--cream); display: grid; place-items: center; font-size: 24px; overflow: hidden; cursor: pointer; }
   .ow-thumb img, .ow-photo-box img { width: 100%; height: 100%; object-fit: cover; }
   .ow-photo { display: flex; gap: 14px; align-items: center; margin-top: 6px; }
@@ -409,9 +477,9 @@
   @keyframes pinShake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
   .gate-err { min-height: 26px; margin: 10px 0 8px; font-size: 17px; font-weight: 500; color: var(--red); line-height: 1.4; }
   .gate-err.checking { color: var(--brown); }
-  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 320px; margin: 0 auto; }
-  .pad button { height: 62px; border: 2px solid var(--line); background: #fff; border-radius: 18px; font-size: 30px; font-weight: 500; color: var(--brown); cursor: pointer; touch-action: manipulation; -webkit-user-select: none; user-select: none; }
-  .pad button:active { background: var(--cream); }
+  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 320px; margin: 0 auto; touch-action: pan-y; }   /* กันมือถือคิดว่า 2 นิ้ว = ซูม / แตะเบิ้ล = ซูม แล้วทิ้งปุ่มที่กดตามมา (เลื่อนจอขึ้นลงยังได้) */
+  .pad button { height: 62px; border: 2px solid var(--line); background: #fff; border-radius: 18px; font-size: 30px; font-weight: 500; color: var(--brown); cursor: pointer; touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; transition: transform .08s, background-color .08s; }
+  .pad button:active, .pad button.press { background: var(--cream); transform: scale(.94); }
   .pad button:disabled { opacity: .35; cursor: default; }
   .pad .pad-fn { font-size: 20px; background: transparent; }
   .pad .pad-ok { font-size: 20px; font-weight: 600; background: var(--btn); border-color: var(--btn); color: #fff; }
@@ -552,7 +620,7 @@
 // ====== หน้าเดียวใช้ทุกร้าน ======
 // ร้านไหน = ?s=รหัสร้าน ใน Endpoint URL ของ LIFF เช่น https://.../demo_menu/?s=demo
 // ค่าของแต่ละร้าน (LIFF ID + ลิงก์ /exec) อยู่ในไฟล์ shops.json ข้างไฟล์นี้ — เพิ่มร้านใหม่ = เพิ่ม 1 บรรทัดในนั้น
-const PAGE_VERSION = '15 พ.ย. 69 · 03:00';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
+const PAGE_VERSION = '15 พ.ย. 69 · 23:00';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
 let LIFF_ID = '';
 let API_URL = '';
 let SHOP_KEY = '';
@@ -886,7 +954,7 @@ function renderMenu() {
     if (window.scrollY > top) window.scrollTo({ top: top, behavior: 'smooth' });
   };
   $('menuList').onclick = (e) => {
-    const el = e.target.closest('.item'); if (!el || !state.menu.shop.open) return;
+    const el = e.target.closest('.item'); if (!el || !state.menu.shop.open || el.classList.contains('soldout')) return;
     openItem(el.dataset.id);
   };
   updateCartBar();
@@ -895,54 +963,81 @@ function renderMenu() {
 function itemHtml(p) {
   const count = state.cart.filter((l) => l.id === p.id).reduce((s, l) => s + l.qty, 0);
   const thumb = p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : '🍽️';
-  return `<div class="item${state.menu.shop.open ? '' : ' disabled'}" data-id="${esc(p.id)}">
+  const few = !p.soldOut && p.left != null && p.left <= 5;   // จำกัดต่อวัน ใกล้หมด = บอกลูกค้า
+  return `<div class="item${state.menu.shop.open ? '' : ' disabled'}${p.soldOut ? ' soldout' : ''}" data-id="${esc(p.id)}">
     <div class="thumb">${thumb}</div>
     <div class="item-info">
       <div class="item-name">${esc(p.name)}</div>
       <div class="item-price">${baht(p.price)}</div>
+      ${few ? `<div class="left-tag">🔥 เหลือ ${p.left} ที่</div>` : ''}
       ${count ? `<div class="in-cart">ในตะกร้า ${count}</div>` : ''}
     </div>
-    <button class="add-btn" aria-label="เพิ่ม">+</button>
+    ${p.soldOut ? '<span class="soldout-tag">หมดแล้ววันนี้</span>' : '<button class="add-btn" aria-label="เพิ่ม">+</button>'}
   </div>`;
 }
 
 // ---------- เลือกตัวเลือก ----------
+// มือถือแนวตั้ง: รูปใหญ่เต็มกว้างบนสุด → ชื่อ/ราคา → ตัวเลือก · ปุ่มใส่ตะกร้าติดขอบล่างตลอด (ไม่ต้องเลื่อนหา)
+// จอกว้าง/แนวนอน (คอม iPad มือถือตะแคง): รูปซ้ายเต็มความสูง · ขวาเป็นตัวเลือก (เลื่อนเฉพาะฝั่งขวา)
 function openItem(id) {
   const p = state.menu.products.find((x) => x.id === id);
+  if (!p || p.soldOut) return;
   const groups = p.groups.map((g) => state.menu.groups[g]);
+  const inCart = state.cart.filter((l) => l.id === p.id).reduce((n, l) => n + l.qty, 0);
+  const maxQty = p.left != null ? Math.max(0, p.left - inCart) : 99;   // จำกัดต่อวัน: เหลือเท่าไหร่ (หักที่อยู่ในตะกร้าแล้ว)
   let qty = 1;
 
+  const choiceHtml = (g, gi) => {
+    const firstOk = g.choices.findIndex((c) => !c.out);
+    return g.choices.map((c, ci) => `
+      <label class="choice${c.out ? ' out' : ''}">
+        <input type="${g.multi ? 'checkbox' : 'radio'}" name="g${gi}" value="${esc(c.name)}" data-price="${c.price}" ${c.out ? 'disabled' : ''} ${!g.multi && g.required && ci === firstOk ? 'checked' : ''}>
+        <span class="name">${esc(c.name)}</span>
+        <span class="extra">${c.out ? 'หมด' : c.price ? '+' + baht(c.price) : ''}</span>
+      </label>`).join('');
+  };
   $('sheetBody').innerHTML = `
-    <h3>${esc(p.name)}</h3>
-    <div style="color:var(--orange-dark);font-weight:600">${baht(p.price)}</div>
-    ${groups.map((g, gi) => `
-      <div class="group">
-        <div class="group-title"><span>${esc(g.name)}</span><span class="req">${g.required ? 'ต้องเลือก' : 'ไม่บังคับ'}${g.multi ? ' · เลือกได้หลายอย่าง' : ''}</span></div>
-        ${g.choices.map((c, ci) => `
-          <label class="choice">
-            <input type="${g.multi ? 'checkbox' : 'radio'}" name="g${gi}" value="${esc(c.name)}" data-price="${c.price}" ${!g.multi && g.required && ci === 0 ? 'checked' : ''}>
-            <span class="name">${esc(c.name)}</span>
-            <span class="extra">${c.price ? '+' + baht(c.price) : ''}</span>
-          </label>`).join('')}
-      </div>`).join('')}
-    <div class="qty"><button id="qMinus">−</button><span id="qVal">1</span><button id="qPlus">+</button></div>
-    <p class="err" id="sheetErr"></p>
-    <button class="primary" id="addToCart"></button>
-    <button class="ghost" id="sheetClose">ยกเลิก</button>`;
+    <button class="pd-x" id="sheetX" aria-label="ปิด">✕</button>
+    <div class="pd${p.image ? ' has-img' : ''}">
+      ${p.image ? `<div class="pd-hero"><img src="${esc(p.image)}" alt="${esc(p.name)}"></div>` : ''}
+      <div class="pd-side">
+        <div class="pd-main">
+          <div class="pd-head"><h3>${esc(p.name)}</h3><div class="pd-price">${baht(p.price)}</div></div>
+          ${p.left != null && p.left <= 5 ? `<div class="left-tag">🔥 วันนี้เหลือ ${p.left} ที่${inCart ? ` (อยู่ในตะกร้าแล้ว ${inCart})` : ''}</div>` : ''}
+          ${groups.map((g, gi) => `
+            <div class="group">
+              <div class="group-title"><span>${esc(g.name)}</span><span class="req">${g.required ? 'ต้องเลือก' : 'ไม่บังคับ'}${g.multi ? ' · เลือกได้หลายอย่าง' : ''}</span></div>
+              ${choiceHtml(g, gi)}
+            </div>`).join('')}
+        </div>
+        <div class="pd-foot">
+          <p class="err" id="sheetErr"></p>
+          <div class="qty"><button id="qMinus" aria-label="ลดจำนวน">−</button><span id="qVal">1</span><button id="qPlus" aria-label="เพิ่มจำนวน">+</button></div>
+          <button class="primary" id="addToCart"></button>
+        </div>
+      </div>
+    </div>`;
 
   const picked = () => [...$('sheetBody').querySelectorAll('input:checked')];
   const unitPrice = () => p.price + picked().reduce((s, i) => s + Number(i.dataset.price), 0);
-  const refresh = () => { $('qVal').textContent = qty; $('addToCart').textContent = `ใส่ตะกร้า · ${baht(unitPrice() * qty)}`; };
+  const refresh = () => {
+    $('qVal').textContent = qty;
+    $('qPlus').disabled = qty >= Math.min(99, maxQty);
+    $('qMinus').disabled = qty <= 1;
+    $('addToCart').disabled = maxQty < 1;
+    $('addToCart').textContent = maxQty < 1 ? 'ใส่ตะกร้าครบที่เหลือแล้ว' : `ใส่ตะกร้า · ${baht(unitPrice() * qty)}`;
+  };
 
   $('sheetBody').onchange = refresh;
   $('sheetBody').onclick = null;
   $('qMinus').onclick = () => { qty = Math.max(1, qty - 1); refresh(); };
-  $('qPlus').onclick = () => { qty = Math.min(99, qty + 1); refresh(); };
-  $('sheetClose').onclick = closeSheet;
+  $('qPlus').onclick = () => { qty = Math.min(99, maxQty, qty + 1); refresh(); };
+  $('sheetX').onclick = closeSheet;
   $('addToCart').onclick = () => {
     for (let gi = 0; gi < groups.length; gi++) {
       if (groups[gi].required && !$('sheetBody').querySelector(`input[name="g${gi}"]:checked`)) {
-        $('sheetErr').textContent = 'กรุณาเลือก' + groups[gi].name; return;
+        $('sheetErr').textContent = groups[gi].choices.every((c) => c.out) ? `${groups[gi].name}หมดทุกอย่างแล้ว ขอโทษนะครับ` : 'กรุณาเลือก' + groups[gi].name;
+        return;
       }
     }
     const options = picked().map((i) => i.value);
@@ -955,7 +1050,7 @@ function openItem(id) {
     renderMenu();
   };
   refresh();
-  openSheet();
+  openSheet('sheet-pd' + (p.image ? ' has-img' : ''));
 }
 /** รูป QR จ่ายเงินพร้อมชื่อร้าน ยอด เลขออเดอร์ (เอาไปสแกนจากอัลบั้มในแอปธนาคาร) */
 function payCard(order) {
@@ -1011,9 +1106,13 @@ async function saveQr(order) {
   openSheet();
 }
 
-function openSheet() {
+/** cls: แบบพิเศษของแผ่น (เช่น 'sheet-pd' = หน้าเลือกเมนู) · ไม่ส่ง = แผ่นธรรมดา */
+function openSheet(cls) {
+  $('sheetBody').className = 'sheet' + (cls ? ' ' + cls : '');
+  $('sheet').classList.toggle('pd-open', /sheet-pd/.test(cls || ''));
   if ($('sheet').classList.contains('hidden')) { $('sheet').classList.remove('hidden'); lockScroll(); }
   $('sheetBody').scrollTop = 0;
+  const main = $('sheetBody').querySelector('.pd-main'); if (main) main.scrollTop = 0;
 }
 function closeSheet() {
   if ($('sheet').classList.contains('hidden')) return;
@@ -1206,6 +1305,7 @@ async function submitOrder() {
     $('orderErr').textContent = err.message === 'Failed to fetch' ? 'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้งนะครับ' : err.message;
     $('submitBtn').disabled = false;
     $('submitBtn').textContent = submitLabel();
+    if (/หมด|เหลือวันนี้/.test(err.message)) loadMenu().then((m) => { state.menu = m; renderMenu(); }).catch(() => {});   // ของหมดระหว่างเลือก
   } finally {
     unbusy();
   }
@@ -1777,11 +1877,29 @@ function focusCard() {
 // กดปุ่มตัวเลข/พิมพ์บนคีย์บอร์ดคอม = มือถืออนุญาตให้ส่งเสียง → เข้าหน้าร้านแล้วมีเสียงเลย ไม่ต้องแตะจออีก
 const GATE = { token: '', shown: false, busy: false, checked: false, pin: '' };
 function gateInit() {
-  $('gatePad').addEventListener('click', (e) => {
-    const b = e.target.closest('button[data-k]');
+  const pad = $('gatePad');
+  let touched = false;
+  const press = (b) => {
     if (!b || b.disabled) return;
-    sayUnlock();
+    b.classList.add('press');
+    setTimeout(() => b.classList.remove('press'), 130);
     gateKey(b.dataset.k);
+  };
+  // รับปุ่มตอนนิ้ว "แตะลง" ทันที — ไม่รอ click (iPhone ทิ้ง click เวลากดเร็ว ๆ / นิ้วถัดไปแตะก่อนนิ้วแรกยก / นิ้วขยับนิดเดียว)
+  // แตะหลายนิ้วซ้อนกันก็นับครบทุกปุ่ม · เสียงยังเปิดให้เองตอนยกนิ้ว (sayInit ดัก touchend/click ไว้แล้ว)
+  pad.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const b = e.target.closest('button[data-k]');
+    if (!b) return;
+    touched = true;
+    e.preventDefault();
+    press(b);
+  });
+  // click จากนิ้ว/เมาส์ = นับไปแล้วตอนแตะลง ข้ามไป · click จากคีย์บอร์ด (Tab แล้ว Enter, detail = 0) / เครื่องเก่าที่ไม่มี pointer ยังใช้ได้
+  pad.addEventListener('click', (e) => {
+    if (touched && e.detail !== 0) return;
+    sayUnlock();
+    press(e.target.closest('button[data-k]'));
   });
   // คอม: พิมพ์ตัวเลขจากคีย์บอร์ดได้เลย (Enter = ตกลง, Backspace = ลบ, Esc = ล้าง)
   document.addEventListener('keydown', (e) => {
@@ -1916,7 +2034,8 @@ function ownerEnter() {
 function ownerTab(tab) {
   owner.tab = tab;
   owner.view = 'active';
-  document.body.classList.toggle('ow-wide', tab === 'orders');   // คอม/แท็บเล็ต: แท็บออเดอร์ใช้จอเต็ม เรียงหลายคอลัมน์
+  document.body.classList.toggle('ow-wide', tab === 'orders');   // คอม/แท็บเล็ต: แท็บออเดอร์ใช้จอเต็ม
+  document.body.classList.toggle('ow-mid', tab === 'menu');      // แท็บเมนู: กว้างขึ้น เรียง 2 คอลัมน์
   document.querySelectorAll('.ow-tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
   $('owAlert').classList.add('hidden');
   $('owBody').innerHTML = '<div class="ow-empty">กำลังโหลด...</div>';
@@ -2081,6 +2200,12 @@ async function loadOwnerMenu() {
 function groupSummary(g) {
   return g.choices.map((c) => c.name + (c.price ? ' +' + c.price : '')).join(', ');
 }
+function groupModeText(g) { return g.multi ? 'เลือกได้หลายอย่าง' : g.required ? 'ต้องเลือก 1 อย่าง' : 'เลือกได้ 1 อย่าง (ไม่บังคับ)'; }
+/** " · วันละ 20 · เหลือ 12" / " · หมดวันนี้ (ขายครบ 20)" */
+function limitText(p) {
+  if (!p.limit) return '';
+  return p.left > 0 ? ` · <span class="lim">วันละ ${p.limit} · เหลือ ${p.left}</span>` : ` · <span class="lim zero">หมดวันนี้ (ขายครบ ${p.limit})</span>`;
+}
 
 function renderOwnerMenu() {
   if (owner.tab !== 'menu') return;
@@ -2089,19 +2214,21 @@ function renderOwnerMenu() {
   $('owBody').innerHTML =
     `<button class="ow-big ready" data-menu="add">➕ เพิ่มเมนูใหม่</button>
      <div class="ow-hint">กด <b>มีขาย / หมดแล้ว</b> เพื่อสลับ ลูกค้าเห็นทันที</div>` +
-    cats.map((c) => `<h2 class="cat">${esc(c)}</h2>` + products.filter((p) => p.category === c).map((p) => `
+    cats.map((c) => `<h2 class="cat">${esc(c)}</h2><div class="ow-prods">` + products.filter((p) => p.category === c).map((p) => `
       <div class="ow-prod">
         <div class="ow-thumb" data-menu="edit" data-id="${esc(p.id)}">${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : '📷'}</div>
-        <div class="nm" data-menu="edit" data-id="${esc(p.id)}">${esc(p.name)}<small>${baht(p.price)} · ✏️ แก้ไข</small></div>
+        <div class="nm" data-menu="edit" data-id="${esc(p.id)}">${esc(p.name)}<small>${baht(p.price)}${limitText(p)} · ✏️ แก้ไข</small></div>
         <button class="ow-switch ${p.open ? 'on' : 'off'}" data-menu="toggle" data-id="${esc(p.id)}">${p.open ? '✅ มีขาย' : '❌ หมดแล้ว'}</button>
-      </div>`).join('')).join('') +
+      </div>`).join('') + '</div>').join('') +
     `<h2 class="cat" style="margin-top:26px">ตัวเลือกเสริม</h2>
-     <div class="ow-hint" style="text-align:left">เช่น ขนาดพิเศษ +10 บาท, เพิ่มไข่ — แก้ครั้งเดียว ใช้ได้กับทุกเมนูที่เลือกไว้</div>` +
+     <div class="ow-hint" style="text-align:left">แตะรายการเพื่อสลับ <b>มี / หมด</b> (เช่น เส้นใหญ่หมด) ลูกค้าเห็นทันที</div>
+     <div class="og-cards">` +
     Object.values(groups).map((g) => `
-      <div class="ow-prod" data-menu="group" data-name="${esc(g.name)}">
-        <div class="nm">${esc(g.name)}<small>${esc(groupSummary(g))}</small></div>
-        <span style="font-size:18px;color:var(--muted)">✏️ แก้ไข</span>
-      </div>`).join('') +
+      <div class="og-card">
+        <div class="og-top"><div class="og-title">${esc(g.name)}<small>${esc(groupModeText(g))} · ใช้กับ ${products.filter((p) => p.groups.includes(g.name)).length} เมนู</small></div>
+          <button class="og-edit" data-menu="group" data-name="${esc(g.name)}">✏️ แก้ไข</button></div>
+        <div class="opt-chips">${g.choices.map((c) => `<button class="opt-chip${c.out ? ' out' : ''}" data-menu="opt" data-g="${esc(g.name)}" data-c="${esc(c.name)}">${c.out ? '✕' : '✓'} <span class="t">${esc(c.name)}</span>${c.out ? ' · หมด' : c.price ? ' +' + c.price : ''}</button>`).join('')}</div>
+      </div>`).join('') + '</div>' +
     `<button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" data-menu="group-add">➕ เพิ่มตัวเลือกเสริม</button>`;
 
   $('owBody').onclick = async (e) => {
@@ -2111,6 +2238,15 @@ function renderOwnerMenu() {
     if (act === 'edit') return editProduct(products.find((p) => p.id === el.dataset.id));
     if (act === 'group') return editGroup(groups[el.dataset.name]);
     if (act === 'group-add') return editGroup(null);
+    if (act === 'opt') {   // ตัวเลือก มี ⇄ หมด
+      const c = groups[el.dataset.g].choices.find((x) => x.name === el.dataset.c);
+      c.out = !c.out; renderOwnerMenu();
+      try {
+        await ownerCall('owner.optionOut', { group: el.dataset.g, name: c.name, out: c.out });
+        toast(c.out ? `✕ ${c.name} หมดแล้ว` : `✓ ${c.name} กลับมามีแล้ว`);
+      } catch (err) { c.out = !c.out; renderOwnerMenu(); toast('❌ ' + err.message); }
+      return;
+    }
     if (act === 'toggle') {
       const p = products.find((x) => x.id === el.dataset.id);
       p.open = !p.open; renderOwnerMenu();
@@ -2140,7 +2276,8 @@ function shrinkImage(file, max) {
   });
 }
 
-function openModal(html) {
+function openModal(html, cls) {
+  $('owModalBody').className = 'sheet ow ow-modal' + (cls ? ' ' + cls : '');   // cls 'wide' = จอกว้างให้ฟอร์มกว้างขึ้น
   $('owModalBody').onclick = null; // ล้าง handler ของหน้าก่อน
   $('owModalBody').innerHTML = html;
   if ($('owModal').classList.contains('hidden')) { $('owModal').classList.remove('hidden'); lockScroll(); }
@@ -2152,80 +2289,109 @@ function closeModal() {
   unlockScroll();
 }
 
-function editProduct(p) {
+/** ฟอร์มเพิ่ม/แก้เมนู · d = ค่าที่กรอกค้างไว้ (กลับมาจากหน้าแก้กลุ่มตัวเลือก ข้อมูลไม่หาย) */
+function editProduct(p, d) {
   const { products, groups } = owner.menu;
   const cats = [...new Set(products.map((x) => x.category))];
-  const chosen = new Set(p ? p.groups : []);
-  let cat = p ? p.category : (cats[0] || '');
-  let photo = null; // รูปใหม่ที่เลือก (ย่อแล้ว)
-  let removePhoto = false;
+  d = d || { name: p ? p.name : '', price: p ? String(p.price) : '', cat: p ? p.category : (cats[0] || ''), newCat: '',
+    chosen: new Set(p ? p.groups : []), limit: p && p.limit ? String(p.limit) : '', photo: null, removePhoto: false };
+  [...d.chosen].forEach((g) => { if (!groups[g]) d.chosen.delete(g); });   // กลุ่มที่ถูกลบไปแล้ว
+  const live = p ? products.find((x) => x.id === p.id) || p : null;
+  const box = d.photo ? `<img src="data:image/jpeg;base64,${d.photo}" alt="">` : p && p.image && !d.removePhoto ? `<img src="${esc(p.image)}" alt="">` : '📷';
+  const ogHtml = () => Object.values(groups).map((g) => `
+      <div class="og${d.chosen.has(g.name) ? ' on' : ''}" data-g="${esc(g.name)}" role="checkbox" aria-checked="${d.chosen.has(g.name)}">
+        <span class="og-box">✓</span>
+        <span class="og-txt"><b>${esc(g.name)}</b><span>${g.choices.map((c) => c.out ? `<span class="x">${esc(c.name)} (หมด)</span>` : esc(c.name) + (c.price ? ' +' + c.price : '')).join(' · ')}</span></span>
+        <button class="og-edit" data-edit>✏️ แก้</button>
+      </div>`).join('');
   openModal(`
     <h3>${p ? 'แก้ไขเมนู' : 'เพิ่มเมนูใหม่'}</h3>
     <div class="ow-photo">
-      <div class="ow-photo-box" id="fPhotoBox">${p && p.image ? `<img src="${esc(p.image)}" alt="">` : '📷'}</div>
+      <div class="ow-photo-box" id="fPhotoBox">${box}</div>
       <div class="ow-photo-btns">
         <label class="ow-chip ow-photo-pick">📷 ถ่ายรูป / เลือกรูป<input type="file" accept="image/*" id="fPhoto" hidden></label>
-        ${p && p.image ? '<button class="ow-chip" id="fPhotoDel">ลบรูป</button>' : ''}
+        ${box !== '📷' ? '<button class="ow-chip" id="fPhotoDel">ลบรูป</button>' : ''}
       </div>
     </div>
-    <label class="ow-field">ชื่อเมนู<input id="fName" value="${esc(p ? p.name : '')}" placeholder="เช่น ข้าวมันไก่ทอด"></label>
-    <label class="ow-field">ราคา (บาท)<input id="fPrice" type="number" inputmode="numeric" min="0" value="${p ? p.price : ''}" placeholder="เช่น 50"></label>
+    <label class="ow-field">ชื่อเมนู<input id="fName" value="${esc(d.name)}" placeholder="เช่น ข้าวมันไก่ทอด"></label>
+    <label class="ow-field">ราคา (บาท)<input id="fPrice" type="number" inputmode="numeric" min="0" value="${esc(d.price)}" placeholder="เช่น 50"></label>
     <div class="ow-field">หมวด</div>
-    <div class="ow-chips" id="fCats">${cats.map((c) => `<button class="ow-chip${c === cat ? ' on' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}
-      <button class="ow-chip" data-cat="__new">➕ หมวดใหม่</button></div>
-    <input id="fNewCat" class="ow-input hidden" placeholder="ชื่อหมวดใหม่ เช่น ของหวาน">
-    <div class="ow-field">ตัวเลือกเสริมของเมนูนี้ <small>(กดเลือกได้หลายอัน)</small></div>
-    <div class="ow-chips" id="fGroups">${Object.keys(groups).map((g) => `<button class="ow-chip${chosen.has(g) ? ' on' : ''}" data-g="${esc(g)}">${esc(g)}</button>`).join('') || '<span class="ow-hint">ยังไม่มีตัวเลือกเสริม</span>'}</div>
+    <div class="ow-chips" id="fCats">${cats.map((c) => `<button class="ow-chip${c === d.cat ? ' on' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}
+      <button class="ow-chip${d.cat === '__new' ? ' on' : ''}" data-cat="__new">➕ หมวดใหม่</button></div>
+    <input id="fNewCat" class="ow-input${d.cat === '__new' ? '' : ' hidden'}" value="${esc(d.newCat)}" placeholder="ชื่อหมวดใหม่ เช่น ของหวาน">
+    <label class="ow-field">ขายได้วันละกี่ที่ <small>(เว้นว่าง = ไม่จำกัด · ขายครบแล้วขึ้น "หมด" เอง พรุ่งนี้เต็มใหม่)</small>
+      ${live && live.limit ? `<small class="now">วันนี้ขายไปแล้ว ${live.sold} · เหลือ ${live.left}</small>` : ''}
+      <input id="fLimit" type="number" inputmode="numeric" min="0" max="9999" value="${esc(d.limit)}" placeholder="ไม่จำกัด"></label>
+    <div class="ow-field">ตัวเลือกเสริมของเมนูนี้ <small>(แตะเพื่อเลือก · เลือกได้หลายกลุ่ม)</small></div>
+    <div class="og-list" id="fGroups">${ogHtml() || '<span class="ow-hint">ยังไม่มีตัวเลือกเสริม</span>'}</div>
+    <button class="og-add" id="fAddGroup">➕ สร้างกลุ่มตัวเลือกใหม่ <small>(เช่น ความเผ็ด, ท็อปปิ้ง)</small></button>
     <p class="err" id="fErr"></p>
     <button class="ow-big money" id="fSave">💾 บันทึก</button>
     <button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" id="fCancel">ยกเลิก</button>
-    ${p ? '<button class="ow-cancel" id="fDel">ลบเมนูนี้</button>' : ''}`);
+    ${p ? '<button class="ow-cancel" id="fDel">ลบเมนูนี้</button>' : ''}`, 'wide');
 
+  const grab = () => { d.name = $('fName').value; d.price = $('fPrice').value; d.limit = $('fLimit').value; d.newCat = $('fNewCat').value; };
+  const back = () => editProduct(p, d);
   $('fCats').onclick = (e) => {
     const b = e.target.closest('.ow-chip'); if (!b) return;
-    cat = b.dataset.cat;
+    d.cat = b.dataset.cat;
     $('fCats').querySelectorAll('.ow-chip').forEach((x) => x.classList.toggle('on', x === b));
-    $('fNewCat').classList.toggle('hidden', cat !== '__new');
-    if (cat === '__new') $('fNewCat').focus();
+    $('fNewCat').classList.toggle('hidden', d.cat !== '__new');
+    if (d.cat === '__new') $('fNewCat').focus();
   };
   $('fGroups').onclick = (e) => {
-    const b = e.target.closest('.ow-chip'); if (!b) return;
-    if (chosen.has(b.dataset.g)) chosen.delete(b.dataset.g); else chosen.add(b.dataset.g);
-    b.classList.toggle('on');
+    const row = e.target.closest('.og'); if (!row) return;
+    const name = row.dataset.g;
+    if (e.target.closest('[data-edit]')) {   // แก้กลุ่มนี้ แล้วกลับมาที่ฟอร์มเมนู
+      grab();
+      return editGroup(groups[name], { back: (saved) => {
+        if (saved && saved !== name && d.chosen.has(name)) { d.chosen.delete(name); d.chosen.add(saved); }
+        back();
+      } });
+    }
+    if (d.chosen.has(name)) d.chosen.delete(name); else d.chosen.add(name);
+    row.classList.toggle('on', d.chosen.has(name));
+    row.setAttribute('aria-checked', d.chosen.has(name));
   };
+  $('fAddGroup').onclick = () => { grab(); editGroup(null, { back: (saved) => { if (saved) d.chosen.add(saved); back(); } }); };
   $('fPhoto').onchange = async (e) => {
     const file = e.target.files[0]; if (!file) return;
     $('fPhotoBox').innerHTML = '⏳';
     try {
-      photo = await shrinkImage(file, 900);
-      removePhoto = false;
-      $('fPhotoBox').innerHTML = `<img src="data:image/jpeg;base64,${photo}" alt="">`;
+      d.photo = await shrinkImage(file, 900);
+      d.removePhoto = false;
+      $('fPhotoBox').innerHTML = `<img src="data:image/jpeg;base64,${d.photo}" alt="">`;
     } catch (err) { $('fPhotoBox').innerHTML = '📷'; toast('❌ เปิดรูปนี้ไม่ได้ · ลองรูปอื่นนะครับ'); }
   };
-  if ($('fPhotoDel')) $('fPhotoDel').onclick = () => { photo = null; removePhoto = true; $('fPhotoBox').innerHTML = '📷'; $('fPhotoDel').remove(); };
+  if ($('fPhotoDel')) $('fPhotoDel').onclick = () => { d.photo = null; d.removePhoto = !!(p && p.image); $('fPhotoBox').innerHTML = '📷'; $('fPhotoDel').remove(); };
   $('fCancel').onclick = closeModal;
   if (p) $('fDel').onclick = () => confirmBox(`ลบเมนู "${p.name}" ใช่ไหม?`, 'ลบแล้วลูกค้าจะไม่เห็นเมนูนี้อีก (ถ้าแค่ของหมด ให้กด "หมดแล้ว" แทน)', 'ใช่ ลบเมนู', async () => {
     try { await ownerCall('owner.deleteProduct', { id: p.id }); toast('🗑️ ลบเมนูแล้ว'); } catch (err) { toast('❌ ' + err.message); }
     loadOwnerMenu();
-  });
+  }, { back: () => { grab(); back(); } });
   $('fSave').onclick = async () => {
-    const name = $('fName').value.trim();
-    const price = $('fPrice').value;
-    const category = cat === '__new' ? $('fNewCat').value.trim() : cat;
+    grab();
+    const name = d.name.trim();
+    const price = d.price;
+    const category = d.cat === '__new' ? d.newCat.trim() : d.cat;
+    const limit = d.limit === '' ? '' : Number(d.limit);
     if (!name) { $('fErr').textContent = 'ใส่ชื่อเมนูก่อนนะครับ'; return; }
     if (price === '' || Number(price) < 0) { $('fErr').textContent = 'ใส่ราคาก่อนนะครับ'; return; }
     if (!category) { $('fErr').textContent = 'เลือกหรือพิมพ์หมวดก่อนนะครับ'; return; }
+    if (limit !== '' && !(limit >= 0 && limit <= 9999 && Number.isInteger(limit))) { $('fErr').textContent = 'จำนวนต่อวันใส่เป็นเลข 0–9999 นะครับ'; return; }
     $('fSave').disabled = true; $('fSave').textContent = 'กำลังบันทึก...';
     try {
-      const saved = await ownerCall('owner.saveProduct', { id: p ? p.id : '', name, price: Number(price), category, groups: [...chosen] });
-      if (photo) { $('fSave').textContent = 'กำลังอัปโหลดรูป...'; await ownerCall('owner.uploadImage', { id: saved.id, data: photo, mime: 'image/jpeg' }); }
-      else if (removePhoto) await ownerCall('owner.removeImage', { id: saved.id });
+      const saved = await ownerCall('owner.saveProduct', { id: p ? p.id : '', name, price: Number(price), category, groups: [...d.chosen], limit });
+      if (d.photo) { $('fSave').textContent = 'กำลังอัปโหลดรูป...'; await ownerCall('owner.uploadImage', { id: saved.id, data: d.photo, mime: 'image/jpeg' }); }
+      else if (d.removePhoto) await ownerCall('owner.removeImage', { id: saved.id });
       closeModal(); toast('✅ บันทึกเมนูแล้ว'); loadOwnerMenu();
     } catch (err) { $('fErr').textContent = err.message; $('fSave').disabled = false; $('fSave').textContent = '💾 บันทึก'; }
   };
 }
 
-function editGroup(g) {
+/** opt.back(ชื่อกลุ่มที่บันทึก | null) = เปิดจากฟอร์มเมนู → บันทึก/ยกเลิกแล้วกลับไปฟอร์มเดิม */
+function editGroup(g, opt) {
+  opt = opt || {};
   let mode = g ? groupMode(g) : 'one';
   let rows = g ? g.choices.map((c) => ({ ...c })) : [{ name: '', price: 0 }, { name: '', price: 0 }];
   const rowHtml = () => rows.map((c, i) => `
@@ -2235,6 +2401,7 @@ function editGroup(g) {
       <span>บาท</span><button data-del="${i}" aria-label="ลบ">✕</button>
     </div>`).join('');
   openModal(`
+    ${opt.back ? '<button class="ow-cancel plain" id="gBack" style="margin:0 0 6px;padding-left:0">← กลับไปหน้าเมนู</button>' : ''}
     <h3>${g ? 'แก้ไขตัวเลือกเสริม' : 'เพิ่มตัวเลือกเสริม'}</h3>
     <label class="ow-field">ชื่อ<input id="gName" value="${esc(g ? g.name : '')}" placeholder="เช่น ขนาด, ความหวาน, เพิ่มเติม"></label>
     <div class="ow-field">ให้ลูกค้าเลือกแบบไหน</div>
@@ -2259,11 +2426,17 @@ function editGroup(g) {
     sync(); rows.splice(Number(b.dataset.del), 1); if (!rows.length) rows.push({ name: '', price: 0 });
     $('gRows').innerHTML = rowHtml();
   };
-  $('gCancel').onclick = closeModal;
+  const done = async (saved) => {   // บันทึก/ลบแล้ว: โหลดเมนูใหม่ แล้วกลับไปที่เดิม
+    if (!opt.back) { closeModal(); loadOwnerMenu(); return; }
+    try { owner.menu = (await ownerCall('owner.menu')).data; renderOwnerMenu(); } catch (err) { toast('❌ ' + err.message); }
+    opt.back(saved);
+  };
+  $('gCancel').onclick = opt.back ? () => opt.back(null) : closeModal;
+  if ($('gBack')) $('gBack').onclick = () => opt.back(null);
   if (g) $('gDel').onclick = () => confirmBox(`ลบตัวเลือก "${g.name}" ใช่ไหม?`, 'เมนูที่ใช้ตัวเลือกนี้อยู่ จะไม่มีให้เลือกอีก', 'ใช่ ลบตัวเลือก', async () => {
     try { await ownerCall('owner.deleteGroup', { name: g.name }); toast('🗑️ ลบตัวเลือกแล้ว'); } catch (err) { toast('❌ ' + err.message); }
-    loadOwnerMenu();
-  });
+    done(null);
+  }, { back: () => editGroup(g, opt) });
   $('gSave').onclick = async () => {
     sync();
     const name = $('gName').value.trim();
@@ -2273,7 +2446,7 @@ function editGroup(g) {
     $('gSave').disabled = true; $('gSave').textContent = 'กำลังบันทึก...';
     try {
       await ownerCall('owner.saveGroup', { oldName: g ? g.name : '', name, mode, choices });
-      closeModal(); toast('✅ บันทึกตัวเลือกแล้ว'); loadOwnerMenu();
+      toast('✅ บันทึกตัวเลือกแล้ว'); done(name);
     } catch (err) { $('gErr').textContent = err.message; $('gSave').disabled = false; $('gSave').textContent = '💾 บันทึก'; }
   };
 }
