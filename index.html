@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- © 2026 Pumpkin Bot · สงวนลิขสิทธิ์ ห้ามคัดลอก ดัดแปลง หรือนำไปใช้โดยไม่ได้รับอนุญาต -->
 <html lang="th">
 <head>
 <meta charset="utf-8">
@@ -1497,7 +1498,7 @@ $('cartBtn').onclick = () => { renderCart(); show('cartView'); };
 // ---------- แนบสลิปในหน้าเว็บ (ไม่ต้องกลับไปส่งในแชท) ----------
 // ย่อรูปในเครื่องก่อนส่ง (ด้านยาวไม่เกิน 1600px พอให้ระบบอ่าน QR ในสลิปได้) → ระบบตรวจแบบเดียวกับส่งในแชท
 function pickSlip() {
-  if (SANDBOX) { sandboxSlipFile().then(sendSlip); return; }   // ร้านทดลอง: ใช้สลิปตัวอย่าง
+  if (SANDBOX) { sandboxPay(); return; }   // ร้านทดลอง: ข้ามขั้นโอน + ตรวจสลิป
   let inp = $('slipFile');
   if (!inp) {
     inp = document.createElement('input');
@@ -1543,8 +1544,11 @@ async function sendSlip(file) {
     text = '⚠️ ' + (err.message === 'Failed to fetch' ? 'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้งนะครับ' : err.message);
   }
   await loadMyOrders(false);
+  slipResultSheet('📎 ผลตรวจสลิป', text);
+}
+function slipResultSheet(title, text) {
   $('sheetBody').innerHTML = `
-    <h3>📎 ผลตรวจสลิป</h3>
+    <h3>${esc(title)}</h3>
     <div class="my-card slip-result">${esc(text).replace(/\n/g, '<br>')}</div>
     <button class="primary" id="slipMine">🧾 ดูออเดอร์ของฉัน</button>
     <button class="ghost" id="sheetClose">ปิด</button>`;
@@ -2970,10 +2974,7 @@ function canLiffScan() {
 }
 async function scanSlip(ctx) {
   sayUnlock();
-  if (SANDBOX) {   // ร้านทดลอง: จำลองว่าส่องสลิปลูกค้าแล้ว (ยอดตามบิล/ยอดขาย/ออเดอร์ที่รอจ่าย)
-    const file = await sandboxSlipFile();
-    return checkSlip({ image: await slipDataUrl(file), demoAmount: ctx ? (ctx.walk ? ctx.total : ctx.bill ? ctx.bill.total : 0) : 0 }, ctx);
-  }
+  if (SANDBOX) return sandboxScanInfo(ctx);   // ร้านทดลอง: ไม่มีสลิปจริงให้ตรวจ → อธิบายว่าของจริงทำอะไร
   if (canLiffScan()) {
     let v = '';
     try { const r = await liff.scanCodeV2(); v = (r && r.value) || ''; } catch (e) { v = ''; }
@@ -3602,23 +3603,28 @@ function sandboxQr() {
   W.sandbox = true;
   window.QRCode = W;
 }
-/** สลิปตัวอย่าง (วาดเอง) — ระบบทดลองจะ "ตรวจ" ให้ผ่านตามยอดที่ต้องจ่าย */
-function sandboxSlipFile() {
-  return new Promise((resolve) => {
-    const cv = document.createElement('canvas');
-    cv.width = 540; cv.height = 760;
-    const g = cv.getContext('2d');
-    const font = getComputedStyle(document.body).fontFamily || 'sans-serif';
-    g.fillStyle = '#fff'; g.fillRect(0, 0, 540, 760);
-    g.fillStyle = '#1B8A4B'; g.fillRect(0, 0, 540, 130);
-    g.textAlign = 'center';
-    g.fillStyle = '#fff'; g.font = `600 42px ${font}`; g.fillText('โอนเงินสำเร็จ', 270, 82);
-    g.fillStyle = '#333'; g.font = `600 32px ${font}`; g.fillText('สลิปตัวอย่าง', 270, 230);
-    g.font = `400 24px ${font}`; g.fillText('Pumpkin Bot · ร้านทดลอง', 270, 280);
-    g.fillText('ไม่ใช่การโอนเงินจริง', 270, 320);
-    for (let y = 0; y < 9; y++) for (let x = 0; x < 9; x++) if ((x * 7 + y * 5 + x * y) % 3) { g.fillStyle = '#222'; g.fillRect(180 + x * 20, 400 + y * 20, 18, 18); }
-    cv.toBlob((b) => resolve(new File([b], 'demo-slip.jpg', { type: 'image/jpeg' })), 'image/jpeg', 0.85);
-  });
+/** ลูกค้ากด "จำลองว่าโอนแล้ว" — ไม่มีโอนจริง ไม่มีตรวจสลิป (ไม่ใช้โควตาอะไร) ออเดอร์เป็น "จ่ายแล้ว" ทันที */
+async function sandboxPay() {
+  let text = '';
+  try {
+    await withBusy('กำลังจำลองการจ่ายเงิน...', async () => {
+      const res = await fetch(SANDBOX_API, { method: 'POST', body: JSON.stringify({ action: 'demo.pay' }) });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      text = data.text;
+    });
+  } catch (err) { text = '⚠️ ' + err.message; }
+  await loadMyOrders(false);
+  slipResultSheet('✅ จำลองการจ่ายเงินแล้ว', text);
+}
+/** หน้าร้านทดลอง: ปุ่มสแกนสลิป → บอกว่าร้านจริงทำอะไรได้ แล้วกลับไปที่เดิม */
+function sandboxScanInfo(ctx) {
+  openModal(`
+    <h3>📷 สแกนสลิปลูกค้า</h3>
+    <p style="font-size:18px;line-height:1.55">ร้านจริง: ส่องกล้องที่ QR บนสลิปในมือถือลูกค้า ระบบเช็คกับธนาคารให้ทันที ว่าเงินเข้าบัญชีร้านจริง ยอดตรง และไม่ใช่สลิปที่เคยใช้แล้ว</p>
+    <div class="ow-hint">ร้านทดลองไม่มีสลิปจริงให้ตรวจ — ใช้ปุ่ม "รับเงิน" / "โอนแล้ว" แทนได้เลย</div>
+    <button class="ow-big ready" id="sbBack">เข้าใจแล้ว</button>`);
+  $('sbBack').onclick = ctx && ctx.bill ? () => renderBill(ctx.bill) : ctx && ctx.walk ? showWalkinQr : closeModal;
 }
 /** try.html เรียกเมื่ออีกฝั่งเปลี่ยนข้อมูล → โหลดใหม่ทันที (ไม่ต้องรอรอบ 10–20 วิ) */
 window.sandboxPing = (kind) => {
