@@ -523,6 +523,14 @@
   .sp-pick { text-align: center; display: block; }
   .ow-big.sp-alt { background: #fff; color: var(--brown); border: 2px solid var(--line); }
   .ow-toast { position: fixed; left: 12px; right: 12px; width: fit-content; max-width: calc(100% - 24px); margin: 0 auto; top: 84px; pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,.25); background: var(--brown); color: #fff; font-size: 18px; padding: 12px 16px; border-radius: 16px; z-index: 40; max-width: 90%; text-align: center; }
+  /* ---------- ร้านทดลอง (เปิดผ่าน try.html) ---------- */
+  .sb-note { display: none; }
+  .sb-paid { display: none; }
+  body.sandbox .sb-paid { display: block; }
+  body.sandbox #saveQr, body.sandbox #donePay > .slip-btn, body.sandbox #doneSteps { display: none !important; }   /* ร้านทดลอง: ไม่มีขั้นโอนจริง */
+  body.sandbox .sb-note { display: block; background: #FFF4DC; border: 2px dashed #E0B24A; color: #5C430C; border-radius: 14px; padding: 10px 14px; margin: 8px auto 12px; max-width: 340px; font-size: 16px; line-height: 1.5; text-align: center; }
+  .qr-demo { position: relative; }
+  .qr-demo::after { content: 'ตัวอย่าง · ไม่ต้องโอนจริง'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-12deg); white-space: nowrap; background: #B3261E; color: #fff; font-size: 17px; font-weight: 600; padding: 6px 14px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.25); pointer-events: none; }
 </style>
 </head>
 <body>
@@ -569,6 +577,8 @@
       <div id="donePay">
         <div style="color:var(--muted)">สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</div>
         <div class="amount" id="doneTotal"></div>
+        <div class="sb-note">🧪 ร้านทดลอง: ไม่ต้องโอนเงินจริง<br>กดปุ่มด้านล่างแทนการโอน + ส่งสลิปได้เลย</div>
+        <button class="primary sb-paid" data-slip style="margin:0 auto 14px;max-width:320px">✅ จำลองว่าโอนแล้ว</button>
         <div id="qr"></div>
         <button class="primary" id="saveQr" style="margin:0 auto 10px;max-width:320px">💾 บันทึก QR ไว้สแกนจ่าย</button>
         <button class="ghost slip-btn" data-slip style="margin:0 auto 12px;max-width:320px">📎 แนบสลิป ยืนยันทันที</button>
@@ -643,11 +653,29 @@
 // ====== หน้าเดียวใช้ทุกร้าน ======
 // ร้านไหน = ?s=รหัสร้าน ใน Endpoint URL ของ LIFF เช่น https://.../demo_menu/?s=demo
 // ค่าของแต่ละร้าน (LIFF ID + ลิงก์ /exec) อยู่ในไฟล์ shops.json ข้างไฟล์นี้ — เพิ่มร้านใหม่ = เพิ่ม 1 บรรทัดในนั้น
-const PAGE_VERSION = '16 พ.ย. 69 · 02:00';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
+const PAGE_VERSION = '16 พ.ย. 69 · 03:00';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
 let LIFF_ID = '';
 let API_URL = '';
 let SHOP_KEY = '';
 // =================================
+
+// ---------- ร้านทดลอง: เปิดผ่าน try.html (?try=1) ----------
+// ทั้งระบบหลังบ้านรันอยู่ในหน้า try.html ของคนที่เปิดดูเอง ไม่ต่อ LINE / Google Sheet / EasySlip จริง ปิดหน้าแล้วข้อมูลหาย
+const SANDBOX_API = 'sandbox:api';
+const SANDBOX = (() => {
+  try { return new URLSearchParams(location.search).has('try') && window.parent !== window && !!window.parent.PumpkinSandbox; }
+  catch (e) { return false; }
+})();
+if (SANDBOX) {
+  const realFetch = window.fetch.bind(window);
+  window.fetch = (url, opt) => {
+    if (url !== SANDBOX_API) return realFetch(url, opt);
+    const sb = window.parent.PumpkinSandbox;
+    return sb.request(isOwnerMode() ? 'owner' : 'customer', (opt && opt.method) || 'GET', opt && opt.body)
+      .then((txt) => new Response(txt, { status: 200, headers: { 'Content-Type': 'application/json' } }));
+  };
+  document.documentElement.classList.add('sandbox');
+}
 
 const state = { menu: null, cart: [], method: null, cat: null, lastOrder: null, user: { userId: 'TEST' } };
 
@@ -831,7 +859,7 @@ function openMyOrders() {
         <div class="my-total">${o.stage === 'unpaid' ? 'ยอดโอน ' + baht(Math.max(0, (o.pay || o.total) - (o.paid || 0))) : 'ยอด ' + baht(o.total)}</div>
         <div class="my-q ${esc(o.stage)}">${esc(o.text).replace(/\n/g, '<br>')}</div>
         ${o.busy ? `<div class="busy-note">${esc(o.busyText).replace(/\n/g, '<br>')}</div>` : ''}
-        ${o.stage === 'unpaid' && o.promptpay ? `<button class="primary" data-pay="${esc(o.key || o.no)}">ดู QR จ่ายเงิน</button><button class="ghost slip-btn" data-slip>📎 แนบสลิป ยืนยันทันที</button>` : ''}
+        ${o.stage === 'unpaid' && o.promptpay ? `<button class="primary" data-pay="${esc(o.key || o.no)}">ดู QR จ่ายเงิน</button><button class="ghost slip-btn" data-slip>${SANDBOX ? '✅ จำลองว่าโอนแล้ว' : '📎 แนบสลิป ยืนยันทันที'}</button>` : ''}
       </div>`).join('') : '<div class="my-card">ตอนนี้ยังไม่มีออเดอร์ที่ค้างอยู่ครับ 🐾</div>'}
     ${list.some((o) => o.stage === 'queue' || o.stage === 'unpaid')
       ? '<div class="my-note">แต่ละออเดอร์มีคิวของตัวเอง · ร้านทำให้ตามลำดับคิว</div><button class="primary" id="myRefresh">🔄 เช็คคิวอีกครั้ง</button>'
@@ -879,6 +907,7 @@ let BRAND = {};         // รูปที่ใช้จริงแต่ล�
 /** รับเฉพาะลิงก์รูป https หรือไฟล์ในเว็บเดียวกัน (เช่น brands/ร้าน/logo.png) */
 function safeImg(u) {
   u = String(u || '').trim();
+  if (SANDBOX && /^blob:https?:\/\/[^\s"'<>]+$/.test(u)) return u;
   return /^https:\/\/[^\s"'<>]+$/.test(u) || /^[\w][\w./-]*\.(png|jpe?g|webp|gif|svg)$/i.test(u) ? u : '';
 }
 /** ตั้งรูปประจำร้าน: images.จุด > logo > ไอคอนกลางสีตามธีม */
@@ -1468,6 +1497,7 @@ $('cartBtn').onclick = () => { renderCart(); show('cartView'); };
 // ---------- แนบสลิปในหน้าเว็บ (ไม่ต้องกลับไปส่งในแชท) ----------
 // ย่อรูปในเครื่องก่อนส่ง (ด้านยาวไม่เกิน 1600px พอให้ระบบอ่าน QR ในสลิปได้) → ระบบตรวจแบบเดียวกับส่งในแชท
 function pickSlip() {
+  if (SANDBOX) { sandboxSlipFile().then(sendSlip); return; }   // ร้านทดลอง: ใช้สลิปตัวอย่าง
   let inp = $('slipFile');
   if (!inp) {
     inp = document.createElement('input');
@@ -2062,6 +2092,7 @@ function gateMsg(t, shake) {
   if (navigator.vibrate) navigator.vibrate(200);
 }
 function gateShow(msg) {
+  if (SANDBOX) { sandboxOwnerEnter(); return; }
   PTR.ready = false;
   if (!GATE.shown) {
     GATE.shown = true;
@@ -2126,6 +2157,7 @@ function startOwner() {
   document.title = 'หน้าร้าน';
   $('loading').classList.add('hidden');
   sayInit();          // กดแป้นรหัส/พิมพ์รหัส = เปิดเสียงไปในตัว
+  if (SANDBOX) { sandboxOwnerEnter(); return; }   // ร้านทดลอง: ไม่ต้องใส่รหัส
   gateInit();
   gateShow();
 }
@@ -2672,7 +2704,7 @@ function renderOwnerHours(shop) {
   };
   $('locSave').onclick = async () => {
     $('locErr').textContent = '';
-    const pin = $('locPin').value.trim();
+    const pin = $('locPin').value.trim() || (SANDBOX ? window.parent.PumpkinSandbox.pin : '');
     if (!pin) { $('locErr').textContent = 'ใส่รหัสร้านก่อนนะครับ'; $('locPin').focus(); return; }
     try { const { data } = await ownerCall('owner.location', { map: $('locUrl').value, pin }); toast(data.map ? '✅ บันทึกที่ตั้งร้านแล้ว' : 'ลบที่ตั้งร้านแล้ว'); renderOwnerHours(data); }
     catch (err) { $('locErr').textContent = err.message; $('locPin').value = ''; }
@@ -2938,6 +2970,10 @@ function canLiffScan() {
 }
 async function scanSlip(ctx) {
   sayUnlock();
+  if (SANDBOX) {   // ร้านทดลอง: จำลองว่าส่องสลิปลูกค้าแล้ว (ยอดตามบิล/ยอดขาย/ออเดอร์ที่รอจ่าย)
+    const file = await sandboxSlipFile();
+    return checkSlip({ image: await slipDataUrl(file), demoAmount: ctx ? (ctx.walk ? ctx.total : ctx.bill ? ctx.bill.total : 0) : 0 }, ctx);
+  }
   if (canLiffScan()) {
     let v = '';
     try { const r = await liff.scanCodeV2(); v = (r && r.value) || ''; } catch (e) { v = ''; }
@@ -3338,7 +3374,7 @@ async function payStep2(rawId) {
   new QRCode($('payQr'), { text: res.promptpay, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
   $('payBack').onclick = () => payStep1(res.id);
   $('paySave').onclick = async () => {
-    const pin = $('payPin').value.trim();
+    const pin = $('payPin').value.trim() || (SANDBOX ? window.parent.PumpkinSandbox.pin : '');
     if (!pin) { $('payErr2').textContent = 'ใส่รหัสร้านก่อนนะครับ'; return; }
     $('paySave').disabled = true; $('paySave').textContent = 'กำลังบันทึก...';
     try {
@@ -3369,6 +3405,7 @@ async function loadOwnerSales() {
 
 /** อ่านว่าเป็นร้านไหน แล้วโหลด LIFF ID + ลิงก์ API ของร้านนั้นจาก shops.json */
 async function loadShop() {
+  if (SANDBOX) return sandboxShop();
   const q = new URLSearchParams(location.search);
   SHOP_KEY = (q.get('s') || '').trim();
   if (!/^[a-z0-9_-]{1,40}$/i.test(SHOP_KEY)) throw new Error('ลิงก์ไม่ครบ (ไม่มีรหัสร้าน ?s=)');
@@ -3523,7 +3560,81 @@ async function checkFreshPage() {
   } catch (e) { /* ไม่เป็นไร ใช้หน้าเดิมไปก่อน */ }
 }
 
+// ---------- ร้านทดลอง (try.html): ฝั่งหน้าเว็บ ----------
+/** ร้านทดลองไม่ใช้ shops.json / LIFF — ตัวตนตามกรอบ (ลูกค้า/ร้าน) ที่ try.html เปิดไว้ */
+function sandboxShop() {
+  const sb = window.parent.PumpkinSandbox;
+  const role = isOwnerMode() ? 'owner' : 'customer';
+  SHOP_KEY = 'try';
+  LIFF_ID = '';
+  API_URL = SANDBOX_API;
+  STORE_KEY = 'pumpkin-try-' + sb.session;   // ตะกร้าของรอบทดลองนี้เท่านั้น (เริ่มใหม่ = ตะกร้าว่าง)
+  SHOP_INFO = { name: sb.shopName, logo: sb.logo || '' };
+  state.user = { userId: sb.ids[role], idToken: sb.ids[role], displayName: role === 'owner' ? 'เจ้าของร้าน' : 'ลูกค้าทดลอง' };
+  document.body.classList.add('sandbox');
+  $('closeBtn').textContent = 'กลับไปหน้าเมนู';
+  sandboxQr();
+  sb.attach(role, window);
+}
+/** หน้าร้านทดลอง: เข้าเลย ไม่ต้องใส่รหัส */
+async function sandboxOwnerEnter() {
+  if (GATE.busy) return;
+  GATE.busy = true;
+  try {
+    const r = await ownerFetch('owner.unlock', { pin: window.parent.PumpkinSandbox.pin });
+    GATE.token = r.gate;
+    ownerEnter();
+  } catch (err) {
+    $('ownerView').classList.remove('hidden');
+    ownerError(err);
+  } finally { GATE.busy = false; }
+}
+/** QR จ่ายเงินในร้านทดลอง = QR ตัวอย่าง (แอปธนาคารสแกนแล้วจ่ายไม่ได้) + ป้าย "ไม่ต้องโอนจริง" · QR อื่น (ลิงก์ร้าน/โต๊ะ) ใช้ของจริง */
+function sandboxQr() {
+  const Q = window.QRCode;
+  if (!Q || Q.sandbox) return;
+  const W = function (el, opt) {
+    const o = Object.assign({}, opt);
+    if (/^000201/.test(String(o.text || ''))) { o.text = 'PUMPKIN-BOT-DEMO-NOT-A-PAYMENT-QR'; el.classList.add('qr-demo'); }
+    return new Q(el, o);
+  };
+  W.CorrectLevel = Q.CorrectLevel;
+  W.sandbox = true;
+  window.QRCode = W;
+}
+/** สลิปตัวอย่าง (วาดเอง) — ระบบทดลองจะ "ตรวจ" ให้ผ่านตามยอดที่ต้องจ่าย */
+function sandboxSlipFile() {
+  return new Promise((resolve) => {
+    const cv = document.createElement('canvas');
+    cv.width = 540; cv.height = 760;
+    const g = cv.getContext('2d');
+    const font = getComputedStyle(document.body).fontFamily || 'sans-serif';
+    g.fillStyle = '#fff'; g.fillRect(0, 0, 540, 760);
+    g.fillStyle = '#1B8A4B'; g.fillRect(0, 0, 540, 130);
+    g.textAlign = 'center';
+    g.fillStyle = '#fff'; g.font = `600 42px ${font}`; g.fillText('โอนเงินสำเร็จ', 270, 82);
+    g.fillStyle = '#333'; g.font = `600 32px ${font}`; g.fillText('สลิปตัวอย่าง', 270, 230);
+    g.font = `400 24px ${font}`; g.fillText('Pumpkin Bot · ร้านทดลอง', 270, 280);
+    g.fillText('ไม่ใช่การโอนเงินจริง', 270, 320);
+    for (let y = 0; y < 9; y++) for (let x = 0; x < 9; x++) if ((x * 7 + y * 5 + x * y) % 3) { g.fillStyle = '#222'; g.fillRect(180 + x * 20, 400 + y * 20, 18, 18); }
+    cv.toBlob((b) => resolve(new File([b], 'demo-slip.jpg', { type: 'image/jpeg' })), 'image/jpeg', 0.85);
+  });
+}
+/** try.html เรียกเมื่ออีกฝั่งเปลี่ยนข้อมูล → โหลดใหม่ทันที (ไม่ต้องรอรอบ 10–20 วิ) */
+window.sandboxPing = (kind) => {
+  if (!SANDBOX) return;
+  if (isOwnerMode()) { if (owner.started && GATE.token) loadOwnerOrders(true); return; }
+  if (!state.menu) return;
+  if (kind === 'menu') menuRefresh().catch(() => {});
+  else loadMyOrders(false, true);
+};
+/** กด "เริ่มทดลอง" ที่ try.html = แตะจอแล้ว → เปิดเสียงในกรอบนี้ไปด้วยเลย */
+window.sandboxUnlock = () => {
+  try { if (isOwnerMode()) sayUnlock(); else myAudioUnlock(); } catch (e) { /* เครื่องนี้ไม่มีเสียง */ }
+};
+
 (async function start() {
+  if (!SANDBOX && new URLSearchParams(location.search).has('try')) { location.replace('try.html'); return; }
   checkFreshPage();
   try {
     await loadShop();
