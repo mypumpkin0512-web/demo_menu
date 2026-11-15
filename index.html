@@ -171,6 +171,10 @@
   .last-order button { border: none; background: var(--btn); color: #fff; border-radius: 12px; padding: 11px 14px; font-size: 16px; cursor: pointer; white-space: nowrap; }
   .last-order button#lastOrderHide { background: transparent; color: var(--muted); padding: 0; width: 44px; height: 44px; font-size: 20px; }
   .notify-note { background: #E3F4E6; color: #23733A; border-radius: 14px; padding: 12px 14px; margin-top: 12px; font-size: 17px; }
+  /* แผนที่ Leaflet ใส่ z-index ชั้นในสูง (400+) → ต้องขังไว้ในกรอบของมันเอง ไม่งั้นทะลุขึ้นมาทับป๊อปอัพ (z-index 20) */
+  .map-wrap, .loc-wrap, .loc-mini { isolation: isolate; z-index: 0; }
+  /* Safari/iPad: แผนที่ (ชั้นที่เร่งด้วยการ์ดจอ) ยังโผล่ทับป๊อปอัพได้ → ตอนมีป๊อปอัพ ซ่อนแผนที่ที่อยู่ข้างหลังไปเลย (แผนที่ในป๊อปอัพไม่โดน) */
+  .pop-open #ownerView .loc-mini, .pop-open #cartView .map-wrap { visibility: hidden; }
   .loc-wrap { position: relative; height: min(50vh, 460px); min-height: 260px; border-radius: 16px; overflow: hidden; margin: 10px 0 6px; border: 2px solid var(--line); background: var(--cream); }
   #locMap, #locMiniMap { position: absolute; inset: 0; }
   .loc-mini { position: relative; height: 150px; border-radius: 14px; overflow: hidden; margin-top: 10px; border: 2px solid var(--line); background: var(--cream); cursor: pointer; }
@@ -397,11 +401,33 @@
   @media (prefers-reduced-motion: reduce) { .ready-pop .rp-card, .ready-pop .rp-icon { animation: none; } }
   .done-queue { background: #FFF4DC; color: #7A5A12; border-radius: 16px; padding: 12px 14px; margin: 12px 0 0; text-align: left; font-size: 17px; line-height: 1.6; }
   .my-card { background: var(--card); border-radius: 18px; padding: 14px; margin-top: 12px; }
+  .again { margin-bottom: 4px; }
+  .nowrap { white-space: nowrap; }
+  .again-more { display: block; width: 100%; min-height: 48px; margin: 2px 0 6px; border: 2px dashed var(--line); background: transparent; border-radius: 14px; font: inherit; font-size: 17px; color: var(--brown); cursor: pointer; }
+  .hist-top { display: flex; justify-content: space-between; gap: 8px; font-size: 16px; color: var(--muted); }
+  .hist-items { margin: 8px 0; font-size: 18px; line-height: 1.5; }
+  .hist-items small { color: var(--muted); font-size: 15px; }
+  .hist-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .hist-foot b { font-size: 21px; }
+  .hist-foot .primary { width: auto; min-width: 130px; margin: 0; padding: 0 18px; }
   .my-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
   .my-top b { font-size: 22px; }
   .my-top span { font-size: 16px; color: var(--muted); }
   .my-items { font-size: 17px; margin-top: 6px; line-height: 1.6; }
   .my-total { font-weight: 600; color: var(--orange-dark); margin-top: 4px; }
+  /* ลูกค้า: แถบขั้นตอน 4 ขั้น (เขียว ✓ = ผ่านแล้ว · วงส้มตัวหนา = ตอนนี้อยู่ตรงนี้ · เทา = ยังไม่ถึง) */
+  .trk { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 12px 0 2px; }
+  .trk-s { position: relative; text-align: center; font-size: 15px; line-height: 1.25; color: #6F6158; }
+  .trk-s i { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0 auto 5px; border-radius: 50%; background: #EEE5DA; border: 3px solid #EEE5DA; color: #6F6158; font-style: normal; font-size: 15px; font-weight: 600; box-sizing: border-box; }
+  .trk-s::before { content: ''; position: absolute; top: 14px; right: 50%; width: 100%; height: 4px; background: #EEE5DA; }
+  .trk-s:first-child::before { display: none; }
+  .trk-s.ok { color: #23733A; }
+  .trk-s.ok i { background: var(--green); border-color: var(--green); color: #fff; }
+  .trk-s.ok::before, .trk-s.now::before { background: var(--green); }
+  .trk-s.now { color: var(--brown); font-weight: 600; }
+  .trk-s.now i { background: #fff; border-color: var(--btn); color: var(--btn); box-shadow: 0 0 0 4px rgba(217,147,84,.28); }
+  .trk-s.now.end i { background: var(--green); border-color: var(--green); color: #fff; box-shadow: 0 0 0 4px rgba(48,132,68,.25); }
+  .trk-s.now.end { color: #23733A; }
   .my-q { border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: 17px; line-height: 1.55; background: #FFF4DC; color: #7A5A12; }
   .my-q.queue { background: var(--tint); color: var(--brown); font-weight: 500; }
   .my-q.ready, .my-q.parcel, .my-q.done { background: #E3F4E6; color: #23733A; font-weight: 500; }
@@ -481,11 +507,13 @@
   .oc-items { font-size: 20px; line-height: 1.3; overflow-wrap: anywhere; }
   .oc-items small { font-size: 16px; color: var(--muted); }
   .oc-side { flex: none; width: 100px; display: flex; flex-direction: column; align-items: stretch; margin-top: 2px; }
-  .oc-act { border: none; border-radius: 14px; min-height: 52px; padding: 3px 4px 5px; font-size: 17px; font-weight: 600; color: #fff; line-height: 1.2; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  /* ปุ่มเปลี่ยนสถานะ: ทึบ สีเข้ม มีเงา = "ปุ่มกดได้" เสมอ (ไม่ใช้แบบจาง/เส้นขอบ เพราะดูเหมือนป้ายบอกสถานะ) · สีตามงาน: เขียว = เงิน · ส้มน้ำตาล = ทำเสร็จ/ส่งต่อ · ฟ้า = ลูกค้ารับแล้ว */
+  .oc-act { border: none; border-radius: 14px; min-height: 56px; padding: 4px 4px 6px; font-size: 17px; font-weight: 600; color: #fff; line-height: 1.2; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 3px 0 rgba(0,0,0,.18); }
+  .oc-act:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
   .oc-act i { font-style: normal; font-size: 20px; line-height: 1.15; }
   .oc-act.money { background: var(--green); }
   .oc-act.ready { background: var(--btn); }
-  .oc-act.served { background: #E3F4E6; color: #23733A; border: 2px solid #A9D8B3; }
+  .oc-act.pick { background: #1D6A8A; }
   .oc-wait { font-size: 15px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #FFF0D1; color: #7A4A00; }   /* ทำเสร็จแล้ว รอลูกค้ามารับ */
   .oc-act:disabled { background: #E9E1D6; color: #74655A; border-color: #E9E1D6; }
   /* ยกเลิก = ✕ มุมขวาบน (มีกล่องถามยืนยันก่อนเสมอ) · พื้นที่แตะ 44px แต่ไม่ดันการ์ดให้สูง */
@@ -678,7 +706,7 @@
 // ====== หน้าเดียวใช้ทุกร้าน ======
 // ร้านไหน = ?s=รหัสร้าน ใน Endpoint URL ของ LIFF เช่น https://.../demo_menu/?s=demo
 // ค่าของแต่ละร้าน (LIFF ID + ลิงก์ /exec) อยู่ในไฟล์ shops.json ข้างไฟล์นี้ — เพิ่มร้านใหม่ = เพิ่ม 1 บรรทัดในนั้น
-const PAGE_VERSION = '16 พ.ย. 69 · 04:15';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
+const PAGE_VERSION = '16 พ.ย. 69 · 05:40';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
 let LIFF_ID = '';
 let API_URL = '';
 let SHOP_KEY = '';
@@ -768,23 +796,30 @@ function renderLastOrder() {
 // poll = ถามอัตโนมัติ (แบบเบา: ส่งเลข "เปลี่ยนล่าสุด" ไป ถ้าในร้านไม่มีอะไรเปลี่ยน ระบบตอบทันที)
 async function loadMyOrders(loud, poll) {
   if (!API_URL) return;
-  let changed = false;
+  let changed = false, histNew = false, histAgain = false;
+  const wantHist = !state.history || state.histStale;   // ประวัติ "เคยสั่ง": ขอตอนเปิดหน้า/หลังสั่ง/ดึงรีเฟรช ไม่ต้องขอทุกรอบ
   const run = async () => {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'my.orders', userId: state.user.userId, idToken: state.user.idToken, since: poll && MY.stamp ? MY.stamp : undefined })
+      body: JSON.stringify({ action: 'my.orders', userId: state.user.userId, idToken: state.user.idToken, since: poll && MY.stamp && !wantHist ? MY.stamp : undefined, history: wantHist ? 1 : undefined })
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     if (data.data.same) return;
     MY.stamp = data.data.stamp || '';
+    // ออเดอร์ที่รอจ่าย เพิ่งจ่ายแล้ว → ขอประวัติใหม่ ("เคยสั่ง" มีออเดอร์นี้ด้วย)
+    const wasUnpaid = (state.myOrders || []).filter((o) => o.stage === 'unpaid').map((o) => o.key);
     state.myOrders = data.data.orders;
+    if (!data.data.history && wasUnpaid.some((k) => !state.myOrders.some((o) => o.key === k && o.stage === 'unpaid'))) { state.histStale = true; histAgain = true; }
+    if (data.data.history) { histNew = JSON.stringify(data.data.history) !== JSON.stringify(state.history || null); state.history = data.data.history; state.histStale = false; }
     changed = true;
   };
   try { if (loud) await withBusy('กำลังเช็คคิว...', run); else await run(); }
   catch (e) { /* เช็คไม่ได้ ใช้ข้อมูลเดิมในเครื่องไปก่อน */ }
   if (changed) myOrdersChanged();
+  if (histNew && state.menu && !isOwnerMode()) renderMenu();   // "เคยสั่ง" บนสุดของเมนู
+  if (histAgain) return loadMyOrders(false);
   if ($('menuView') && !$('menuView').classList.contains('hidden')) renderLastOrder();
   myPollSchedule();
 }
@@ -850,7 +885,7 @@ function myOrdersChanged() {
   const o = lo && list.find((x) => x.no === lo.orderNo);
   if (o && !$('doneView').classList.contains('hidden')) {
     const t = o.payLater ? o.text.split('\n').filter((l) => !/^🧾/.test(l)).join('\n') : o.text;
-    $('doneQueue').innerHTML = esc(t).replace(/\n/g, '<br>');
+    $('doneQueue').innerHTML = trackHtml(o) + esc(t).replace(/\n/g, '<br>');
     $('doneQueue').classList.remove('hidden');
     $('doneQueue').classList.toggle('ready', o.stage === 'ready');
     if (o.stage !== 'unpaid') { $('donePay').classList.add('hidden'); $('doneSteps').classList.add('hidden'); }
@@ -875,6 +910,24 @@ function showReady(o) {
   $('readyPop').onclick = (e) => { if (e.target === $('readyPop')) $('rpOk').click(); };   // แตะพื้นที่มืดด้านหลัง = รับทราบ
 }
 
+/** แถบขั้นตอนของออเดอร์ (ลูกค้า): สั่งแล้ว → จ่ายเงิน → กำลังทำ → พร้อมรับ / เสิร์ฟ / กำลังส่ง · นั่งทานจ่ายทีหลัง: สั่ง → ทำ → เสิร์ฟ → จ่ายเงิน */
+const TRK_LAST = { 'ห่อกลับบ้าน': 'พร้อมรับ', 'รับหน้าร้าน': 'พร้อมรับ', 'นั่งทานที่ร้าน': 'เสิร์ฟแล้ว', 'ส่งถึงบ้าน': 'กำลังส่ง', 'ส่งพัสดุ': 'จัดส่งแล้ว' };
+function trackHtml(o) {
+  if (!o || !o.stage || o.stage === 'cancelled') return '';
+  let steps, at;
+  if (o.payLater) {
+    steps = ['สั่งแล้ว', 'กำลังทำ', 'เสิร์ฟแล้ว', 'จ่ายเงิน'];
+    at = o.stage === 'ready' ? 3 : o.stage === 'done' ? 4 : 1;
+  } else {
+    steps = ['สั่งแล้ว', 'จ่ายเงิน', o.method === 'ส่งพัสดุ' ? 'แพ็กของ' : 'กำลังทำ', TRK_LAST[o.method] || 'พร้อมรับ'];
+    at = { unpaid: 1, queue: 2, parcel: 2, ready: 3, done: 4 }[o.stage] || 1;
+  }
+  return `<div class="trk" aria-label="ขั้นตอนของออเดอร์">${steps.map((t, i) => {
+    const cls = i < at ? 'ok' : i === at ? 'now' + (i === 3 && !o.payLater ? ' end' : '') : '';   // ห้ามใช้ชื่อ done/cur (ชนกับคลาสหน้าสั่งเสร็จ)
+    const icon = i < at || (i === at && i === 3 && !o.payLater) ? '✓' : String(i + 1);
+    return `<div class="trk-s ${cls}"${i === at ? ' aria-current="step"' : ''}><i>${icon}</i>${esc(t)}</div>`;
+  }).join('')}</div>`;
+}
 function openMyOrders() {
   const list = state.myOrders || [];
   $('sheetBody').innerHTML = `
@@ -884,6 +937,7 @@ function openMyOrders() {
         <div class="my-top"><b>${esc(o.no)}</b><span>${METHOD_ICON[o.method] || ''} ${esc(o.method)} · ${esc(o.time)}</span></div>
         <div class="my-items">${o.items.map((i) => `${i.qty} × ${esc(i.name)}${i.options ? ' (' + esc(i.options) + ')' : ''}`).join('<br>')}</div>
         <div class="my-total">${o.stage === 'unpaid' ? 'ยอดโอน ' + baht(Math.max(0, (o.pay || o.total) - (o.paid || 0))) : 'ยอด ' + baht(o.total)}</div>
+        ${trackHtml(o)}
         <div class="my-q ${esc(o.stage)}">${esc(o.text).replace(/\n/g, '<br>')}</div>
         ${o.busy ? `<div class="busy-note">${esc(o.busyText).replace(/\n/g, '<br>')}</div>` : ''}
         ${o.stage === 'unpaid' && o.promptpay ? `<button class="primary" data-pay="${esc(o.key || o.no)}">ดู QR จ่ายเงิน</button><button class="ghost slip-btn" data-slip>${SANDBOX ? '✅ จำลองว่าโอนแล้ว' : '📎 แนบสลิป ยืนยันทันที'}</button>` : ''}
@@ -1040,10 +1094,12 @@ function lockScroll() {
   if (lockCount++ > 0) return;
   lockY = window.scrollY;
   Object.assign(document.body.style, { position: 'fixed', top: -lockY + 'px', left: '0', right: '0' });
+  document.documentElement.classList.add('pop-open');
 }
 function unlockScroll() {
   if (lockCount === 0 || --lockCount > 0) return;
   Object.assign(document.body.style, { position: '', top: '', left: '', right: '' });
+  document.documentElement.classList.remove('pop-open');
   window.scrollTo(0, lockY);
 }
 /** เลื่อนขึ้นบนสุด (ถ้าจอล็อกอยู่ จะขึ้นบนสุดตอนปลดล็อก) */
@@ -1114,7 +1170,7 @@ function renderMenu() {
   $('chips').scrollLeft = keepX;
   chipsReveal();
   const shown = state.cat === 'ทั้งหมด' ? cats : [state.cat];
-  $('menuList').innerHTML = shown.map((c) => `
+  $('menuList').innerHTML = (state.cat === tabs[0] ? againHtml() : '') + shown.map((c) => `
     <h2 class="cat">${esc(c)}</h2>
     ${products.filter((p) => p.category === c).map(itemHtml).join('')}
   `).join('');
@@ -1127,8 +1183,9 @@ function renderMenu() {
     if (window.scrollY > top) window.scrollTo({ top: top, behavior: 'smooth' });
   };
   $('menuList').onclick = (e) => {
+    if (e.target.closest('#againMore')) return openMyHistory();
     const el = e.target.closest('.item'); if (!el || !state.menu.shop.open || el.classList.contains('soldout')) return;
-    openItem(el.dataset.id);
+    openItem(el.dataset.id, el.closest('.again-list') ? (state.againOpts || {})[el.dataset.id] : null);   // เคยสั่ง: เลือกตัวเลือกแบบครั้งก่อนไว้ให้
   };
   updateCartBar();
 }
@@ -1185,6 +1242,81 @@ $('chips').addEventListener('scroll', chipsEdge, { passive: true });
 window.addEventListener('resize', chipsEdge);
 if (window.ResizeObserver) new ResizeObserver(chipsEdge).observe($('chips'));   // หน้าเมนูเพิ่งโชว์ (ตอนวาดยังซ่อนอยู่ วัดขนาดไม่ได้)
 
+// ---------- เคยสั่ง (บนสุดของเมนู) + ออเดอร์ย้อนหลัง 5 ครั้ง กดสั่งซ้ำได้ ----------
+const AGAIN_MAX = 3;
+const optList = (t) => String(t || '').split(',').map((x) => x.trim()).filter(Boolean);
+function againHtml() {
+  const hist = state.history || [];
+  if (!hist.length || !state.menu) return '';
+  const { products } = state.menu;
+  const favs = [], opts = {};
+  hist.forEach((o) => o.items.forEach((it) => {
+    const p = products.find((x) => x.id === it.id);
+    if (!p || opts[p.id]) return;
+    opts[p.id] = optList(it.options);   // ตัวเลือกครั้งล่าสุดของเมนูนั้น
+    favs.push(p);
+  }));
+  state.againOpts = opts;
+  if (!favs.length) return '';
+  return `<section class="again">
+    <h2 class="cat">🔁 เคยสั่ง</h2>
+    <div class="again-list">${favs.slice(0, AGAIN_MAX).map((p) => itemHtml(p)).join('')}</div>
+    <button class="again-more" id="againMore"><span class="nowrap">🧾 ออเดอร์ย้อนหลัง ${hist.length} ครั้ง</span> <span class="nowrap">· กดสั่งซ้ำได้</span></button>
+  </section>`;
+}
+function openMyHistory() {
+  const hist = state.history || [];
+  $('sheetBody').innerHTML = `
+    <h3>🧾 ออเดอร์ย้อนหลัง</h3>
+    <div class="ow-hint" style="text-align:left">กด "สั่งซ้ำ" = ใส่ทุกอย่างในออเดอร์นั้นลงตะกร้า <span class="nowrap">(ราคาตามเมนูวันนี้)</span></div>
+    ${hist.map((o) => `<div class="my-card hist">
+      <div class="hist-top"><span>${esc(o.date)} · ${esc(o.time)} น.</span><span>${METHOD_ICON[o.method] || ''} ${esc(o.method)}</span></div>
+      <div class="hist-items">${o.items.map((i) => `<div>${i.qty} × ${esc(i.name)}${i.options ? ` <small>${esc(i.options)}</small>` : ''}</div>`).join('')}</div>
+      <div class="hist-foot"><b>${baht(o.total)}</b><button class="primary" data-reorder="${esc(o.key)}">🔁 สั่งซ้ำ</button></div>
+    </div>`).join('')}
+    <button class="ghost" id="sheetClose">ปิด</button>`;
+  $('sheetBody').onclick = (e) => { const b = e.target.closest('[data-reorder]'); if (b) reorder(b.dataset.reorder); };
+  $('sheetBody').onchange = null;
+  $('sheetClose').onclick = closeSheet;
+  openSheet();
+}
+/** ใส่ทั้งออเดอร์เก่าลงตะกร้า: ใช้ราคา/ตัวเลือกของวันนี้ · ของที่ปิดขาย/หมด/ตัวเลือกที่บังคับหมด = ข้าม แล้วบอกลูกค้า */
+function reorder(key) {
+  const o = (state.history || []).find((x) => x.key === key);
+  if (!o || !state.menu) return;
+  if (!state.menu.shop.open) { toast('ตอนนี้ร้านปิดรับออเดอร์อยู่ครับ'); return; }
+  const { products, groups } = state.menu;
+  let added = 0;
+  const miss = [];
+  o.items.forEach((it) => {
+    const p = products.find((x) => x.id === it.id);
+    if (!p || p.soldOut) { miss.push(it.name); return; }
+    const want = optList(it.options);
+    let unit = p.price, ok = true;
+    const options = [];
+    p.groups.forEach((gName) => {
+      const g = groups[gName];
+      if (!g) return;
+      let picked = g.choices.filter((c) => want.includes(c.name) && !c.out);
+      if (!g.multi) picked = picked.slice(0, 1);
+      if (g.required && !picked.length) ok = false;
+      picked.forEach((c) => { unit += c.price; options.push(c.name); });
+    });
+    const inCart = state.cart.filter((l) => l.id === p.id).reduce((n, l) => n + l.qty, 0);
+    const qty = Math.min(it.qty, p.left != null ? Math.max(0, p.left - inCart) : 99);
+    if (!ok || !qty) { miss.push(it.name); return; }
+    const k = p.id + '|' + options.join('|');
+    const line = state.cart.find((l) => l.key === k);
+    if (line) line.qty = Math.min(99, line.qty + qty);
+    else state.cart.push({ key: k, id: p.id, name: p.name, options, unit, qty });
+    added += qty;
+  });
+  persist();
+  closeSheet();
+  renderMenu();
+  toast(added ? `🛒 ใส่ตะกร้าแล้ว ${added} ชิ้น` + (miss.length ? ` · วันนี้ไม่มี: ${miss.join(', ')}` : '') : 'ออเดอร์นี้วันนี้ไม่มีขายครับ');
+}
+
 function itemHtml(p) {
   const count = state.cart.filter((l) => l.id === p.id).reduce((s, l) => s + l.qty, 0);
   const thumb = p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : '🍽️';
@@ -1204,7 +1336,7 @@ function itemHtml(p) {
 // ---------- เลือกตัวเลือก ----------
 // มือถือแนวตั้ง: รูปใหญ่เต็มกว้างบนสุด → ชื่อ/ราคา → ตัวเลือก · ปุ่มใส่ตะกร้าติดขอบล่างตลอด (ไม่ต้องเลื่อนหา)
 // จอกว้าง/แนวนอน (คอม iPad มือถือตะแคง): รูปซ้ายเต็มความสูง · ขวาเป็นตัวเลือก (เลื่อนเฉพาะฝั่งขวา)
-function openItem(id) {
+function openItem(id, preset) {
   const p = state.menu.products.find((x) => x.id === id);
   if (!p || p.soldOut) return;
   const groups = p.groups.map((g) => state.menu.groups[g]);
@@ -1214,9 +1346,12 @@ function openItem(id) {
 
   const choiceHtml = (g, gi) => {
     const firstOk = g.choices.findIndex((c) => !c.out);
+    // เคยสั่ง: เลือกแบบครั้งก่อนไว้ให้ (ตัวที่หมดแล้วข้าม) · ไม่มี = ค่าเริ่มต้นเดิม
+    const pre = preset ? g.choices.findIndex((c) => !c.out && preset.includes(c.name)) : -1;
+    const on = (c, ci) => (preset && !c.out && preset.includes(c.name) && (g.multi || ci === pre)) || (!g.multi && g.required && pre === -1 && ci === firstOk);
     return g.choices.map((c, ci) => `
       <label class="choice${c.out ? ' out' : ''}">
-        <input type="${g.multi ? 'checkbox' : 'radio'}" name="g${gi}" value="${esc(c.name)}" data-price="${c.price}" ${c.out ? 'disabled' : ''} ${!g.multi && g.required && ci === firstOk ? 'checked' : ''}>
+        <input type="${g.multi ? 'checkbox' : 'radio'}" name="g${gi}" value="${esc(c.name)}" data-price="${c.price}" ${c.out ? 'disabled' : ''} ${on(c, ci) ? 'checked' : ''}>
         <span class="name">${esc(c.name)}</span>
         <span class="extra">${c.out ? 'หมด' : c.price ? '+' + baht(c.price) : ''}</span>
       </label>`).join('');
@@ -1560,7 +1695,7 @@ function showDone(order, again) {
   if (!later) new QRCode($('qr'), { text: order.promptpay, width: 230, height: 230, correctLevel: QRCode.CorrectLevel.M });
   $('saveQr').onclick = () => saveQr(order);
   $('doneQueue').classList.toggle('hidden', !order.queue);
-  if (order.queue) $('doneQueue').innerHTML = esc(later ? order.queue.text.split('\n').filter((l) => !/^🧾/.test(l)).join('\n') : order.queue.text).replace(/\n/g, '<br>');   // จ่ายทีหลัง: กล่องบนบอกแล้ว ไม่ต้องซ้ำ
+  if (order.queue) $('doneQueue').innerHTML = trackHtml(Object.assign({ method: order.method, payLater: later }, order.queue)) + esc(later ? order.queue.text.split('\n').filter((l) => !/^🧾/.test(l)).join('\n') : order.queue.text).replace(/\n/g, '<br>');   // จ่ายทีหลัง: กล่องบนบอกแล้ว ไม่ต้องซ้ำ
   const busyMsg = order.queue && order.queue.busy ? order.queue.busyText : '';
   $('doneBusy').classList.toggle('hidden', !busyMsg);
   if (busyMsg) $('doneBusy').innerHTML = esc(busyMsg).replace(/\n/g, '<br>');
@@ -1572,6 +1707,7 @@ function showDone(order, again) {
   if (state.qrTable) formData.table = state.qrTable;   // สแกนจาก QR โต๊ะ: สั่งเพิ่มก็ยังเป็นโต๊ะเดิม
   state.lastOrder = { orderNo: order.orderNo, total: due, promptpay: order.promptpay, method: order.method, payLater: later, lines: [], at: Date.now() };
   state.myOrders = null;   // มีออเดอร์ใหม่ → ถามระบบใหม่
+  state.histStale = true;  // ประวัติ "เคยสั่ง" ด้วย (ของเดิมยังโชว์ระหว่างรอ)
   loadMyOrders(false);
   persist();
 
@@ -2350,7 +2486,7 @@ function renderOwnerOrders(data) {
 
 // การ์ดออเดอร์แบบแน่น: แถวบน = เลข/คิว/โต๊ะ/ยอด · ซ้าย = ลูกค้า + รายการ · ขวา = ปุ่มทำงาน
 // (เดิมปุ่มใหญ่กินแถวของตัวเอง → ย้ายไปไว้ด้านขวา จอเดียวเห็นออเดอร์ได้มากขึ้น ตัวหนังสือยังใหญ่เท่าเดิม)
-const READY_SHORT = { 'ห่อกลับบ้าน': ['🥡', 'ห่อเสร็จ'], 'รับหน้าร้าน': ['🔔', 'เสร็จแล้ว'], 'ส่งถึงบ้าน': ['🛵', 'ออกไปส่ง'], 'ส่งพัสดุ': ['📦', 'ส่งแล้ว'] };
+const READY_SHORT = { 'ห่อกลับบ้าน': ['🥡', 'ห่อเสร็จ'], 'รับหน้าร้าน': ['🔔', 'ทำเสร็จ'], 'ส่งถึงบ้าน': ['🛵', 'ออกไปส่ง'], 'ส่งพัสดุ': ['📦', 'ส่งแล้ว'], 'นั่งทานที่ร้าน': ['🍽️', 'เสิร์ฟแล้ว'] };
 const actLabel = (icon, label) => `<i>${icon}</i>${label}`;   // ไอคอนบน ข้อความล่าง → ปุ่มแคบ เหลือที่ให้รายการอาหาร
 function orderCard(o) {
   const paid = o.status >= 2;
@@ -2369,9 +2505,9 @@ function orderCard(o) {
     : `<span class="oc-pay">${o.paid > 0 ? 'จ่ายไม่ครบ' : 'ยังไม่จ่าย'}</span>`;
   // นั่งทานที่ร้าน + จ่ายแล้ว: ปุ่มเบา ๆ ✓ เอาออกจากรายการ (คนขายยกไปเสิร์ฟเอง)
   const act = waitBill ? `<button class="oc-act money" data-bill="${esc(o.bill)}">${actLabel('🧾', 'เช็คบิล')}</button>`
-    : waitPickup ? `<button class="oc-act served ow-done" data-act="5">${actLabel('🤝', 'มารับแล้ว')}</button>`
+    : waitPickup ? `<button class="oc-act pick" data-act="5" title="ลูกค้ามารับของแล้ว">${actLabel('🤝', 'มารับแล้ว')}</button>`
     : !paid ? `<button class="oc-act money" data-act="2">${actLabel('💰', 'รับเงินแล้ว')}</button>`
-    : dineIn ? `<button class="oc-act served ow-done" data-act="4">${actLabel('✓', 'เสิร์ฟแล้ว')}</button>`
+    : dineIn ? `<button class="oc-act ready" data-act="4" title="ยกไปเสิร์ฟที่โต๊ะแล้ว">${actLabel('🍽️', 'เสิร์ฟแล้ว')}</button>`
     : `<button class="oc-act ready" data-act="4" title="${esc(READY_LABEL[o.method] || READY_LABEL['รับหน้าร้าน'])}">${actLabel(...(READY_SHORT[o.method] || READY_SHORT['รับหน้าร้าน']))}</button>`;
   return `<div class="ow-card${waitBill ? ' waitpay' : paid ? '' : ' unpaid'}" data-no="${esc(o.no)}" data-due="${paid ? 0 : Math.max(0, (o.pay || o.total) - (o.paid || 0))}" data-name="${esc(o.name || '')}">
     <div class="oc-top"><span class="ow-no">${esc(o.disp || o.no)}</span>${o.queue ? `<span class="ow-q">คิว ${o.queue}</span>` : ''}<span class="oc-amt">${pay}${baht(paid ? o.total : Math.max(0, (o.pay || o.total) - (o.paid || 0)))}</span>${waitBill || waitPickup ? '<span class="oc-x" aria-hidden="true" style="visibility:hidden"></span>' : '<button class="oc-x" data-act="6" aria-label="ยกเลิกออเดอร์" title="ยกเลิกออเดอร์">✕</button>'}</div>
@@ -2419,11 +2555,14 @@ function onOrderClick(e) {
 }
 
 async function setStatus(no, to, btn, track) {
-  if (to === 2) SAY.mine.add(no);   // กดรับเงินเอง ไม่ต้องพูด
+  if (to === 2) SAY.mine.add(no);   // กดรับเงินเอง ไม่ต้องพูดว่า "จ่ายเงินแล้ว" ซ้ำ
+  const o = (SAY.list || []).find((x) => x.no === no) || { no, disp: no, method: '' };
   if (btn) { btn.disabled = true; btn.textContent = 'กำลังบันทึก...'; }
   try {
     const res = await ownerCall('owner.setStatus', { orderNo: no, to, track });
-    toast(to === 2 ? '✅ บันทึกว่าได้รับเงินแล้ว' : to === 5 ? '✅ ลูกค้ารับของแล้ว' : res.notified ? '✅ แจ้งลูกค้าในไลน์แล้ว' : '✅ บันทึกแล้ว');
+    const done = doneWords(o, to, res.notified);
+    toast('✅ ' + done.show);
+    if (SAY.on && SAY.unlocked) sayEnqueue(false, [done.speak]);   // พูดยืนยันสั้น ๆ: ไม่ต้องก้มดูจอก็รู้ว่ากดถูกออเดอร์
   } catch (err) {
     toast('❌ ' + err.message);
   }
@@ -2443,6 +2582,19 @@ function payOrderSheet(no, disp, due, name) {
   $('poPaid').onclick = () => { closeModal(); setStatus(no, 2, null, ''); };
   $('poScan').onclick = () => scanSlip({ order: { no, back } });
   $('poClose').onclick = closeModal;
+}
+
+/** คำยืนยันหลังกดปุ่มสถานะ: show = บนจอ · speak = เสียงพูด (เช่น "ออเดอร์ 7, ห่อเสร็จ, แจ้งลูกค้าแล้ว") */
+function doneWords(o, to, notified) {
+  const disp = o.disp || o.no;
+  const num = parseInt((String(disp).match(/(\d+)$/) || ['', '0'])[1], 10);
+  const dine = o.method === 'นั่งทานที่ร้าน';
+  const who = dine && o.pickup ? sayClean(o.pickup) : `ออเดอร์ ${num}`;
+  const whoShow = dine && o.pickup ? `${disp} · ${o.pickup}` : disp;
+  const act = to === 2 ? 'รับเงินแล้ว' : to === 5 ? 'ลูกค้ารับของแล้ว' : to === 6 ? 'ยกเลิกแล้ว'
+    : dine ? 'เสิร์ฟแล้ว' : ({ 'ห่อกลับบ้าน': 'ห่อเสร็จ', 'รับหน้าร้าน': 'ทำเสร็จ', 'ส่งถึงบ้าน': 'ออกไปส่งแล้ว', 'ส่งพัสดุ': 'ส่งพัสดุแล้ว' }[o.method] || 'บันทึกแล้ว');
+  const line = notified ? 'แจ้งลูกค้าในไลน์แล้ว' : '';
+  return { show: [whoShow, act, line].filter(Boolean).join(' · '), speak: [who, act, line].filter(Boolean).join(', ') };
 }
 
 function confirmCancel(no, disp) {
@@ -2761,6 +2913,10 @@ function mapLatLng(url) {
   const lat = Number(m[1]), lng = Number(m[2]);
   return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? [lat, lng] : null;
 }
+/** แผนที่ยังอยู่บนจอไหม (ปิดป๊อปอัพ/สลับแท็บไปแล้ว = ห้ามสั่งแผนที่ตัวเก่า ไม่งั้น Leaflet error) */
+function mapAlive(m) {
+  try { return !!m && !!m._mapPane && document.body.contains(m.getContainer()); } catch (e) { return false; }
+}
 function osmTiles(m) {
   m.attributionControl.setPrefix('Leaflet');
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(m);
@@ -2772,7 +2928,7 @@ function miniShopMap(ll) {
   const m = L.map('locMiniMap', { zoomControl: false, dragging: false, scrollWheelZoom: false, touchZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false, tap: false }).setView(ll, 16);
   osmTiles(m);
   owner.miniMap = m;
-  setTimeout(() => m.invalidateSize(), 150);
+  setTimeout(() => { if (mapAlive(m)) m.invalidateSize(); }, 150);
 }
 function pickShopLocation(shop) {
   const start = mapLatLng(shop.map);
@@ -2806,12 +2962,12 @@ function pickShopLocation(shop) {
   const m = L.map('locMap', { zoomControl: true }).setView(start || [13.7563, 100.5018], start ? 18 : 11);
   osmTiles(m);
   owner.locMap = m;
-  setTimeout(() => m.invalidateSize(), 150);
+  setTimeout(() => { if (mapAlive(m)) m.invalidateSize(); }, 150);
   const me = (auto) => {
     if (!navigator.geolocation) { if (!auto) hint('เครื่องนี้หาตำแหน่งไม่ได้ — เลื่อนแผนที่เองได้ครับ'); return; }
     hint('กำลังหาตำแหน่งของคุณ...');
-    navigator.geolocation.getCurrentPosition((p) => { m.setView([p.coords.latitude, p.coords.longitude], 18); hint('ถ้ายืนอยู่ที่ร้าน หมุดน่าจะตรงแล้ว — เลื่อนปรับได้'); },
-      () => hint(auto ? '' : 'หาตำแหน่งไม่ได้ (อาจไม่ได้อนุญาต) — เลื่อนแผนที่เองได้ครับ'), { enableHighAccuracy: true, timeout: 15000 });
+    navigator.geolocation.getCurrentPosition((p) => { if (!mapAlive(m)) return; m.setView([p.coords.latitude, p.coords.longitude], 18); hint('ถ้ายืนอยู่ที่ร้าน หมุดน่าจะตรงแล้ว — เลื่อนปรับได้'); },
+      () => { if (mapAlive(m)) hint(auto ? '' : 'หาตำแหน่งไม่ได้ (อาจไม่ได้อนุญาต) — เลื่อนแผนที่เองได้ครับ'); }, { enableHighAccuracy: true, timeout: 15000 });
   };
   $('locMe').onclick = () => me(false);
   $('locUse').onclick = () => { const c = m.getCenter(); save(c.lat.toFixed(6) + ', ' + c.lng.toFixed(6)); };
@@ -3706,6 +3862,7 @@ async function menuRefresh() {
   updateCartBar();
   if (!$('cartView').classList.contains('hidden')) renderCart();
   state.myOrders = null;
+  state.histStale = true;
   await loadMyOrders(false);
 }
 /** หน้าร้าน: โหลดแท็บที่เปิดอยู่ใหม่ */
