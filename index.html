@@ -500,6 +500,7 @@
   .ow-cancel.plain { color: var(--brown); text-decoration: none; font-size: 19px; padding: 10px 24px; }
   .later-note { background: #E6EEF9; color: #23466F; border-radius: 16px; padding: 14px 16px; margin: 14px 0 0; font-size: 18px; line-height: 1.6; }
   .later-note b { font-size: 26px; display: block; }
+  .later-note.paid { background: #E3F4E6; color: #1E5E30; }
   .oc-body { display: flex; gap: 10px; align-items: flex-start; }
   .oc-main { flex: 1; min-width: 0; }
   .oc-who { font-size: 16px; line-height: 1.35; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -706,7 +707,7 @@
 // ====== หน้าเดียวใช้ทุกร้าน ======
 // ร้านไหน = ?s=รหัสร้าน ใน Endpoint URL ของ LIFF เช่น https://.../demo_menu/?s=demo
 // ค่าของแต่ละร้าน (LIFF ID + ลิงก์ /exec) อยู่ในไฟล์ shops.json ข้างไฟล์นี้ — เพิ่มร้านใหม่ = เพิ่ม 1 บรรทัดในนั้น
-const PAGE_VERSION = '16 พ.ย. 69 · 05:40';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
+const PAGE_VERSION = '16 พ.ย. 69 · 06:10';   // แก้ทุกครั้งที่อัปโหลดหน้าเว็บใหม่ (เครื่องที่ยังค้างหน้าเก่าจะโหลดใหม่ให้เอง)
 let LIFF_ID = '';
 let API_URL = '';
 let SHOP_KEY = '';
@@ -778,7 +779,7 @@ function renderLastOrder() {
     const waiting = mine.find((o) => o.stage === 'queue');
     $('lastOrderBox').classList.remove('hidden');
     $('lastOrderText').textContent = mine.length === 1
-      ? `🧾 ออเดอร์ ${mine[0].no} · ${mine[0].stage === 'unpaid' ? 'ยังไม่จ่าย' : waiting ? (waiting.ahead ? 'คิวก่อนหน้า ' + waiting.ahead : 'ถึงคิวแล้ว') : mine[0].payLater ? 'รอเช็คบิล' : mine[0].statusName}`
+      ? `🧾 ออเดอร์ ${mine[0].no} · ${mine[0].stage === 'unpaid' ? 'ยังไม่จ่าย' : waiting ? (waiting.ahead ? 'คิวก่อนหน้า ' + waiting.ahead : 'ถึงคิวแล้ว') : mine[0].billPaid && mine[0].stage === 'done' ? 'ชำระแล้ว ขอบคุณครับ' : mine[0].payLater ? 'รอเช็คบิล' : mine[0].statusName}`
       : `🧾 ออเดอร์ของฉัน ${mine.length} รายการ`;
     // ยังรอคิว/รอจ่าย = "เช็คคิว" · พร้อมรับหมดแล้ว = แค่ "ดูออเดอร์"
     $('lastOrderQr').textContent = mine.some((o) => o.stage === 'queue' || o.stage === 'unpaid') ? 'เช็คคิว' : 'ดูออเดอร์';
@@ -831,9 +832,11 @@ const MY_POLL_MS = 20000;
 const MY_POLL_MAX_MS = 3 * 3600 * 1000;   // เปิดค้างเกิน 3 ชม. หยุดถาม (กลับมาหน้านี้ใหม่ก็ถามต่อ)
 const MY = { timer: null, stamp: '', prev: null, since: Date.now(), ctx: null };
 const MY_WAIT = ['unpaid', 'queue', 'parcel'];
+// นั่งทานจ่ายทีหลัง: เสิร์ฟแล้วก็ยังถามต่อ จนร้านเช็คบิล (ลูกค้าจะเห็น "ชำระแล้ว" เอง)
+const myWaiting = () => (state.myOrders || []).some((o) => MY_WAIT.includes(o.stage) || (o.payLater && o.stage === 'ready'));
 function myPollSchedule() {
   clearTimeout(MY.timer);
-  const waiting = (state.myOrders || []).some((o) => MY_WAIT.includes(o.stage));
+  const waiting = myWaiting();
   if (!waiting || isOwnerMode() || document.visibilityState === 'hidden' || Date.now() - MY.since > MY_POLL_MAX_MS) return;
   MY.timer = setTimeout(() => loadMyOrders(false, true), MY_POLL_MS);
 }
@@ -841,7 +844,7 @@ document.addEventListener('visibilitychange', () => {
   if (isOwnerMode()) return;
   if (document.visibilityState === 'hidden') { clearTimeout(MY.timer); return; }
   MY.since = Date.now();
-  if ((state.myOrders || []).some((o) => MY_WAIT.includes(o.stage))) loadMyOrders(false, true);
+  if (myWaiting()) loadMyOrders(false, true);
 });
 // เสียงในเว็บต้องให้ลูกค้าแตะจอก่อน 1 ครั้ง (กดสั่งก็นับ) → เตรียมเสียงไว้ตอนแตะครั้งแรก
 function myAudioUnlock() {
@@ -876,8 +879,10 @@ function myOrdersChanged() {
   if (MY.prev) {
     const ready = list.find((o) => o.stage === 'ready' && o.method !== 'นั่งทานที่ร้าน' && MY.prev[o.key || o.no] && MY.prev[o.key || o.no] !== 'ready');
     const paid = list.find((o) => MY.prev[o.key || o.no] === 'unpaid' && o.stage !== 'unpaid');
+    const billed = list.find((o) => o.billPaid && o.stage === 'done' && MY.prev[o.key || o.no] && MY.prev[o.key || o.no] !== 'done');
     if (ready) showReady(ready);
     else if (paid) toast('✅ ร้านได้รับเงินแล้ว · ออเดอร์ ' + paid.no);
+    else if (billed) { toast('✅ ชำระเงินแล้ว · ขอบคุณที่อุดหนุนนะครับ'); myChime(); }
   }
   MY.prev = now;
   // หน้าสั่งเสร็จ: อัปเดตกล่องคิวของออเดอร์นั้น
@@ -889,6 +894,10 @@ function myOrdersChanged() {
     $('doneQueue').classList.remove('hidden');
     $('doneQueue').classList.toggle('ready', o.stage === 'ready');
     if (o.stage !== 'unpaid') { $('donePay').classList.add('hidden'); $('doneSteps').classList.add('hidden'); }
+    if (o.billPaid && o.stage === 'done') {   // นั่งทาน: เช็คบิลจ่ายแล้ว → กล่องฟ้า "ค่อยจ่ายตอนเช็คบิล" เปลี่ยนเป็น "ชำระแล้ว"
+      $('doneLater').innerHTML = `<b>${baht(o.total)}</b>✅ ชำระเงินแล้ว`;
+      $('doneLater').classList.add('paid');
+    }
   }
   // แผ่น "ออเดอร์ของฉัน" เปิดอยู่ → วาดใหม่ (คงตำแหน่งเลื่อน)
   if (!$('sheet').classList.contains('hidden') && $('sheetBody').querySelector('.my-card')) {
@@ -915,7 +924,7 @@ const TRK_LAST = { 'ห่อกลับบ้าน': 'พร้อมรั�
 function trackHtml(o) {
   if (!o || !o.stage || o.stage === 'cancelled') return '';
   let steps, at;
-  if (o.payLater) {
+  if (o.payLater || (o.billPaid && o.stage === 'done')) {   // นั่งทานจ่ายทีหลัง (รวมที่เพิ่งเช็คบิลจ่ายแล้ว)
     steps = ['สั่งแล้ว', 'กำลังทำ', 'เสิร์ฟแล้ว', 'จ่ายเงิน'];
     at = o.stage === 'ready' ? 3 : o.stage === 'done' ? 4 : 1;
   } else {
@@ -925,7 +934,7 @@ function trackHtml(o) {
   return `<div class="trk" aria-label="ขั้นตอนของออเดอร์">${steps.map((t, i) => {
     const cls = i < at ? 'ok' : i === at ? 'now' + (i === 3 && !o.payLater ? ' end' : '') : '';   // ห้ามใช้ชื่อ done/cur (ชนกับคลาสหน้าสั่งเสร็จ)
     const icon = i < at || (i === at && i === 3 && !o.payLater) ? '✓' : String(i + 1);
-    return `<div class="trk-s ${cls}"${i === at ? ' aria-current="step"' : ''}><i>${icon}</i>${esc(t)}</div>`;
+    return `<div class="trk-s ${cls}"${i === at ? ' aria-current="step"' : ''}><i>${icon}</i>${esc(i === 3 && t === 'จ่ายเงิน' && at === 4 ? 'จ่ายแล้ว' : t)}</div>`;
   }).join('')}</div>`;
 }
 function openMyOrders() {
@@ -1544,7 +1553,7 @@ function renderCart() {
 }
 /** นั่งทานที่ร้าน (ร้านเปิดแบบจ่ายทีหลัง) = สั่งเลย กินก่อน จ่ายตอนเช็คบิล */
 function payLaterNow() { return !!(state.menu && state.menu.shop.payLater) && state.method === 'นั่งทานที่ร้าน'; }
-function submitLabel() { return payLaterNow() ? 'ยืนยันสั่งอาหาร' : 'ยืนยันสั่งซื้อ'; }
+function submitLabel() { return payLaterNow() ? 'ยืนยันสั่ง' : 'ยืนยันสั่งซื้อ'; }
 
 const FIELD_DEFS = {
   'ชื่อ': { key: 'name', label: 'ชื่อ', type: 'text' },
@@ -1690,7 +1699,8 @@ function showDone(order, again) {
   $('donePay').classList.toggle('hidden', later);
   $('doneSteps').classList.toggle('hidden', later);
   $('doneLater').classList.toggle('hidden', !later);
-  if (later) $('doneLater').innerHTML = `<b>${baht(order.total)}</b>🍽️ นั่งรอที่โต๊ะได้เลย ร้านจะยกไปเสิร์ฟให้<br>🧾 ทานเสร็จแล้วค่อยจ่ายตอนเช็คบิล (สแกน QR หรือเงินสด)`;
+  $('doneLater').classList.remove('paid');
+  if (later) $('doneLater').innerHTML = `<b>${baht(order.total)}</b>🍽️ นั่งรอที่โต๊ะได้เลย ร้านจะยกไปเสิร์ฟให้<br>🧾 ค่อยจ่ายตอนเช็คบิล (สแกน QR หรือเงินสด)`;
   $('qr').innerHTML = '';
   if (!later) new QRCode($('qr'), { text: order.promptpay, width: 230, height: 230, correctLevel: QRCode.CorrectLevel.M });
   $('saveQr').onclick = () => saveQr(order);
@@ -1867,12 +1877,12 @@ function toast(msg) {
 // มือถือยอมให้เว็บส่งเสียงหลังแตะจอ 1 ครั้ง → แตะตรงไหนก็ได้ ระบบเปิดเสียงให้เอง
 const SAY = { on: true, unlocked: false, last: null, slip: {}, told: {}, mine: new Set(), calls: new Set(), bills: new Set(), ctx: null, lines: [], left: null, rate: 'mid',
   opt: { no: true, table: true, name: true, items: false, note: false } };   // อ่านอะไรบ้าง (ยอดเงินอ่านทุกครั้ง) — ตั้งแยกแต่ละเครื่องที่แท็บร้าน
-const SAY_OPTS = [['no', '🔢 เลขออเดอร์'], ['table', '🪑 เลขโต๊ะ'], ['name', '👤 ชื่อลูกค้า'], ['items', '🍽️ เมนูแต่ละอย่าง'], ['note', '📝 หมายเหตุ']];
+const SAY_OPTS = [['no', '🔢 เลขออเดอร์'], ['table', '🪑 เลขโต๊ะ'], ['name', '👤 ชื่อลูกค้า'], ['items', '🧾 เมนูแต่ละอย่าง'], ['note', '📝 หมายเหตุ']];
 const SAY_CALM = new Set(['paid', 'order', 'bill']);   // แจ้งข่าวดี: ป๊อปอัพเขียว หายเอง · นอกนั้นต้องมีคนจัดการ (ส้ม ค้างไว้)
 const SAY_AGAIN_MS = 3 * 60 * 1000;   // ออเดอร์เดิมเตือนเรื่องสลิปซ้ำได้ทุก 3 นาที (ลูกค้าส่งรูปรัว ๆ จะไม่ดังรัว)
 const ALERT = {
   paid: { icon: '💰', sub: 'จ่ายเงินแล้ว เริ่มทำได้เลย', say: 'จ่ายเงินแล้ว เริ่มทำได้เลย' },
-  order: { icon: '🍽️', sub: 'สั่งอาหาร เริ่มทำได้เลย · จ่ายตอนเช็คบิล', say: 'สั่งอาหาร เริ่มทำได้เลย' },
+  order: { icon: '🍽️', sub: 'สั่งแล้ว เริ่มทำได้เลย · จ่ายตอนเช็คบิล', say: 'สั่งแล้ว เริ่มทำได้เลย' },
   check: { icon: '📎', sub: 'ส่งสลิปมาแล้ว — เช็คยอดในแอปธนาคาร แล้วกด "ได้รับเงินแล้ว"', say: 'ส่งสลิปมาแล้ว ช่วยเช็คยอดในแอปธนาคาร แล้วกดได้รับเงินแล้วด้วย' },
   warn: { icon: '⚠️', sub: 'สลิปมีปัญหา — เช็คในแอปธนาคารก่อน', say: 'สลิปมีปัญหา ช่วยเช็คในแอปธนาคารก่อนนะ' }
 };
@@ -1933,8 +1943,8 @@ function sayTileHtml() {
 }
 /** ลองฟัง: ใช้ออเดอร์ล่าสุดในหน้าร้าน (ถ้ามี) ไม่งั้นใช้ตัวอย่าง */
 function sayTest() {
-  const o = (SAY.list || []).slice(-1)[0] || { disp: '#001', name: 'นก', total: 70, method: 'นั่งทานที่ร้าน', pickup: 'โต๊ะ 3',
-    items: [{ name: 'ข้าวมันไก่ทอด', options: 'พิเศษ', qty: 2 }], note: 'ไม่ใส่แตง' };
+  const o = (SAY.list || []).slice(-1)[0] || { disp: '#001', name: 'นก', total: 120, method: 'รับหน้าร้าน', pickup: '',
+    items: [{ name: 'เมนูตัวอย่าง', options: 'แบบพิเศษ', qty: 2 }], note: '' };
   sayEnqueue(false, [alertLine(o, 'paid').speak]);
 }
 /** บางเครื่อง/บางเวอร์ชันของไลน์ยอมให้เว็บมีเสียงเลยโดยไม่ต้องแตะ → ลองก่อน ถ้าได้ก็ไม่ต้องขึ้นแถบให้แตะ */
@@ -2138,7 +2148,7 @@ function alertLine(o, kind) {
     const items = SAY.opt.items && o.items && o.items.length
       ? o.items.map((i) => sayClean(i.name) + ' ' + i.qty + (i.options ? ' ' + sayClean(i.options).replace(/\s*,\s*/g, ' ') : '')).join(', ') + ', ' : '';   // "ข้าวมันไก่ทอด 2 พิเศษ" แบบที่แม่ค้าเรียกกัน
     const note = SAY.opt.note && o.note ? 'หมายเหตุ ' + sayClean(o.note).slice(0, 80) + ', ' : '';
-    speak = kind === 'order' ? `${head}สั่งอาหาร, ${items}${note}เริ่มทำได้เลย`
+    speak = kind === 'order' ? `${head}สั่งแล้ว, ${items}${note}เริ่มทำได้เลย`
       : `${head}จ่ายเงินแล้ว ${amt}` + (over > 0 ? ` โอนเกินมา ${sayAmount(over)}` : '') + ', ' + items + note + 'เริ่มทำได้เลย';
   } else if (kind === 'check') {
     speak = `${head}ส่งสลิปมาแล้ว ยอด ${amt}, ช่วยเช็คยอดในแอปธนาคาร แล้วกดได้รับเงินแล้วด้วย`;
@@ -2474,7 +2484,7 @@ function renderOwnerOrders(data) {
   // หน้านี้เน้นเห็นออเดอร์ให้ได้มากที่สุด: เสียง/เวลาร้าน → แท็บร้าน · ยอดขาย → แท็บยอดขาย
   const closed = data.shop && !data.shop.open ? `<div class="ow-slim closed" data-goto="hours">🔴 ปิดรับออเดอร์อยู่ · กดเพื่อดู</div>` : '';
   const quotaOut = data.slip && data.slip.on && data.slip.left <= 0 ? `<div class="ow-slim closed">⚠️ ระบบตรวจสลิปอัตโนมัติพักชั่วคราว — เช็คยอดในแอปธนาคารเอง</div>` : '';
-  const lineLow = data.line && data.line.low ? `<div class="ow-slim hint" data-goto>💬 ข้อความไลน์เดือนนี้เหลือ ${data.line.left} — หยุดแจ้ง "ห่อเสร็จ" แล้ว (ลูกค้าดูสถานะในหน้าออเดอร์ได้)</div>` : '';
+  const lineLow = data.line && data.line.low ? `<div class="ow-slim hint" data-goto>💬 ข้อความไลน์เดือนนี้เหลือ ${data.line.left} — หยุดแจ้ง "พร้อมรับ" ทางไลน์แล้ว (ลูกค้าดูสถานะในหน้าออเดอร์ได้)</div>` : '';
   const head = closed + sayHintHtml() + quotaOut + lineLow + tools + billsHtml(owner.bills);
   if (!list.length) {
     $('owBody').innerHTML = head + '<div class="ow-empty"><img class="mascot" alt="" src="' + esc(BRAND.empty) + '">ยังไม่มีออเดอร์ที่ต้องทำ</div>';
@@ -2603,9 +2613,9 @@ function confirmCancel(no, disp) {
 
 // ---------- เมนู (เพิ่ม/แก้ราคา/ของหมด/ตัวเลือกเสริม) ----------
 const GROUP_MODES = [
-  { v: 'one', label: 'ต้องเลือก 1 อย่าง', hint: 'เช่น ขนาด ธรรมดา/พิเศษ' },
-  { v: 'optional', label: 'เลือกได้ 1 อย่าง (ไม่บังคับ)', hint: 'เช่น ความเผ็ด' },
-  { v: 'many', label: 'เลือกได้หลายอย่าง', hint: 'เช่น เพิ่มไข่ ไม่ใส่ผัก' }
+  { v: 'one', label: 'ต้องเลือก 1 อย่าง', hint: 'เช่น ขนาด เล็ก/ใหญ่' },
+  { v: 'optional', label: 'เลือกได้ 1 อย่าง (ไม่บังคับ)', hint: 'เช่น ระดับ น้อย/ปกติ/มาก' },
+  { v: 'many', label: 'เลือกได้หลายอย่าง', hint: 'เช่น ของเพิ่ม เลือกพร้อมกันได้' }
 ];
 const groupMode = (g) => (g.multi ? 'many' : g.required ? 'one' : 'optional');
 
@@ -2754,7 +2764,7 @@ function editProduct(p, d) {
         ${box !== '📷' ? '<button class="ow-chip" id="fPhotoDel">ลบรูป</button>' : ''}
       </div>
     </div>
-    <label class="ow-field">ชื่อเมนู<input id="fName" value="${esc(d.name)}" placeholder="เช่น ข้าวมันไก่ทอด"></label>
+    <label class="ow-field">ชื่อเมนู<input id="fName" value="${esc(d.name)}" placeholder="ชื่อที่ลูกค้าจะเห็น"></label>
     <label class="ow-field">ราคา (บาท)<input id="fPrice" type="number" inputmode="numeric" min="0" value="${esc(d.price)}" placeholder="เช่น 50"></label>
     <div class="ow-field">หมวด</div>
     <div class="ow-chips" id="fCats">${cats.map((c) => `<button class="ow-chip${c === d.cat ? ' on' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}
@@ -2765,7 +2775,7 @@ function editProduct(p, d) {
       <input id="fLimit" type="number" inputmode="numeric" min="0" max="9999" value="${esc(d.limit)}" placeholder="ไม่จำกัด"></label>
     <div class="ow-field">ตัวเลือกเสริมของเมนูนี้ <small>(แตะเพื่อเลือก · เลือกได้หลายกลุ่ม)</small></div>
     <div class="og-list" id="fGroups">${ogHtml() || '<span class="ow-hint">ยังไม่มีตัวเลือกเสริม</span>'}</div>
-    <button class="og-add" id="fAddGroup">➕ สร้างกลุ่มตัวเลือกใหม่ <small>(เช่น ความเผ็ด, ท็อปปิ้ง)</small></button>
+    <button class="og-add" id="fAddGroup">➕ สร้างกลุ่มตัวเลือกใหม่ <small>(เช่น ขนาด, สี, ของเพิ่ม)</small></button>
     <p class="err" id="fErr"></p>
     <button class="ow-big money" id="fSave">💾 บันทึก</button>
     <button class="ow-big" style="background:#fff;color:var(--brown);border:2px solid var(--line)" id="fCancel">ยกเลิก</button>
@@ -3021,7 +3031,7 @@ function renderOwnerHours(shop) {
       <div id="payBox"></div>
     </div>
     <div class="ow-tile">
-      <div style="font-size:21px;font-weight:600">🪑 QR สั่งอาหารประจำโต๊ะ</div>
+      <div style="font-size:21px;font-weight:600">🪑 QR สั่งประจำโต๊ะ</div>
       <div class="ow-hint" style="margin-top:2px;text-align:left">พิมพ์แปะไว้ที่โต๊ะ ลูกค้าสแกนแล้วเปิดเมนูร้านในไลน์ พร้อมเลขโต๊ะให้อัตโนมัติ</div>
       <div class="ow-field" style="margin-top:6px">เลขโต๊ะ <small>(เช่น 1-10 หรือ 1-8, A1, A2)</small></div>
       <div class="tq-row"><input id="tqList" value="1-10" autocomplete="off"><button class="ow-switch on" id="tqMake">สร้าง QR</button></div>
@@ -3164,7 +3174,7 @@ function renderThemeTile(current) {
       <div class="th-preview" style="${themeVars(p)}">
         <div style="font-size:16px;color:var(--muted);margin-bottom:6px">ตัวอย่างที่ลูกค้าเห็น</div>
         <div class="pv-top"><span class="chip active">ทั้งหมด</span><span class="chip">เมนูแนะนำ</span></div>
-        <div class="item"><div class="thumb">🍽️</div><div class="item-info"><div class="item-name">เมนูตัวอย่าง</div><div class="item-price">฿50</div></div><button class="add-btn" tabindex="-1">+</button></div>
+        <div class="item"><div class="thumb">🛍️</div><div class="item-info"><div class="item-name">เมนูตัวอย่าง</div><div class="item-price">฿50</div></div><button class="add-btn" tabindex="-1">+</button></div>
         <div class="pv-btn">🧺 ดูตะกร้า · ฿50</div>
       </div>
       ${same(pick, current || { name: 'pumpkin' }) ? '<div class="ow-hint" style="text-align:center">✅ ใช้สีนี้อยู่</div>' : '<button class="ow-big money" id="thSave">💾 ใช้สีนี้</button>'}`;
@@ -3555,7 +3565,7 @@ async function loadHistory(params) {
 const ANNOUNCE_TEMPLATES = [
   '📢 พรุ่งนี้ร้านหยุด 1 วันนะครับ',
   '🎉 วันนี้มีเมนูใหม่ มาลองกันได้เลยครับ',
-  '🔥 โปรวันนี้ ซื้อครบ 100 บาท แถมน้ำ 1 แก้ว',
+  '🔥 โปรวันนี้ ซื้อครบ 200 บาท ลด 20 บาท',
   '🙏 ขอบคุณที่อุดหนุนนะครับ'
 ];
 
@@ -3567,8 +3577,8 @@ function lineQuotaHtml(q) {
   return `<div class="lq${q.low ? ' low' : ''}">
     <div class="lq-top"><b>💬 ข้อความไลน์</b><span class="n">เหลือ <b>${q.left}</b> / ${q.limit}</span></div>
     <div class="lq-bar" role="progressbar" aria-valuenow="${q.used}" aria-valuemax="${q.limit}" aria-label="ใช้ไปแล้ว ${q.used}"><i style="width:${pct}%"></i></div>
-    <div class="sub">ของเดือนนี้ · ใช้ตอนแจ้ง "ห่อเสร็จ" · แจ้งยกเลิก · ประกาศ (ตอบแชทไม่นับ)</div>
-    ${q.low ? `<div class="lq-warn">⚠️ เหลือน้อย: หยุดแจ้ง "ห่อเสร็จ" แล้ว เก็บ ${q.reserve} ข้อความไว้แจ้งยกเลิก · ลูกค้ายังเห็นสถานะในหน้าออเดอร์ · เดือนหน้าเต็มใหม่</div>` : ''}
+    <div class="sub">ของเดือนนี้ · ใช้ตอนแจ้งลูกค้าว่าพร้อมรับ · แจ้งยกเลิก · ประกาศ (ตอบแชทไม่นับ)</div>
+    ${q.low ? `<div class="lq-warn">⚠️ เหลือน้อย: หยุดแจ้ง "พร้อมรับ" ทางไลน์แล้ว เก็บ ${q.reserve} ข้อความไว้แจ้งยกเลิก · ลูกค้ายังเห็นสถานะในหน้าออเดอร์ · เดือนหน้าเต็มใหม่</div>` : ''}
   </div>`;
 }
 function renderAnnounceBack() { closeModal(); }
